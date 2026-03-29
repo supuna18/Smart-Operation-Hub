@@ -1,0 +1,39 @@
+# --- Java / Maven (Backend) ---
+backend/target/
+backend/*.jar
+backend/*.war
+backend/*.ear
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.factorypath
+# Help files
+backend/HELP.md
+
+# --- Node / React (Frontend) ---
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# --- Logs ---
+*.log
+logs/
+
+# --- IDEs and Editors ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# --- Environment Variables (Security) ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
