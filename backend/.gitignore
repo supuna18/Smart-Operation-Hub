@@ -1,33 +1,33 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# --- Java / Maven (Backend) ---
+backend/target/
+backend/*.jar
+backend/*.war
+backend/*.ear
+# Maven wrapper files (Optional but good to keep local)
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.factorypath
+backend/HELP.md
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# --- Node / React (Frontend) ---
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
 
-### IntelliJ IDEA ###
-.idea
+# --- IDEs and Editors ---
+.vscode/
+.idea/
 *.iws
 *.iml
 *.ipr
+.settings/
+.classpath
+.project
+.DS_Store
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
+# --- OS generated files ---
+Thumbs.db
+desktop.ini
