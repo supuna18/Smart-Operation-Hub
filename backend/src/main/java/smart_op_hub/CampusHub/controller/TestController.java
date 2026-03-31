@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.*;
 import smart_op_hub.CampusHub.model.User;
 import smart_op_hub.CampusHub.repository.UserRepository;
 
+
+
+
 @RestController
 @RequestMapping("/test")
 public class TestController {
@@ -22,3 +25,8 @@ public class TestController {
         return "User Saved Successfully to MongoDB!";
     }
 }
+
+
+
+
+// Remove id completely if it is not a valid existing ID to avoid sending null to backend
