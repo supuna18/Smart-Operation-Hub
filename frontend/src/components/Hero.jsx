@@ -1,10 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Play } from 'lucide-react';
+import heroBg from '../assets/hero-bg.png';
 
 const Hero = () => {
   return (
     <section className="relative overflow-hidden flex items-center pt-20 pb-32 px-6 md:px-16 bg-white">
+      {/* Subtle Background Visual */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] grayscale pointer-events-none">
+        <img src={heroBg} alt="" className="w-full h-full object-cover blur-sm" />
+      </div>
+
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center z-10">
         <div className="max-w-3xl">
           <motion.div
@@ -57,17 +63,15 @@ const Hero = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, delay: 0.2 }}
-            className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-gray-200"
+            className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-gray-200 aspect-square"
           >
-            <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-              <div className="p-12 text-center">
-                <div className="w-24 h-24 bg-[#262626] rounded-3xl mx-auto mb-6 flex items-center justify-center text-white shadow-xl">
-                  <span className="text-4xl font-bold">S</span>
-                </div>
-                <h3 className="text-2xl font-bold text-[#262626]">Digital Campus</h3>
-                <p className="text-gray-500 mt-2 font-medium">Streamlined, Automated, Secure.</p>
-              </div>
-            </div>
+            <img 
+              src={heroBg} 
+              alt="Digital Campus Illustration" 
+              className="w-full h-full object-cover"
+            />
+            {/* Overlay for a more integrated feel */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#262626]/20 to-transparent pointer-events-none" />
           </motion.div>
           {/* Static Background Blobs */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-gradient-to-tr from-yellow-100/30 to-transparent rounded-full blur-3xl -z-10" />
