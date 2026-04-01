@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 py-5 sticky top-0 bg-white/70 backdrop-blur-xl z-50 border-b border-gray-200/30 font-poppins transition-all">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-2xl font-bold tracking-tight text-[#262626]">
+      <Link to="/" className="text-2xl font-bold tracking-tight text-[#262626]">
         Smart<span className="text-[#FACC15]">Hub</span>
-      </motion.div>
+      </Link>
       
       {/* Desktop Menu */}
       <div className="hidden md:flex space-x-10 font-medium items-center">
-        {['Home', 'Services', 'About'].map((item) => (
-          <a key={item} href="#" className="text-[#262626]/80 hover:text-[#262626] transition-colors">{item}</a>
-        ))}
+        <Link to="/" className="text-[#262626]/80 hover:text-[#262626] transition-colors">Home</Link>
+        <a href="#services" className="text-[#262626]/80 hover:text-[#262626] transition-colors">Services</a>
+        <Link to="/about" className="text-[#262626]/80 hover:text-[#262626] transition-colors">About</Link>
         <div className="flex items-center space-x-4">
           <button className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
             Login
@@ -42,11 +43,9 @@ const Navbar = () => {
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-xl flex flex-col p-6 md:hidden space-y-4"
           >
-            {['Home', 'Services', 'About'].map((item) => (
-              <a key={item} href="#" className="font-medium text-[#262626] p-3 rounded-xl hover:bg-gray-50 transition-colors">
-                {item}            
-              </a>    
-            ))}
+            <Link to="/" onClick={() => setIsOpen(false)} className="font-medium text-[#262626] p-3 rounded-xl hover:bg-gray-50 transition-colors">Home</Link>
+            <a href="#services" onClick={() => setIsOpen(false)} className="font-medium text-[#262626] p-3 rounded-xl hover:bg-gray-50 transition-colors">Services</a>
+            <Link to="/about" onClick={() => setIsOpen(false)} className="font-medium text-[#262626] p-3 rounded-xl hover:bg-gray-50 transition-colors">About</Link>
             <div className="flex flex-col space-y-3 pt-2">
               <button className="text-[#262626] font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
                 Login
