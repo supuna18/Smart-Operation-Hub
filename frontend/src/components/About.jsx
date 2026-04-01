@@ -4,27 +4,27 @@ import aboutHeroImg from '../assets/about-hero.png';
 
 const About = () => {
   return (
-    <div className="pt-20">
+    <div className="">
       {/* 1. Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden bg-[#262626]">
+      <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden bg-[#262626] pt-32 pb-20">
         <div className="absolute inset-0 z-0">
           <img src={aboutHeroImg} alt="About Us" className="w-full h-full object-cover opacity-40 grayscale" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#262626]/80 to-[#262626]" />
         </div>
         
         <div className="relative z-10 text-center px-6">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-bold text-white mb-6"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-block px-10 py-5 bg-[#FACC15] text-[#262626] rounded-[2rem] font-black text-3xl md:text-5xl shadow-2xl mb-10 transform -rotate-1 border-4 border-white/20"
           >
-            Our <span className="text-[#FACC15]">Vision</span> & Story
-          </motion.h1>
+            Our Vision & Our Story
+          </motion.div>
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="max-w-2xl mx-auto text-xl text-gray-300 font-medium"
+            transition={{ delay: 0.4 }}
+            className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-200 font-bold leading-relaxed drop-shadow-lg"
           >
             Redefining campus management through smart automation and unified digital ecosystems.
           </motion.p>
