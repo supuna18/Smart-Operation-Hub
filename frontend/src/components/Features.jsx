@@ -35,10 +35,10 @@ const Features = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-20">
           <div className="max-w-2xl">
-            <h4 className="text-[#8D6E63] font-bold tracking-widest uppercase text-sm mb-4">Our Ecosystem</h4>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#3E2723]">Comprehensive solutions for campus challenges.</h2>
+            <h4 className="text-yellow-600 font-bold tracking-widest uppercase text-sm mb-4">Our Ecosystem</h4>
+            <h2 className="text-4xl md:text-5xl font-bold text-[#262626]">Comprehensive solutions for campus challenges.</h2>
           </div>
-          <p className="text-[#5D4037]/60 font-medium max-w-xs mt-6 md:mt-0">
+          <p className="text-gray-500 font-medium max-w-xs mt-6 md:mt-0">
             Four specialized modules working together to streamline your operations.
           </p>
         </div>
