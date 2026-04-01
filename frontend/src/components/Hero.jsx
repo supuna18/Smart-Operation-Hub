@@ -29,7 +29,7 @@ const Hero = () => {
             transition={{ duration: 0.8 }}
             className="text-4xl sm:text-6xl md:text-7xl font-bold leading-[1.05] tracking-tight text-[#262626]"
           >
-            Elevating <span className="text-yellow-500">Campus Operations</span> Through Smart Tech.
+            <span className="text-yellow-500"> Elevating Campus Operations .Through Smart Tech.</span> 
           </motion.h1>
           
           <motion.p 
