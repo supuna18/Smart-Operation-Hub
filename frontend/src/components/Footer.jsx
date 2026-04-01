@@ -2,11 +2,11 @@ import React from 'react';
 
 const Footer = () => {
   return (
-    <footer className="bg-[#3E2723] text-[#D7CCC8] py-20 px-6 md:px-16">
+    <footer className="bg-[#262626] text-gray-400 py-20 px-6 md:px-16">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start border-b border-white/10 pb-16">
         <div className="max-w-sm">
           <h2 className="text-3xl font-bold text-white mb-6">SmartHub</h2>
-          <p className="text-[#D7CCC8]/60 leading-relaxed">
+          <p className="text-gray-400/60 leading-relaxed">
             The next generation of campus management. Built for efficiency, transparency, and seamless collaboration.
           </p>
         </div>
