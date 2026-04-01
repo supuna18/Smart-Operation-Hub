@@ -339,7 +339,7 @@ const About = () => {
             Ready to transform<br />your campus?
           </h2>
           <p className="text-lg text-gray-400 font-medium mb-12 max-w-xl mx-auto">
-            Join hundreds of institutions already running smarter with SmartHub.
+            Join hundreds of institutions already running smarter with Smart Sync.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

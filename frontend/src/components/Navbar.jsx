@@ -17,7 +17,7 @@ const Navbar = () => {
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 py-5 sticky top-0 bg-white/70 backdrop-blur-xl z-50 border-b border-gray-200/30 font-poppins transition-all">
       <Link to="/" className="text-2xl font-bold tracking-tight text-[#262626]">
-        Smart<span className="text-[#FACC15]">Hub</span>
+        Smart<span className="text-[#FACC15]">Sync</span>
       </Link>
       
       {/* Desktop Menu */}
