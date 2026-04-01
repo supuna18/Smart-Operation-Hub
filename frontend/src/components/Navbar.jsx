@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Services', path: '/#services', isHash: true },
+    { name: 'About', path: '/about' }
+  ];
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 py-5 sticky top-0 bg-white/70 backdrop-blur-xl z-50 border-b border-gray-200/30 font-poppins transition-all">
@@ -14,9 +22,25 @@ const Navbar = () => {
       
       {/* Desktop Menu */}
       <div className="hidden md:flex space-x-10 font-medium items-center">
-        <Link to="/" className="text-[#262626]/80 hover:text-[#262626] transition-colors">Home</Link>
-        <a href="#services" className="text-[#262626]/80 hover:text-[#262626] transition-colors">Services</a>
-        <Link to="/about" className="text-[#262626]/80 hover:text-[#262626] transition-colors">About</Link>
+        {navLinks.map((link) => {
+          const isActive = currentPath === link.path || (link.isHash && location.hash === link.path.split('#')[1]);
+          return (
+            <Link 
+              key={link.name} 
+              to={link.path} 
+              className={`relative transition-colors ${isActive ? 'text-[#262626]' : 'text-[#262626]/60 hover:text-[#262626]'}`}
+            >
+              {link.name}
+              {isActive && (
+                <motion.div 
+                  layoutId="navUnderline"
+                  className="absolute -bottom-1.5 left-0 right-0 h-0.5 bg-[#FACC15] rounded-full"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+            </Link>
+          );
+        })}
         <div className="flex items-center space-x-4">
           <button className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
             Login
@@ -43,9 +67,19 @@ const Navbar = () => {
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-xl flex flex-col p-6 md:hidden space-y-4"
           >
-            <Link to="/" onClick={() => setIsOpen(false)} className="font-medium text-[#262626] p-3 rounded-xl hover:bg-gray-50 transition-colors">Home</Link>
-            <a href="#services" onClick={() => setIsOpen(false)} className="font-medium text-[#262626] p-3 rounded-xl hover:bg-gray-50 transition-colors">Services</a>
-            <Link to="/about" onClick={() => setIsOpen(false)} className="font-medium text-[#262626] p-3 rounded-xl hover:bg-gray-50 transition-colors">About</Link>
+            {navLinks.map((link) => {
+              const isActive = currentPath === link.path;
+              return (
+                <Link 
+                  key={link.name} 
+                  to={link.path} 
+                  onClick={() => setIsOpen(false)}
+                  className={`font-semibold p-4 rounded-2xl transition-all ${isActive ? 'bg-yellow-50 text-[#FACC15]' : 'text-[#262626] hover:bg-gray-50'}`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
             <div className="flex flex-col space-y-3 pt-2">
               <button className="text-[#262626] font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
                 Login
