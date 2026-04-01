@@ -1,24 +1,28 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Features from './components/Features';
+import Home from './components/Home';
+import About from './components/About';
 import Footer from './components/Footer';
 
 function App() {
   return (
-    <div className="min-h-screen bg-white font-poppins selection:bg-[#D7CCC8]">
-      {/* 1. Navbar Component */}
-      <Navbar />
+    <Router>
+      <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col">
+        {/* Navbar is persistent across pages */}
+        <Navbar />
 
-      {/* 2. Hero Section Component */}
-      <Hero />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+        </main>
 
-      {/* 3. Features Section Component */}
-      <Features />
-
-      {/* 4. Footer Component */}
-      <Footer />
-    </div>
+        {/* Footer is persistent across pages */}
+        <Footer />
+      </div>
+    </Router>
   );
 }
 
