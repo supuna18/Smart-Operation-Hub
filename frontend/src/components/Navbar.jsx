@@ -44,8 +44,8 @@ const Navbar = () => {
           >
             {['Home', 'Services', 'About'].map((item) => (
               <a key={item} href="#" className="font-medium text-[#262626] p-3 rounded-xl hover:bg-gray-50 transition-colors">
-                {item}
-              </a>
+                {item}            
+              </a>    
             ))}
             <div className="flex flex-col space-y-3 pt-2">
               <button className="text-[#262626] font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
