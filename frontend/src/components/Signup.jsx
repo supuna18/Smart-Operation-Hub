@@ -26,7 +26,12 @@ const Signup = () => {
       localStorage.setItem('token', response.data.token);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data || 'Failed to sign up. Please try again.');
+      console.error('Signup Error:', err);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Cannot connect to the server. Please check if the backend is running on port 8080.');
+      } else {
+        setError(err.response?.data || 'Failed to sign up. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

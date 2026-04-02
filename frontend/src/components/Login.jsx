@@ -26,7 +26,12 @@ const Login = () => {
       localStorage.setItem('token', response.data.token);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data || 'Failed to login. Please check your credentials.');
+      console.error('Login Error:', err);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Cannot connect to the server. Please check if the backend is running on port 8080.');
+      } else {
+        setError(err.response?.data || 'Failed to login. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }
