@@ -1,8 +1,6 @@
 package smart_op_hub.CampusHub.service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,7 +10,6 @@ import smart_op_hub.CampusHub.model.User;
 import smart_op_hub.CampusHub.repository.UserRepository;
 import smart_op_hub.CampusHub.security.JwtUtil;
 
-import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -26,9 +23,6 @@ public class AuthService {
 
     @Autowired
     private JwtUtil jwtUtil;
-
-    // Use a placeholder or environment variable for production
-    private static final String CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
 
     public AuthRequest.AuthResponse signup(AuthRequest.SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {

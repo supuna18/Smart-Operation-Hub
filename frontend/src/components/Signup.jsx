@@ -52,9 +52,9 @@ const Signup = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 relative overflow-hidden">
       {/* Dynamic Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-20 -right-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-40 left-20 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#FACC15] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-20 -right-20 w-96 h-96 bg-gray-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-40 left-20 w-96 h-96 bg-yellow-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
       <motion.div
@@ -68,9 +68,9 @@ const Signup = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
-            className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-purple-500/30 mb-4"
+            className="w-16 h-16 bg-[#FACC15] rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-yellow-500/20 mb-4"
           >
-            <User className="w-8 h-8 text-white" />
+            <User className="w-8 h-8 text-[#262626]" />
           </motion.div>
           <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
             Create Account
@@ -92,14 +92,14 @@ const Signup = () => {
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700 ml-1">Full Name</label>
             <div className="relative group">
-              <User className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-purple-600 transition-colors" />
+              <User className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-[#FACC15] transition-colors" />
               <input
                 type="text"
                 name="username"
                 required
                 value={formData.username}
                 onChange={handleInputChange}
-                className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl py-3 pl-12 pr-4 outline-none focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium"
+                className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl py-3 pl-12 pr-4 outline-none focus:bg-white focus:border-[#FACC15] focus:ring-4 focus:ring-[#FACC15]/10 transition-all font-medium"
                 placeholder="John Doe"
               />
             </div>
@@ -108,14 +108,14 @@ const Signup = () => {
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700 ml-1">Email</label>
             <div className="relative group">
-              <Mail className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-purple-600 transition-colors" />
+              <Mail className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-[#FACC15] transition-colors" />
               <input
                 type="email"
                 name="email"
                 required
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl py-3 pl-12 pr-4 outline-none focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium"
+                className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl py-3 pl-12 pr-4 outline-none focus:bg-white focus:border-[#FACC15] focus:ring-4 focus:ring-[#FACC15]/10 transition-all font-medium"
                 placeholder="john@example.com"
               />
             </div>
@@ -124,14 +124,14 @@ const Signup = () => {
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700 ml-1">Password</label>
             <div className="relative group">
-              <Lock className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-purple-600 transition-colors" />
+              <Lock className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-[#FACC15] transition-colors" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl py-3 pl-12 pr-12 outline-none focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium"
+                className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl py-3 pl-12 pr-12 outline-none focus:bg-white focus:border-[#FACC15] focus:ring-4 focus:ring-[#FACC15]/10 transition-all font-medium"
                 placeholder="Create a password"
               />
               <button
@@ -147,7 +147,7 @@ const Signup = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl py-3.5 font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-600/30 active:scale-[0.98] transition-all disabled:opacity-70 mt-4"
+            className="w-full bg-[#262626] text-[#FACC15] rounded-xl py-3.5 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-gray-200 active:scale-[0.98] transition-all disabled:opacity-70 mt-4"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -179,7 +179,7 @@ const Signup = () => {
 
         <p className="text-center mt-8 text-gray-600 font-medium">
           Already have an account?{' '}
-          <Link to="/login" className="text-purple-600 font-semibold hover:underline decoration-2 underline-offset-4">
+          <Link to="/login" className="text-yellow-600 font-bold hover:underline decoration-2 underline-offset-4">
             Sign in
           </Link>
         </p>
