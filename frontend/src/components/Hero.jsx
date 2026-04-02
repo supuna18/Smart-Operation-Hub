@@ -5,7 +5,7 @@ import heroBg from '../assets/hero-bg.png';
 
 const Hero = () => {
   return (
-    <section className="relative overflow-hidden flex items-center pt-28 pb-32 px-6 md:px-16 bg-white min-h-screen">
+    <section className="relative overflow-hidden pt-12 lg:pt-20 pb-24 lg:pb-32 px-6 md:px-16 bg-white">
 
       {/* Subtle grid overlay — matches About page */}
       <div
