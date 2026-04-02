@@ -6,7 +6,7 @@ const About = () => {
   return (
     <div className="">
       {/* 1. Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-[#262626] pt-32 pb-0">
+      <section className="relative overflow-hidden bg-[#262626] pt-28 lg:pt-40 pb-20 lg:pb-32 flex flex-col items-center justify-center">
         {/* Background image */}
         <div className="absolute inset-0 z-0">
           <img src={aboutHeroImg} alt="About Us" className="w-full h-full object-cover opacity-20 grayscale" />
