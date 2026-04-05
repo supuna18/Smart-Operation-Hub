@@ -22,7 +22,7 @@ const Login = () => {
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:8081/api/auth/login', formData);
+      const response = await axios.post('http://localhost:8082/api/auth/login', formData);
       localStorage.setItem('token', response.data.token);
       navigate('/');
     } catch (err) {
