@@ -41,7 +41,7 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:8081/api/auth/google', {
+      const response = await axios.post('http://localhost:8082/api/auth/google', {
         token: credentialResponse.credential,
       });
       localStorage.setItem('token', response.data.token);
