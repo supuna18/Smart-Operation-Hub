@@ -178,7 +178,6 @@ const Signup = () => {
             theme="outline"
             size="large"
             text="signup_with"
-            width="100%"
           />
         </div>
 
