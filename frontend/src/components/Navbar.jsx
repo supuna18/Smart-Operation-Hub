@@ -10,6 +10,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
+    { name: 'Resources', path: '/resources' },
     { name: 'Services', path: '/#services', isHash: true },
     { name: 'About', path: '/about' }
   ];
@@ -42,9 +43,9 @@ const Navbar = () => {
           );
         })}
         <div className="flex items-center space-x-4">
-          <button className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
+          <Link to="/login" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
             Login
-          </button>
+          </Link>
           <button className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 transition-all">
             Get Started
           </button>

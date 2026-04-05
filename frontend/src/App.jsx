@@ -5,6 +5,8 @@ import Home from './components/Home';
 import About from './components/About';
 import Footer from './components/Footer';
 
+import ResourceManagement from './components/resources/ResourceManagement';
+
 function App() {
   return (
     <Router>
@@ -16,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/resources" element={<ResourceManagement />} />
           </Routes>
         </main>
 
