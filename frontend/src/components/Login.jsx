@@ -22,11 +22,16 @@ const Login = () => {
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', formData);
+      const response = await axios.post('http://localhost:8082/api/auth/login', formData);
       localStorage.setItem('token', response.data.token);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data || 'Failed to login. Please check your credentials.');
+      console.error('Login Error:', err);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Cannot connect to the server. Please check if the backend is running on port 8081.');
+      } else {
+        setError(err.response?.data || 'Failed to login. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }
@@ -36,7 +41,7 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/google', {
+      const response = await axios.post('http://localhost:8082/api/auth/google', {
         token: credentialResponse.credential,
       });
       localStorage.setItem('token', response.data.token);
@@ -161,7 +166,6 @@ const Login = () => {
             theme="filled_blue"
             size="large"
             text="continue_with"
-            width="100%"
           />
         </div>
 
