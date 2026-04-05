@@ -8,6 +8,7 @@ import smart_op_hub.CampusHub.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:5174")
 public class AuthController {
 
     @Autowired
