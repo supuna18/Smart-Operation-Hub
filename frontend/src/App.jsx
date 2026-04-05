@@ -3,6 +3,8 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+// --- Unga module import (Added .jsx extension to solve the error) ---
+import BookingManager from './components/BookingManager.jsx';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -30,6 +32,14 @@ function App() {
       </section>
 
       <div className="ticks"></div>
+
+      {/* --- Inga dhaan unga Booking Management module-ah add pannirukken --- */}
+      <section id="booking-section" style={{ padding: '40px 20px', textAlign: 'center', backgroundColor: '#ffffff' }}>
+        <BookingManager />
+      </section>
+      
+      <div className="ticks"></div>
+      {/* ------------------------------------------------------------------- */}
 
       <section id="next-steps">
         <div id="docs">
