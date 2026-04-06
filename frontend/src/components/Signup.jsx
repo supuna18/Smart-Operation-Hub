@@ -20,7 +20,7 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const response = await axios.post('http://localhost:8082/api/auth/signup', formData);
       localStorage.setItem('token', response.data.token);
@@ -84,9 +84,9 @@ const Signup = () => {
         </div>
 
         {error && (
-          <motion.div 
-            initial={{ opacity: 0, x: -10 }} 
-            animate={{ opacity: 1, x: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
             className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 font-medium text-center"
           >
             {error}
@@ -178,6 +178,7 @@ const Signup = () => {
             theme="outline"
             size="large"
             text="signup_with"
+            width="100%"
           />
         </div>
 
