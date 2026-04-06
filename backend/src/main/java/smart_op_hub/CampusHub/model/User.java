@@ -11,5 +11,8 @@ public class User {
     private String id;
     private String username;
     private String email;
-    private String role; // Admin, Student, Lecturer....,
+    private String password;
+    private String role; // Admin, Student, Lecturer
+    private String authProvider; // local, google
+    private String profileImageUrl;
 }

@@ -18,7 +18,7 @@ const Navbar = () => {
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 py-5 sticky top-0 bg-white/70 backdrop-blur-xl z-50 border-b border-gray-200/30 font-poppins transition-all">
       <Link to="/" className="text-2xl font-bold tracking-tight text-[#262626]">
-        Smart<span className="text-[#FACC15]">Hub</span>
+        Smart<span className="text-[#FACC15]">Sync</span>
       </Link>
       
       {/* Desktop Menu */}
@@ -46,9 +46,9 @@ const Navbar = () => {
           <Link to="/login" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
             Login
           </Link>
-          <button className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 transition-all">
+          <Link to="/signup" className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 transition-all">
             Get Started
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -82,12 +82,12 @@ const Navbar = () => {
               );
             })}
             <div className="flex flex-col space-y-3 pt-2">
-              <button className="text-[#262626] font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+              <Link to="/login" onClick={() => setIsOpen(false)} className="text-[#262626] text-center font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
                 Login
-              </button>
-              <button className="bg-[#FACC15] text-[#262626] px-6 py-3 rounded-xl font-bold shadow-md inline-flex justify-center w-full">
+              </Link>
+              <Link to="/signup" onClick={() => setIsOpen(false)} className="bg-[#FACC15] text-[#262626] px-6 py-3 rounded-xl font-bold shadow-md inline-flex justify-center w-full">
                 Get Started
-              </button>
+              </Link>
             </div>
           </motion.div>
         )}
