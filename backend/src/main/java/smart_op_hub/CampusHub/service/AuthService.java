@@ -79,6 +79,7 @@ public class AuthService {
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            System.out.println("Password mismatch for general user: " + request.getEmail());
             throw new RuntimeException("Invalid email or password");
         }
 

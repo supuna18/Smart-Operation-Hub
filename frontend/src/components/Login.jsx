@@ -26,14 +26,14 @@ const Login = () => {
       const response = await axios.post('http://localhost:8082/api/auth/login', formData);
       setAuthData(response.data.token, response.data.user);
       if (response.data.user.role === 'Admin') {
-        navigate('/admin');
+        navigate('/AdminDashboard');
       } else {
         navigate('/');
       }
     } catch (err) {
       console.error('Login Error:', err);
       if (err.code === 'ERR_NETWORK') {
-        setError('Cannot connect to the server. Please check if the backend is running on port 8081.');
+        setError('Cannot connect to the server. Please check if the backend is running on port 8082.');
       } else {
         setError(err.response?.data || 'Failed to login. Please check your credentials.');
       }
@@ -51,7 +51,7 @@ const Login = () => {
       });
       setAuthData(response.data.token, response.data.user);
       if (response.data.user.role === 'Admin') {
-        navigate('/admin');
+        navigate('/AdminDashboard');
       } else {
         navigate('/');
       }

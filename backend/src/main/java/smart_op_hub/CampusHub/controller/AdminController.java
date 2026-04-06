@@ -6,12 +6,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import smart_op_hub.CampusHub.model.Facility;
 import smart_op_hub.CampusHub.model.ResourceItem;
+import smart_op_hub.CampusHub.model.SafetyReport;
 import smart_op_hub.CampusHub.model.User;
 import smart_op_hub.CampusHub.repository.FacilityRepository;
 import smart_op_hub.CampusHub.repository.ResourceRepository;
+import smart_op_hub.CampusHub.repository.SafetyReportRepository;
 import smart_op_hub.CampusHub.repository.UserRepository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -27,6 +31,9 @@ public class AdminController {
 
     @Autowired
     private ResourceRepository resourceRepository;
+
+    @Autowired
+    private SafetyReportRepository safetyReportRepository;
 
     @GetMapping("/users")
     public List<User> getAllUsers() {
@@ -117,5 +124,40 @@ public class AdminController {
         }
         resourceRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- Safety Endpoints ---
+
+    @GetMapping("/safety/reports")
+    public List<SafetyReport> getAllSafetyReports() {
+        return safetyReportRepository.findAll();
+    }
+
+    @PutMapping("/safety/reports/{id}/status")
+    public ResponseEntity<SafetyReport> updateSafetyReportStatus(@PathVariable String id, @RequestBody Map<String, String> request) {
+        return safetyReportRepository.findById(id).map(report -> {
+            report.setStatus(request.get("status"));
+            return ResponseEntity.ok(safetyReportRepository.save(report));
+        }).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // --- Analytics Endpoints ---
+
+    @GetMapping("/analytics")
+    public ResponseEntity<Map<String, Object>> getAnalytics() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("userCount", userRepository.count());
+        stats.put("facilityCount", facilityRepository.count());
+        stats.put("resourceCount", resourceRepository.count());
+        stats.put("safetyReportCount", safetyReportRepository.count());
+        
+        // Mock health metrics for simplicity
+        Map<String, String> health = new HashMap<>();
+        health.put("status", "Healthy");
+        health.put("database", "Connected");
+        health.put("uptime", "99.98%");
+        stats.put("systemHealth", health);
+        
+        return ResponseEntity.ok(stats);
     }
 }

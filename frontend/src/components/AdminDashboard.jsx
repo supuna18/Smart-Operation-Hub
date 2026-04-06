@@ -7,6 +7,8 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [facilities, setFacilities] = useState([]);
   const [resources, setResources] = useState([]);
+  const [safetyReports, setSafetyReports] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [activeTab, setActiveTab] = useState('users');
   const [facilityDraft, setFacilityDraft] = useState({ name: '', description: '', location: '', capacity: '' });
   const [resourceDraft, setResourceDraft] = useState({ name: '', type: '', quantity: '', status: '' });
@@ -15,15 +17,19 @@ const AdminDashboard = () => {
 
   const loadAll = async () => {
     try {
-      const [usersResponse, facilitiesResponse, resourcesResponse] = await Promise.all([
+      const [usersResponse, facilitiesResponse, resourcesResponse, safetyResponse, analyticsResponse] = await Promise.all([
         api.get('/admin/users'),
         api.get('/admin/facilities'),
         api.get('/admin/resources'),
+        api.get('/admin/safety/reports'),
+        api.get('/admin/analytics'),
       ]);
 
       setUsers(usersResponse.data);
       setFacilities(facilitiesResponse.data);
       setResources(resourcesResponse.data);
+      setSafetyReports(safetyResponse.data);
+      setAnalytics(analyticsResponse.data);
     } catch (err) {
       setError('Unable to load admin data. Please make sure you are logged in as an admin.');
     }
@@ -102,6 +108,15 @@ const AdminDashboard = () => {
     }
   };
 
+  const updateSafetyStatus = async (id, status) => {
+    try {
+      const response = await api.put(`/admin/safety/reports/${id}/status`, { status });
+      setSafetyReports((current) => current.map((item) => (item.id === id ? response.data : item)));
+    } catch (err) {
+      setError('Failed to update report status.');
+    }
+  };
+
   const currentUser = getUser();
 
   return (
@@ -124,13 +139,13 @@ const AdminDashboard = () => {
         {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">{error}</div>}
 
         <div className="flex flex-wrap gap-3 mb-10">
-          {['users', 'facilities', 'resources'].map((tab) => (
+          {['users', 'facilities', 'resources', 'safety', 'analytics'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-5 py-3 rounded-full font-semibold transition ${activeTab === tab ? 'bg-[#262626] text-[#FACC15]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === 'safety' ? 'Safety Approvals' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
@@ -322,6 +337,106 @@ const AdminDashboard = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+        {activeTab === 'safety' && (
+          <div>
+            <div className="overflow-x-auto rounded-3xl border border-gray-200">
+              <table className="min-w-full bg-white">
+                <thead className="bg-[#FACC15]/15 text-left text-sm uppercase tracking-wide text-gray-500">
+                  <tr>
+                    <th className="px-6 py-4">Reported By</th>
+                    <th className="px-6 py-4">Location</th>
+                    <th className="px-6 py-4">Incident</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {safetyReports.map((report) => (
+                    <tr key={report.id} className="border-t border-gray-100 hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-gray-800">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold">
+                            {report.reporterName ? report.reporterName.charAt(0) : 'U'}
+                          </div>
+                          <span>{report.reporterName || report.userId || 'Unknown Reporter'}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{report.location}</td>
+                      <td className="px-6 py-4 text-gray-600 max-w-xs truncate">{report.description}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          report.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                          report.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {report.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 space-x-2">
+                        <button
+                          onClick={() => updateSafetyStatus(report.id, 'Approved')}
+                          className="text-xs font-bold text-green-600 hover:underline"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => updateSafetyStatus(report.id, 'Rejected')}
+                          className="text-xs font-bold text-red-600 hover:underline"
+                        >
+                          Reject
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {safetyReports.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-10 text-center text-gray-400">No safety reports found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'analytics' && analytics && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { label: 'Total Users', value: analytics.userCount, color: 'blue' },
+                { label: 'Facilities', value: analytics.facilityCount, color: 'green' },
+                { label: 'Resources', value: analytics.resourceCount, color: 'purple' },
+                { label: 'Incidents', value: analytics.safetyReportCount, color: 'red' }
+              ].map((stat, i) => (
+                <div key={i} className="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                  <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                  <p className={`text-4xl font-black text-${stat.color}-500 mt-2`}>{stat.value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-8 bg-[#262626] rounded-[2.5rem] text-white">
+              <h3 className="text-2xl font-black mb-6 flex items-center gap-3">
+                <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                System Health
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                <div>
+                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Status</p>
+                  <p className="text-xl font-bold">{analytics.systemHealth.status}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Database</p>
+                  <p className="text-xl font-bold">{analytics.systemHealth.database}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Uptime</p>
+                  <p className="text-xl font-bold">{analytics.systemHealth.uptime}</p>
+                </div>
+              </div>
             </div>
           </div>
         )}

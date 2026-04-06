@@ -47,7 +47,7 @@ const Navbar = () => {
           );
         })}
         {admin && (
-          <Link to="/admin" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
+          <Link to="/AdminDashboard" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
             Admin Dashboard
           </Link>
         )}
@@ -120,7 +120,7 @@ const Navbar = () => {
               ) : (
                 <>
                   {admin && (
-                    <Link to="/admin" onClick={() => setIsOpen(false)} className="text-[#262626] text-center font-semibold p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+                    <Link to="/AdminDashboard" onClick={() => setIsOpen(false)} className="text-[#262626] text-center font-semibold p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
                       Admin Dashboard
                     </Link>
                   )}
