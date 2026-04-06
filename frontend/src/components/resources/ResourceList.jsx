@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ResourceService from '../../services/ResourceService';
-import { FiSearch, FiEdit2, FiTrash2, FiPlus, FiFilter } from 'react-icons/fi';
+import { FiSearch, FiEdit2, FiTrash2, FiPlus, FiFilter, FiUsers, FiMapPin } from 'react-icons/fi';
 
 const ResourceList = ({ onEdit, onAdd }) => {
     const [resources, setResources] = useState([]);
@@ -45,113 +45,140 @@ const ResourceList = ({ onEdit, onAdd }) => {
     };
 
     return (
-        <div className="p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                <h2 className="text-3xl font-bold text-white tracking-tight">Facilities & Assets</h2>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h2 className="text-xl font-bold text-slate-800">Assets & Facilities</h2>
+                    <p className="text-sm text-slate-500 mt-1">Manage and track all campus resources in one place.</p>
+                </div>
                 <button 
                     onClick={onAdd}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-indigo-500/30"
+                    className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-yellow-400 text-slate-900 px-6 py-2.5 rounded-lg transition-colors font-semibold shadow-sm border border-yellow-400"
                 >
-                    <FiPlus /> Add Resource
+                    <FiPlus size={18} className="stroke-[2.5px]" /> New Resource
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className="relative">
-                    <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input 
-                        type="text" 
-                        placeholder="Search resources..." 
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
-                <div className="relative">
-                    <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <select 
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                    >
-                        <option value="" className="bg-slate-800 text-white">All Types</option>
-                        <option value="Lecture Hall" className="bg-slate-800 text-white">Lecture Hall</option>
-                        <option value="Lab" className="bg-slate-800 text-white">Lab</option>
-                        <option value="Auditorium" className="bg-slate-800 text-white">Auditorium</option>
-                        <option value="Equipment" className="bg-slate-800 text-white">Equipment</option>
-                    </select>
-                </div>
-                <div className="relative">
-                    <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <select 
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                        <option value="" className="bg-slate-800 text-white">All Status</option>
-                        <option value="ACTIVE" className="bg-slate-800 text-white">Active</option>
-                        <option value="OUT_OF_SERVICE" className="bg-slate-800 text-white">Out of Service</option>
-                    </select>
+            <div className="p-6 md:p-8 bg-slate-50 border-b border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="relative">
+                        <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input 
+                            type="text" 
+                            placeholder="Search resources by name..." 
+                            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none text-sm"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <div className="relative">
+                        <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <select 
+                            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 appearance-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none cursor-pointer text-sm font-medium"
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                        >
+                            <option value="">All Categories</option>
+                            <option value="Lecture Hall">Lecture Hall</option>
+                            <option value="Lab">Lab</option>
+                            <option value="Auditorium">Auditorium</option>
+                            <option value="Equipment">Equipment</option>
+                        </select>
+                    </div>
+                    <div className="relative">
+                        <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <select 
+                            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 appearance-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none cursor-pointer text-sm font-medium"
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                        >
+                            <option value="">All Statuses</option>
+                            <option value="ACTIVE">Active & Available</option>
+                            <option value="OUT_OF_SERVICE">Under Maintenance</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             {/* List */}
-            {loading ? (
-                <div className="flex justify-center py-20">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {resources.map((resource) => (
-                        <div key={resource.id} className="group bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300 border-l-4 border-l-indigo-500 shadow-lg hover:shadow-indigo-500/10 hover:-translate-y-1">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 className="text-xl font-semibold text-white mb-1">{resource.name}</h3>
-                                    <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs rounded-full border border-indigo-500/30 uppercase tracking-wider">{resource.type}</span>
+            <div className="p-6 md:p-8">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                        <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-yellow-500 animate-spin" />
+                        <p className="text-slate-500 font-medium text-sm">Loading assets...</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {resources.map((resource) => (
+                            <div key={resource.id} className="group bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col">
+                                {/* Top Color Bar */}
+                                <div className={`h-1.5 w-full ${resource.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
+                                
+                                <div className="p-5 flex-1">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold uppercase tracking-wider rounded-md mb-2">
+                                                {resource.type}
+                                            </span>
+                                            <h3 className="text-lg font-bold text-slate-900 leading-tight pr-4">{resource.name}</h3>
+                                        </div>
+                                        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                onClick={() => onEdit(resource)}
+                                                className="p-1.5 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
+                                                title="Edit Resource"
+                                            >
+                                                <FiEdit2 size={16} />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete(resource.id)}
+                                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                                                title="Delete Resource"
+                                            >
+                                                <FiTrash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-2 mt-4">
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                                            <FiUsers className="text-slate-400" size={14} />
+                                            <span><strong className="text-slate-900">{resource.capacity}</strong> Seats Capacity</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                                            <FiMapPin className="text-slate-400" size={14} />
+                                            <span className="truncate">{resource.location}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button 
-                                        onClick={() => onEdit(resource)}
-                                        className="p-2 bg-indigo-500/20 text-indigo-300 rounded-lg hover:bg-indigo-500 hover:text-white transition-all shadow-sm"
-                                    >
-                                        <FiEdit2 size={16} />
-                                    </button>
-                                    <button 
-                                        onClick={() => handleDelete(resource.id)}
-                                        className="p-2 bg-rose-500/20 text-rose-300 rounded-lg hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                                    >
-                                        <FiTrash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-3 text-gray-300 text-sm">
-                                <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
-                                    <span>Capacity:</span>
-                                    <span className="text-white font-medium">{resource.capacity} seats</span>
-                                </div>
-                                <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
-                                    <span>Location:</span>
-                                    <span className="text-white font-medium">{resource.location}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span>Status:</span>
-                                    <span className={`px-2 py-1 rounded-md text-xs font-bold ${resource.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}`}>
-                                        {resource.status === 'ACTIVE' ? 'AVAILABLE' : 'MAINTENANCE'}
+
+                                <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                                    <span className="text-xs font-medium text-slate-500">Current Status</span>
+                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                                        resource.status === 'ACTIVE' 
+                                            ? 'bg-emerald-100 text-emerald-700' 
+                                            : 'bg-yellow-100 text-yellow-700'
+                                    }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${resource.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
+                                        {resource.status === 'ACTIVE' ? 'Available' : 'Maintenance'}
                                     </span>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
 
-            {!loading && resources.length === 0 && (
-                <div className="text-center py-20 text-gray-400 italic bg-white/5 rounded-2xl border border-dashed border-white/10 mt-6">
-                    No resources found matching your criteria.
-                </div>
-            )}
+                {!loading && resources.length === 0 && (
+                    <div className="text-center py-24 rounded-xl border border-dashed border-slate-300 bg-slate-50">
+                        <div className="w-12 h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center mx-auto mb-4 shadow-sm">
+                            <FiSearch className="text-slate-400" size={20} />
+                        </div>
+                        <p className="text-slate-900 font-bold text-lg mb-1">No assets found</p>
+                        <p className="text-slate-500 text-sm">We couldn't find any resources matching your search criteria.</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
