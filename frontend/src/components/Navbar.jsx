@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearAuth, getUser, isAdmin, isLoggedIn } from '../utils/auth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
+  const user = getUser();
+  const loggedIn = isLoggedIn();
+  const admin = isAdmin();
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -41,13 +46,35 @@ const Navbar = () => {
             </Link>
           );
         })}
+        {admin && (
+          <Link to="/AdminDashboard" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
+            Admin Dashboard
+          </Link>
+        )}
         <div className="flex items-center space-x-4">
-          <Link to="/login" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
-            Login
-          </Link>
-          <Link to="/signup" className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 transition-all">
-            Get Started
-          </Link>
+          {!loggedIn ? (
+            <>
+              <Link to="/login" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
+                Login
+              </Link>
+              <Link to="/signup" className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 transition-all">
+                Get Started
+              </Link>
+            </>
+          ) : (
+            <>
+              <span className="text-sm text-gray-600">{user?.username}</span>
+              <button
+                onClick={() => {
+                  clearAuth();
+                  navigate('/login');
+                }}
+                className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors"
+              >
+                Logout
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -81,12 +108,34 @@ const Navbar = () => {
               );
             })}
             <div className="flex flex-col space-y-3 pt-2">
-              <Link to="/login" onClick={() => setIsOpen(false)} className="text-[#262626] text-center font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                Login
-              </Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)} className="bg-[#FACC15] text-[#262626] px-6 py-3 rounded-xl font-bold shadow-md inline-flex justify-center w-full">
-                Get Started
-              </Link>
+              {!loggedIn ? (
+                <>
+                  <Link to="/login" onClick={() => setIsOpen(false)} className="text-[#262626] text-center font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                    Login
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsOpen(false)} className="bg-[#FACC15] text-[#262626] px-6 py-3 rounded-xl font-bold shadow-md inline-flex justify-center w-full">
+                    Get Started
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {admin && (
+                    <Link to="/AdminDashboard" onClick={() => setIsOpen(false)} className="text-[#262626] text-center font-semibold p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      clearAuth();
+                      navigate('/login');
+                    }}
+                    className="text-[#262626] text-center font-semibold p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           </motion.div>
         )}
