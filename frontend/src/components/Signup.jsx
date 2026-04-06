@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, User } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+import { setAuthData } from '../utils/auth';
 
 const Signup = () => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
@@ -23,7 +24,7 @@ const Signup = () => {
 
     try {
       const response = await axios.post('http://localhost:8082/api/auth/signup', formData);
-      localStorage.setItem('token', response.data.token);
+      setAuthData(response.data.token, response.data.user);
       navigate('/');
     } catch (err) {
       console.error('Signup Error:', err);
@@ -44,7 +45,7 @@ const Signup = () => {
       const response = await axios.post('http://localhost:8082/api/auth/google', {
         token: credentialResponse.credential,
       });
-      localStorage.setItem('token', response.data.token);
+      setAuthData(response.data.token, response.data.user);
       navigate('/');
     } catch (err) {
       setError('Google Sign-In failed. Please try again.');
