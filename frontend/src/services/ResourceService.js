@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/resources';
+const API_URL = 'http://localhost:8082/api/resources';
 
 const getAllResources = () => {
     return axios.get(API_URL);

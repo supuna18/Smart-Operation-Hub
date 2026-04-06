@@ -15,7 +15,7 @@ const FeatureCard = ({ icon, title, desc, delay }) => {
       {/* Subtle corner glow on hover */}
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#FACC15]/0 group-hover:bg-[#FACC15]/10 rounded-full blur-2xl transition-all duration-500 pointer-events-none" />
 
-      {/* Top accent bar */}
+      {/* Top accent bar. */}
       <div className="w-8 h-1 bg-[#FACC15] rounded-full mb-8 group-hover:w-16 transition-all duration-300" />
 
       {/* Icon box */}
