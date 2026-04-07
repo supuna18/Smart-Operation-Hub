@@ -16,6 +16,7 @@ public class Resource {
     private String name;
     private String type; // e.g., "Lecture Hall", "Lab", "Equipment"
     private Integer capacity;
+    private Integer quantity;
     private String location;
-    private ResourceStatus status;
+    private String status;
 }

@@ -16,8 +16,16 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Resources', path: '/resources' },
-    { name: 'Services', path: '/#services', isHash: true },
     { name: 'About', path: '/about' }
+  ];
+
+  const adminLinks = [
+    { name: 'Overview', path: '/' },
+    { name: 'Admin Dashboard', path: '/AdminDashboard' }
+  ];
+
+  const studentLinks = [
+    { name: 'My Bookings', path: '/my-bookings' }
   ];
 
   return (
@@ -28,7 +36,7 @@ const Navbar = () => {
       
       {/* Desktop Menu */}
       <div className="hidden md:flex space-x-10 font-medium items-center">
-        {navLinks.map((link) => {
+        {!admin && navLinks.map((link) => {
           const isActive = currentPath === link.path || (link.isHash && location.hash === link.path.split('#')[1]);
           return (
             <Link 
@@ -47,11 +55,44 @@ const Navbar = () => {
             </Link>
           );
         })}
-        {admin && (
-          <Link to="/AdminDashboard" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
-            Admin Dashboard
-          </Link>
-        )}
+        {admin && adminLinks.map((link) => {
+          const isActive = currentPath === link.path;
+          return (
+            <Link 
+              key={link.name} 
+              to={link.path} 
+              className={`relative transition-colors ${isActive ? 'text-[#262626]' : 'text-[#262626]/60 hover:text-[#262626]'}`}
+            >
+              {link.name}
+              {isActive && (
+                <motion.div 
+                  layoutId="navUnderline"
+                  className="absolute -bottom-1.5 left-0 right-0 h-0.5 bg-[#FACC15] rounded-full"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+            </Link>
+          );
+        })}
+        {loggedIn && !admin && studentLinks.map((link) => {
+          const isActive = currentPath === link.path;
+          return (
+            <Link 
+              key={link.name} 
+              to={link.path} 
+              className={`relative transition-colors ${isActive ? 'text-[#262626]' : 'text-[#262626]/60 hover:text-[#262626]'}`}
+            >
+              {link.name}
+              {isActive && (
+                <motion.div 
+                  layoutId="navUnderline"
+                  className="absolute -bottom-1.5 left-0 right-0 h-0.5 bg-[#FACC15] rounded-full"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+            </Link>
+          );
+        })}
         <div className="flex items-center space-x-4">
           {!loggedIn ? (
             <>
@@ -64,7 +105,10 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <span className="text-sm text-gray-600">{user?.username}</span>
+              <div className="flex flex-col items-end">
+                <span className="text-sm font-bold text-[#262626]">{user?.username}</span>
+                {admin && <span className="text-[9px] font-black uppercase text-[#FACC15] bg-[#262626] px-1.5 py-0.5 rounded leading-none mt-0.5">System Admin</span>}
+              </div>
               <button
                 onClick={() => {
                   clearAuth();
@@ -95,7 +139,33 @@ const Navbar = () => {
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-xl flex flex-col p-6 md:hidden space-y-4"
           >
-            {navLinks.map((link) => {
+            {!admin && navLinks.map((link) => {
+              const isActive = currentPath === link.path;
+              return (
+                <Link 
+                  key={link.name} 
+                  to={link.path} 
+                  onClick={() => setIsOpen(false)}
+                  className={`font-semibold p-4 rounded-2xl transition-all ${isActive ? 'bg-yellow-50 text-[#FACC15]' : 'text-[#262626] hover:bg-gray-50'}`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+            {admin && adminLinks.map((link) => {
+              const isActive = currentPath === link.path;
+              return (
+                <Link 
+                  key={link.name} 
+                  to={link.path} 
+                  onClick={() => setIsOpen(false)}
+                  className={`font-semibold p-4 rounded-2xl transition-all ${isActive ? 'bg-yellow-50 text-[#FACC15]' : 'text-[#262626] hover:bg-gray-50'}`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+            {loggedIn && !admin && studentLinks.map((link) => {
               const isActive = currentPath === link.path;
               return (
                 <Link 
@@ -120,11 +190,6 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  {admin && (
-                    <Link to="/AdminDashboard" onClick={() => setIsOpen(false)} className="text-[#262626] text-center font-semibold p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-                      Admin Dashboard
-                    </Link>
-                  )}
                   <button
                     onClick={() => {
                       setIsOpen(false);

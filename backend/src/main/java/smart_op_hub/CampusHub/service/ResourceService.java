@@ -3,7 +3,6 @@ package smart_op_hub.CampusHub.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import smart_op_hub.CampusHub.model.Resource;
-import smart_op_hub.CampusHub.model.ResourceStatus;
 import smart_op_hub.CampusHub.repository.ResourceRepository;
 
 import java.util.List;
@@ -32,6 +31,7 @@ public class ResourceService {
             resource.setName(resourceDetails.getName());
             resource.setType(resourceDetails.getType());
             resource.setCapacity(resourceDetails.getCapacity());
+            resource.setQuantity(resourceDetails.getQuantity());
             resource.setLocation(resourceDetails.getLocation());
             resource.setStatus(resourceDetails.getStatus());
             return resourceRepository.save(resource);
@@ -42,7 +42,7 @@ public class ResourceService {
         resourceRepository.deleteById(id);
     }
 
-    public List<Resource> searchResources(String name, String type, ResourceStatus status) {
+    public List<Resource> searchResources(String name, String type, String status) {
         List<Resource> resources = resourceRepository.findAll();
 
         if (name != null && !name.isEmpty()) {
@@ -59,7 +59,7 @@ public class ResourceService {
 
         if (status != null) {
             resources = resources.stream()
-                    .filter(r -> r.getStatus() == status)
+                    .filter(r -> r.getStatus() != null && r.getStatus().equalsIgnoreCase(status))
                     .collect(Collectors.toList());
         }
 

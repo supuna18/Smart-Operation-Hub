@@ -50,36 +50,25 @@ public class AuthService {
     }
 
     public AuthRequest.AuthResponse login(AuthRequest.LoginRequest request) {
-        System.out.println("Login attempt for email: " + request.getEmail());
         // Try admin first
         Optional<Admin> optionalAdmin = adminRepository.findByEmail(request.getEmail());
         if (optionalAdmin.isPresent()) {
-            System.out.println("Found in 'admin' collection.");
             Admin admin = optionalAdmin.get();
             if (passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
-                System.out.println("Password matched for admin.");
                 String token = jwtUtil.generateToken(admin.getEmail(), "Admin");
                 User user = new User();
                 user.setEmail(admin.getEmail());
                 user.setUsername("System Admin");
                 user.setRole("Admin");
                 return new AuthRequest.AuthResponse(token, user);
-            } else {
-                System.out.println("Password mismatch for admin.");
             }
-        } else {
-            System.out.println("Not found in 'admin' collection. Checking 'users' collection...");
         }
 
         // Then try general users
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> {
-                    System.out.println("User not found in 'users' collection either.");
-                    return new RuntimeException("Invalid email or password");
-                });
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            System.out.println("Password mismatch for general user: " + request.getEmail());
             throw new RuntimeException("Invalid email or password");
         }
 

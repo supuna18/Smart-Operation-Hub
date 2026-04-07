@@ -7,9 +7,11 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import AuthRoute from './components/AuthRoute';
 import Footer from './components/Footer';
 
 import ResourceManagement from './components/resources/ResourceManagement';
+import MyBookings from './components/resources/MyBookings';
 
 function App() {
   return (
@@ -30,6 +32,22 @@ function App() {
                 <ProtectedRoute>
                   <AdminDashboard />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resources"
+              element={
+                <AuthRoute>
+                  <ResourceManagement />
+                </AuthRoute>
+              }
+            />
+            <Route
+              path="/my-bookings"
+              element={
+                <AuthRoute>
+                  <MyBookings />
+                </AuthRoute>
               }
             />
           </Routes>

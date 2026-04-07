@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import smart_op_hub.CampusHub.model.Facility;
-import smart_op_hub.CampusHub.model.ResourceItem;
+import smart_op_hub.CampusHub.model.Resource;
 import smart_op_hub.CampusHub.model.SafetyReport;
 import smart_op_hub.CampusHub.model.User;
 import smart_op_hub.CampusHub.repository.FacilityRepository;
@@ -97,21 +97,23 @@ public class AdminController {
     }
 
     @GetMapping("/resources")
-    public List<ResourceItem> getResources() {
+    public List<Resource> getResources() {
         return resourceRepository.findAll();
     }
 
     @PostMapping("/resources")
-    public ResourceItem createResource(@RequestBody ResourceItem resourceItem) {
+    public Resource createResource(@RequestBody Resource resourceItem) {
         return resourceRepository.save(resourceItem);
     }
 
     @PutMapping("/resources/{id}")
-    public ResponseEntity<ResourceItem> updateResource(@PathVariable String id, @RequestBody ResourceItem request) {
+    public ResponseEntity<Resource> updateResource(@PathVariable String id, @RequestBody Resource request) {
         return resourceRepository.findById(id).map(resource -> {
             resource.setName(request.getName() != null ? request.getName() : resource.getName());
             resource.setType(request.getType() != null ? request.getType() : resource.getType());
             resource.setQuantity(request.getQuantity() != null ? request.getQuantity() : resource.getQuantity());
+            resource.setCapacity(request.getCapacity() != null ? request.getCapacity() : resource.getCapacity());
+            resource.setLocation(request.getLocation() != null ? request.getLocation() : resource.getLocation());
             resource.setStatus(request.getStatus() != null ? request.getStatus() : resource.getStatus());
             return ResponseEntity.ok(resourceRepository.save(resource));
         }).orElseGet(() -> ResponseEntity.notFound().build());

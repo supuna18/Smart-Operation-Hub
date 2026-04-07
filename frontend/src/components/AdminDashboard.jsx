@@ -2,12 +2,23 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { getUser, clearAuth } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
+import sliitImage from '../assets/SLIIT.jpeg';
+import { FiPlus, FiTrash2, FiActivity, FiBox, FiLayers, FiInfo, FiTrendingUp } from 'react-icons/fi';
+
+const RESOURCE_TYPES = [
+  'Lecture Hall', 'Laboratory', 'Equipment', 'Study Area', 'Lounge', 'Sports Facility', 'Other'
+];
+
+const RESOURCE_STATUS_OPTIONS = [
+  'ACTIVE', 'MAINTENANCE'
+];
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [facilities, setFacilities] = useState([]);
   const [resources, setResources] = useState([]);
   const [safetyReports, setSafetyReports] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [activeTab, setActiveTab] = useState('users');
   const [facilityDraft, setFacilityDraft] = useState({ name: '', description: '', location: '', capacity: '' });
@@ -17,11 +28,12 @@ const AdminDashboard = () => {
 
   const loadAll = async () => {
     try {
-      const [usersResponse, facilitiesResponse, resourcesResponse, safetyResponse, analyticsResponse] = await Promise.all([
+      const [usersResponse, facilitiesResponse, resourcesResponse, safetyResponse, bookingsResponse, analyticsResponse] = await Promise.all([
         api.get('/admin/users'),
         api.get('/admin/facilities'),
         api.get('/admin/resources'),
         api.get('/admin/safety/reports'),
+        api.get('/resources/bookings/all'),
         api.get('/admin/analytics'),
       ]);
 
@@ -29,6 +41,7 @@ const AdminDashboard = () => {
       setFacilities(facilitiesResponse.data);
       setResources(resourcesResponse.data);
       setSafetyReports(safetyResponse.data);
+      setBookings(bookingsResponse.data);
       setAnalytics(analyticsResponse.data);
     } catch (err) {
       setError('Unable to load admin data. Please make sure you are logged in as an admin.');
@@ -117,6 +130,15 @@ const AdminDashboard = () => {
     }
   };
 
+  const updateBookingStatus = async (id, status) => {
+    try {
+      const response = await api.put(`/resources/bookings/${id}/status?status=${status}`);
+      setBookings((current) => current.map((item) => (item.id === id ? response.data : item)));
+    } catch (err) {
+      setError('Failed to update booking status.');
+    }
+  };
+
   const currentUser = getUser();
 
   return (
@@ -139,7 +161,7 @@ const AdminDashboard = () => {
         {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">{error}</div>}
 
         <div className="flex flex-wrap gap-3 mb-10">
-          {['users', 'facilities', 'resources', 'safety', 'analytics'].map((tab) => (
+          {['users', 'facilities', 'resources', 'bookings', 'safety', 'analytics'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -268,78 +290,200 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'resources' && (
-          <div className="space-y-8">
-            <form onSubmit={createResource} className="grid gap-4 md:grid-cols-2">
-              <input
-                value={resourceDraft.name}
-                onChange={(e) => setResourceDraft({ ...resourceDraft, name: e.target.value })}
-                placeholder="Resource name"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
+          <div className="space-y-12">
+            {/* Hero Section */}
+            <div className="relative h-64 w-full rounded-[2.5rem] overflow-hidden shadow-2xl flex items-center group">
+              <img 
+                src={sliitImage} 
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                alt="SLIIT Campus" 
               />
-              <input
-                value={resourceDraft.type}
-                onChange={(e) => setResourceDraft({ ...resourceDraft, type: e.target.value })}
-                placeholder="Type"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <input
-                value={resourceDraft.quantity}
-                onChange={(e) => setResourceDraft({ ...resourceDraft, quantity: e.target.value })}
-                placeholder="Quantity"
-                type="number"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <input
-                value={resourceDraft.status}
-                onChange={(e) => setResourceDraft({ ...resourceDraft, status: e.target.value })}
-                placeholder="Status"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <button
-                type="submit"
-                className="col-span-full rounded-3xl bg-[#262626] py-3 text-center font-semibold text-[#FACC15] hover:bg-gray-900"
-              >
-                Add Resource
-              </button>
-            </form>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#262626]/90 via-[#262626]/40 to-transparent" />
+              <div className="relative z-10 p-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FACC15] text-[#262626] text-[10px] font-black uppercase tracking-widest mb-4">
+                  <FiTrendingUp /> Asset Monitoring
+                </div>
+                <h2 className="text-4xl font-black text-[#FACC15] tracking-tight">Resource Management</h2>
+                <p className="text-white/80 max-w-md mt-2 font-medium">Control campus assets, track quantities, and update status in real-time.</p>
+              </div>
+            </div>
 
+            {/* Redesigned Form */}
+            <div className="bg-[#262626] rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors" />
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                <div>
+                  <h3 className="text-2xl font-black text-[#FACC15] flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-2xl bg-[#FACC15] text-[#262626] flex items-center justify-center">
+                      <FiPlus size={20} className="stroke-[3px]" />
+                    </span>
+                    Register New Asset
+                  </h3>
+                </div>
+              </div>
+              
+              <form onSubmit={createResource} className="grid gap-6 md:grid-cols-2 relative z-10">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest ml-1">Asset Name</label>
+                  <input
+                    value={resourceDraft.name}
+                    onChange={(e) => setResourceDraft({ ...resourceDraft, name: e.target.value })}
+                    placeholder="e.g. Modern Equipment"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-white focus:ring-2 focus:ring-[#FACC15] outline-none transition-all placeholder:text-white/20"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest ml-1">Asset Type</label>
+                  <select
+                    value={resourceDraft.type}
+                    onChange={(e) => setResourceDraft({ ...resourceDraft, type: e.target.value })}
+                    className="w-full rounded-2xl border border-white/10 bg-[#333] px-6 py-4 text-white focus:ring-2 focus:ring-[#FACC15] outline-none transition-all appearance-none cursor-pointer"
+                    required
+                  >
+                    <option value="" disabled className="bg-[#262626]">Select Type</option>
+                    {RESOURCE_TYPES.map(type => (
+                      <option key={type} value={type} className="bg-[#262626]">{type}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest ml-1">Total Quantity</label>
+                  <input
+                    value={resourceDraft.quantity}
+                    onChange={(e) => setResourceDraft({ ...resourceDraft, quantity: e.target.value })}
+                    placeholder="00"
+                    type="number"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-white focus:ring-2 focus:ring-[#FACC15] outline-none transition-all placeholder:text-white/20"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest ml-1">Availability Status</label>
+                  <select
+                    value={resourceDraft.status}
+                    onChange={(e) => setResourceDraft({ ...resourceDraft, status: e.target.value })}
+                    className="w-full rounded-2xl border border-white/10 bg-[#333] px-6 py-4 text-white focus:ring-2 focus:ring-[#FACC15] outline-none transition-all appearance-none cursor-pointer"
+                    required
+                  >
+                    <option value="" disabled className="bg-[#262626]">Select Status</option>
+                    {RESOURCE_STATUS_OPTIONS.map(status => (
+                      <option key={status} value={status} className="bg-[#262626] font-bold">{status}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="col-span-full rounded-2xl bg-[#FACC15] py-4 text-center font-black text-[#262626] hover:bg-yellow-300 transition-all shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  ADD ASSET TO INVENTORY
+                </button>
+              </form>
+            </div>
+
+            {/* Custom Visual Card Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {resources.map((item) => (
+                <div key={item.id} className="group relative bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col border-b-4 border-b-[#FACC15]">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gray-50 text-[#262626] flex items-center justify-center group-hover:bg-[#FACC15] transition-colors">
+                      <FiBox size={24} />
+                    </div>
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase ${
+                      item.status?.toUpperCase() === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {item.status || 'Unknown'}
+                    </span>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <h4 className="text-xl font-black text-[#262626] leading-tight mb-1">{item.name}</h4>
+                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
+                      <FiLayers /> {item.type}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-6 border-t border-gray-50">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">In Stock</span>
+                      <span className="text-2xl font-black text-[#262626]">{item.quantity}</span>
+                    </div>
+                    <button
+                      onClick={() => deleteResource(item.id)}
+                      className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors"
+                      title="Delete Asset"
+                    >
+                      <FiTrash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {resources.length === 0 && (
+                <div className="col-span-full py-20 text-center bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-200">
+                  <FiInfo className="mx-auto mb-4 text-gray-300" size={48} />
+                  <p className="text-xl font-bold text-gray-400">Inventory is currently empty.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {activeTab === 'bookings' && (
+          <div>
             <div className="overflow-x-auto rounded-3xl border border-gray-200">
               <table className="min-w-full bg-white">
                 <thead className="bg-[#FACC15]/15 text-left text-sm uppercase tracking-wide text-gray-500">
                   <tr>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Type</th>
-                    <th className="px-6 py-4">Quantity</th>
+                    <th className="px-6 py-4">Student</th>
+                    <th className="px-6 py-4">Resource</th>
+                    <th className="px-6 py-4">Date</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {resources.map((item) => (
-                    <tr key={item.id} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-800">{item.name}</td>
-                      <td className="px-6 py-4 text-gray-600">{item.type}</td>
-                      <td className="px-6 py-4 text-gray-600">{item.quantity}</td>
-                      <td className="px-6 py-4 text-gray-600">{item.status}</td>
+                  {bookings.map((booking) => (
+                    <tr key={booking.id} className="border-t border-gray-100 hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-gray-800">{booking.username}</td>
+                      <td className="px-6 py-4 text-gray-600">{booking.resourceName}</td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {new Date(booking.bookingDate).toLocaleDateString()}
+                      </td>
                       <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          booking.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                          booking.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {booking.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 space-x-2">
                         <button
-                          onClick={() => deleteResource(item.id)}
-                          className="rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200"
+                          onClick={() => updateBookingStatus(booking.id, 'APPROVED')}
+                          className="text-xs font-bold text-green-600 hover:underline"
                         >
-                          Delete
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => updateBookingStatus(booking.id, 'REJECTED')}
+                          className="text-xs font-bold text-red-600 hover:underline"
+                        >
+                          Reject
                         </button>
                       </td>
                     </tr>
                   ))}
+                  {bookings.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-10 text-center text-gray-400">No resource bookings found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         )}
+
         {activeTab === 'safety' && (
           <div>
             <div className="overflow-x-auto rounded-3xl border border-gray-200">

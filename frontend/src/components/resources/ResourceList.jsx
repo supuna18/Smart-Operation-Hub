@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ResourceService from '../../services/ResourceService';
-import { FiSearch, FiEdit2, FiTrash2, FiPlus, FiFilter, FiUsers, FiMapPin } from 'react-icons/fi';
+import { FiSearch, FiEdit2, FiTrash2, FiPlus, FiFilter, FiUsers, FiMapPin, FiCalendar } from 'react-icons/fi';
+import { isAdmin, getUser } from '../../utils/auth';
 
 const ResourceList = ({ onEdit, onAdd }) => {
     const [resources, setResources] = useState([]);
@@ -8,6 +9,8 @@ const ResourceList = ({ onEdit, onAdd }) => {
     const [filterType, setFilterType] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [loading, setLoading] = useState(true);
+    const admin = isAdmin();
+    const user = getUser();
 
     useEffect(() => {
         fetchResources();
@@ -33,14 +36,19 @@ const ResourceList = ({ onEdit, onAdd }) => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this resource?')) {
-            try {
-                await ResourceService.deleteResource(id);
-                fetchResources();
-            } catch (error) {
-                console.error('Error deleting resource:', error);
-            }
+    const handleBook = async (resource) => {
+        try {
+            const bookingData = {
+                resourceId: resource.id,
+                resourceName: resource.name,
+                userId: user.id || user.email, // Using email as ID if ID is missing
+                username: user.username,
+            };
+            await ResourceService.createBooking(bookingData);
+            alert(`Booking request for ${resource.name} submitted successfully!`);
+        } catch (error) {
+            console.error('Error booking resource:', error);
+            alert('Failed to submit booking request.');
         }
     };
 
@@ -51,12 +59,14 @@ const ResourceList = ({ onEdit, onAdd }) => {
                     <h2 className="text-xl font-bold text-slate-800">Assets & Facilities</h2>
                     <p className="text-sm text-slate-500 mt-1">Manage and track all campus resources in one place.</p>
                 </div>
-                <button 
-                    onClick={onAdd}
-                    className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-yellow-400 text-slate-900 px-6 py-2.5 rounded-lg transition-colors font-semibold shadow-sm border border-yellow-400"
-                >
-                    <FiPlus size={18} className="stroke-[2.5px]" /> New Resource
-                </button>
+                {admin && (
+                    <button 
+                        onClick={onAdd}
+                        className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-yellow-400 text-slate-900 px-6 py-2.5 rounded-lg transition-colors font-semibold shadow-sm border border-yellow-400"
+                    >
+                        <FiPlus size={18} className="stroke-[2.5px]" /> New Resource
+                    </button>
+                )}
             </div>
 
             {/* Filters */}
@@ -123,22 +133,24 @@ const ResourceList = ({ onEdit, onAdd }) => {
                                             </span>
                                             <h3 className="text-lg font-bold text-slate-900 leading-tight pr-4">{resource.name}</h3>
                                         </div>
-                                        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button 
-                                                onClick={() => onEdit(resource)}
-                                                className="p-1.5 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
-                                                title="Edit Resource"
-                                            >
-                                                <FiEdit2 size={16} />
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDelete(resource.id)}
-                                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                                                title="Delete Resource"
-                                            >
-                                                <FiTrash2 size={16} />
-                                            </button>
-                                        </div>
+                                        {admin && (
+                                            <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button 
+                                                    onClick={() => onEdit(resource)}
+                                                    className="p-1.5 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
+                                                    title="Edit Resource"
+                                                >
+                                                    <FiEdit2 size={16} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDelete(resource.id)}
+                                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                                                    title="Delete Resource"
+                                                >
+                                                    <FiTrash2 size={16} />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                     
                                     <div className="space-y-2 mt-4">
@@ -164,6 +176,16 @@ const ResourceList = ({ onEdit, onAdd }) => {
                                         {resource.status === 'ACTIVE' ? 'Available' : 'Maintenance'}
                                     </span>
                                 </div>
+                                {!admin && (
+                                    <div className="px-5 py-4 border-t border-slate-100">
+                                        <button 
+                                            onClick={() => handleBook(resource)}
+                                            className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-lg transition-all font-bold shadow-sm text-sm"
+                                        >
+                                            <FiCalendar size={16} /> Book Now
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

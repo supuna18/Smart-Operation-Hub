@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { isAdmin } from '../../utils/auth';
+import { useNavigate } from 'react-router-dom';
 import ResourceList from './ResourceList';
 import ResourceForm from './ResourceForm';
 import heroImage from '../../assets/reso1.jpeg';
@@ -6,6 +8,13 @@ import heroImage from '../../assets/reso1.jpeg';
 const ResourceManagement = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedResource, setSelectedResource] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (isAdmin()) {
+            navigate('/AdminDashboard');
+        }
+    }, [navigate]);
     const [refreshKey, setRefreshKey] = useState(0);
 
     const handleEdit = (resource) => {
