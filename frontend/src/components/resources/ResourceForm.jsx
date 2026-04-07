@@ -163,7 +163,7 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
                         </div>
                     </div>
 
-                    {/* Footer. */}
+                    {/* Footer., */}
                     <div className="flex gap-3 pt-6 mt-6 border-t border-slate-100">
                         <button
                             type="button"
