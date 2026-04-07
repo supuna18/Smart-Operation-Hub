@@ -1,17 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, LogOut, Ticket } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, [location]);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setIsLoggedIn(false);
+    navigate('/login');
+  };
 
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/#services', isHash: true },
-    { name: 'About', path: '/about' }
+    { name: 'About', path: '/about' },
+    { name: 'Tickets', path: '/tickets' } // මෙන්න මෙතනට Tickets එක එකතු කළා
   ];
 
   return (
@@ -42,12 +56,24 @@ const Navbar = () => {
           );
         })}
         <div className="flex items-center space-x-4">
-          <Link to="/login" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
-            Login
-          </Link>
-          <Link to="/signup" className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 transition-all">
-            Get Started
-          </Link>
+          {!isLoggedIn ? (
+            <>
+              <Link to="/login" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
+                Login
+              </Link>
+              <Link to="/signup" className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 transition-all">
+                Get Started
+              </Link>
+            </>
+          ) : (
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-[#262626] font-semibold hover:text-red-500 transition-colors"
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
+          )}
         </div>
       </div>
 

@@ -24,6 +24,9 @@ const Login = () => {
     try {
       const response = await axios.post('http://localhost:8082/api/auth/login', formData);
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userRole', response.data.user.role);
+      localStorage.setItem('userId', response.data.user.id);
+      localStorage.setItem('userName', response.data.user.username);
       navigate('/');
     } catch (err) {
       console.error('Login Error:', err);
@@ -45,6 +48,9 @@ const Login = () => {
         token: credentialResponse.credential,
       });
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userRole', response.data.user.role);
+      localStorage.setItem('userId', response.data.user.id);
+      localStorage.setItem('userName', response.data.user.username);
       navigate('/');
     } catch (err) {
       setError('Google Sign-In failed. Please try again.');
