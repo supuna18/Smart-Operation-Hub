@@ -47,4 +47,9 @@ public class TicketController {
     public List<Ticket> getTicketsByStatus(@PathVariable TicketStatus status) {
         return ticketService.getTicketsByStatus(status);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteTicket(@PathVariable String id) {
+        ticketService.deleteTicket(id);
+    }
 }

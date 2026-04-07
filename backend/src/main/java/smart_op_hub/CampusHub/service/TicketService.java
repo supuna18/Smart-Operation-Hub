@@ -60,4 +60,8 @@ public class TicketService {
     public List<Ticket> getTicketsByStatus(TicketStatus status) {
         return ticketRepository.findByStatus(status);
     }
+
+    public void deleteTicket(String id) {
+        ticketRepository.deleteById(id);
+    }
 }

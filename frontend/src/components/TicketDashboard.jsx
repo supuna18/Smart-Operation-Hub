@@ -22,6 +22,7 @@ const TicketDashboard = () => {
     const fetchTickets = async () => {
         setLoading(true);
         try {
+            let url = 'http://localhost:8082/api/tickets';
             if (filterStatus !== 'ALL') {
                 url = `http://localhost:8082/api/tickets/status/${filterStatus}`;
             } else if (userRole === 'Admin') {

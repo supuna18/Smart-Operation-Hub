@@ -1,5 +1,4 @@
-import React from 'react';
-import { Calendar, MapPin, User, Clock, CheckCircle, AlertCircle, PlayCircle, HelpCircle } from 'lucide-react';
+import { Calendar, MapPin, User, Clock, CheckCircle, AlertCircle, PlayCircle, HelpCircle, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
 const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
@@ -36,6 +35,17 @@ const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
         }
     };
 
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this ticket?')) {
+            try {
+                await axios.delete(`http://localhost:8082/api/tickets/${ticket.id}`);
+                onUpdate();
+            } catch (err) {
+                alert('Failed to delete ticket');
+            }
+        }
+    };
+
     return (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden group">
             {/* Header */}
@@ -51,9 +61,20 @@ const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
                     </span>
                 </div>
                 
-                <h3 className="text-xl font-bold text-gray-900 mb-2 truncate group-hover:text-yellow-600 transition-colors">
-                    {ticket.issueTitle}
-                </h3>
+                <div className="flex justify-between items-start gap-3 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 truncate group-hover:text-yellow-600 transition-colors">
+                        {ticket.issueTitle}
+                    </h3>
+                    {(isAdmin || ticket.createdBy === localStorage.getItem('userName')) && (
+                        <button 
+                            onClick={handleDelete}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                            title="Delete Ticket"
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    )}
+                </div>
                 
                 <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-4">
                     <MapPin size={14} className="text-gray-400" />
