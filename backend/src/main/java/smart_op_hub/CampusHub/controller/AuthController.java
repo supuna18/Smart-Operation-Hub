@@ -8,6 +8,7 @@ import smart_op_hub.CampusHub.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = { "http://localhost:5173", "http://localhost:5174" })
 public class AuthController {
 
     @Autowired
@@ -37,6 +38,18 @@ public class AuthController {
             return ResponseEntity.ok(authService.googleLogin(request));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> currentUser(org.springframework.security.core.Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        try {
+            return ResponseEntity.ok(authService.getCurrentUser(authentication.getName()));
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(e.getMessage());
         }
     }
 }

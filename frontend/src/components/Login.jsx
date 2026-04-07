@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+import { setAuthData } from '../utils/auth';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -22,11 +23,20 @@ const Login = () => {
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', formData);
-      localStorage.setItem('token', response.data.token);
-      navigate('/');
+      const response = await axios.post('http://localhost:8082/api/auth/login', formData);
+      setAuthData(response.data.token, response.data.user);
+      if (response.data.user.role === 'Admin') {
+        navigate('/AdminDashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
-      setError(err.response?.data || 'Failed to login. Please check your credentials.');
+      console.error('Login Error:', err);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Cannot connect to the server. Please check if the backend is running on port 8082.');
+      } else {
+        setError(err.response?.data || 'Failed to login. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }
@@ -36,11 +46,15 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/google', {
+      const response = await axios.post('http://localhost:8082/api/auth/google', {
         token: credentialResponse.credential,
       });
-      localStorage.setItem('token', response.data.token);
-      navigate('/');
+      setAuthData(response.data.token, response.data.user);
+      if (response.data.user.role === 'Admin') {
+        navigate('/AdminDashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError('Google Sign-In failed. Please try again.');
     } finally {

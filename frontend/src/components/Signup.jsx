@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, User } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+import { setAuthData } from '../utils/auth';
 
 const Signup = () => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
@@ -20,13 +21,18 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/signup', formData);
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post('http://localhost:8082/api/auth/signup', formData);
+      setAuthData(response.data.token, response.data.user);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data || 'Failed to sign up. Please try again.');
+      console.error('Signup Error:', err);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Cannot connect to the server. Please check if the backend is running on port 8082.');
+      } else {
+        setError(err.response?.data || 'Failed to sign up. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -36,10 +42,10 @@ const Signup = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/google', {
+      const response = await axios.post('http://localhost:8082/api/auth/google', {
         token: credentialResponse.credential,
       });
-      localStorage.setItem('token', response.data.token);
+      setAuthData(response.data.token, response.data.user);
       navigate('/');
     } catch (err) {
       setError('Google Sign-In failed. Please try again.');
@@ -79,9 +85,9 @@ const Signup = () => {
         </div>
 
         {error && (
-          <motion.div 
-            initial={{ opacity: 0, x: -10 }} 
-            animate={{ opacity: 1, x: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
             className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 font-medium text-center"
           >
             {error}
