@@ -28,7 +28,12 @@ const Navbar = () => {
       {/* Desktop Menu */}
       <div className="hidden md:flex space-x-10 font-medium items-center">
         {navLinks.map((link) => {
-          const isActive = currentPath === link.path || (link.isHash && location.hash === link.path.split('#')[1]);
+          // --- UPDATED LOGIC START ---
+          const isActive = link.isHash 
+            ? location.hash === '#services' // Services active-ah irundha
+            : (currentPath === link.path && !location.hash); // Home page-la hash illama irundha
+          // --- UPDATED LOGIC END ---
+
           return (
             <Link 
               key={link.name} 
@@ -95,7 +100,11 @@ const Navbar = () => {
             className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-xl flex flex-col p-6 md:hidden space-y-4"
           >
             {navLinks.map((link) => {
-              const isActive = currentPath === link.path;
+              // --- MOBILE ACTIVE LOGIC ---
+              const isActive = link.isHash 
+                ? location.hash === '#services'
+                : (currentPath === link.path && !location.hash);
+
               return (
                 <Link 
                   key={link.name} 
@@ -107,6 +116,7 @@ const Navbar = () => {
                 </Link>
               );
             })}
+            {/* Mobile Auth Buttons logic... same as before */}
             <div className="flex flex-col space-y-3 pt-2">
               {!loggedIn ? (
                 <>
