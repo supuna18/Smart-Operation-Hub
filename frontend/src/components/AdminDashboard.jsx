@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { getUser, clearAuth } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
-import sliitImage from '../assets/SLIIT.jpeg';
+import heroImage from '../assets/reso1.jpeg';
 import { FiPlus, FiTrash2, FiActivity, FiBox, FiLayers, FiInfo, FiTrendingUp } from 'react-icons/fi';
 
 const RESOURCE_TYPES = [
@@ -294,9 +294,9 @@ const AdminDashboard = () => {
             {/* Hero Section */}
             <div className="relative h-64 w-full rounded-[2.5rem] overflow-hidden shadow-2xl flex items-center group">
               <img 
-                src={sliitImage} 
+                src={heroImage} 
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                alt="SLIIT Campus" 
+                alt="Modern Resource Facility" 
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[#262626]/90 via-[#262626]/40 to-transparent" />
               <div className="relative z-10 p-10">
