@@ -174,6 +174,6 @@ const TicketDashboard = () => {
     );
 };
 
-//end o
+//end the dashboard
 
 export default TicketDashboard;
