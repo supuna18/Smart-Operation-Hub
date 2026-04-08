@@ -41,7 +41,7 @@ const TicketDashboard = () => {
             setError(null);
         } catch (err) {
             console.error('Error fetching tickets:', err);
-            setError('Failed to load tickets. Please try again later.');
+            setError(`Failed to load tickets: ${err.message}. Please try again later.`);
         } finally {
             setLoading(false);
         }
