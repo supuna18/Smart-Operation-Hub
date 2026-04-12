@@ -33,7 +33,7 @@ const ResourceManagement = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 font-poppins selection:bg-yellow-200">
-            {/* Header Section. */}
+            {/* Header Sectio.n. */}
             <div className="bg-white border-b border-slate-200 pt-16 pb-20 relative overflow-hidden">
                 {/* Subtle top decoration */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-300 to-transparent" />
