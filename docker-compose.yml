@@ -17,7 +17,7 @@ services:
     build: ./frontend 
     ports:
       - "5174:5173"
-    # මේ ටික අලුතින් ඇඩ් කරන්න
+    # මේ ටික අලුති.න් ඇඩ් කරන්න
     volumes:
       - ./frontend:/app             # Frontend එක මැප් කරනවා
       - /app/node_modules           # මේක අනිවාර්යයි! නැත්නම් node_modules අවුල් යනවා
