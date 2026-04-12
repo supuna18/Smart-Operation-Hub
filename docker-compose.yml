@@ -25,9 +25,6 @@ services:
       - CHOKIDAR_USEPOLLING=true    # සමහර වෙලාවට මේක නැතුව auto-refresh වෙන්නේ නැහැ
     stdin_open: true
     tty: true
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     networks:
       - app-network
 
