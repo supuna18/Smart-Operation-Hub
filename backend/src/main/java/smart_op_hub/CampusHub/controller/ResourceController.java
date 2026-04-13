@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Allow frontend access
+@CrossOrigin(origins = "*") // Allow frontend accedss
 public class ResourceController {
     private final ResourceService resourceService;
 
