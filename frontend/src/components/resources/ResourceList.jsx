@@ -9,12 +9,28 @@ const ResourceList = ({ onEdit, onAdd }) => {
     const [filterType, setFilterType] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [loading, setLoading] = useState(true);
+    const [userBookings, setUserBookings] = useState([]);
     const admin = isAdmin();
     const user = getUser();
 
     useEffect(() => {
         fetchResources();
-    }, [search, filterType, filterStatus]);
+        if (!admin && user) {
+            fetchUserBookings();
+        }
+    }, [search, filterType, filterStatus, admin, user]);
+
+    const fetchUserBookings = async () => {
+        try {
+            const userId = user.id || user.email;
+            if (userId) {
+                const response = await ResourceService.getMyBookings(userId);
+                setUserBookings(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching user bookings:', error);
+        }
+    };
 
     const fetchResources = async () => {
         setLoading(true);
@@ -46,10 +62,15 @@ const ResourceList = ({ onEdit, onAdd }) => {
             };
             await ResourceService.createBooking(bookingData);
             alert(`Booking request for ${resource.name} submitted successfully!`);
+            fetchUserBookings(); // Refresh bookings after submission
         } catch (error) {
             console.error('Error booking resource:', error);
             alert('Failed to submit booking request.');
         }
+    };
+
+    const getBookingForResource = (resourceId) => {
+        return userBookings.find(b => b.resourceId === resourceId);
     };
 
     return (
@@ -178,12 +199,31 @@ const ResourceList = ({ onEdit, onAdd }) => {
                                 </div>
                                 {!admin && (
                                     <div className="px-5 py-4 border-t border-slate-100">
-                                        <button 
-                                            onClick={() => handleBook(resource)}
-                                            className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-lg transition-all font-bold shadow-sm text-sm"
-                                        >
-                                            <FiCalendar size={16} /> Book Now
-                                        </button>
+                                        {getBookingForResource(resource.id) ? (
+                                            <div className={`w-full flex flex-col items-center justify-center py-2 rounded-lg border bg-opacity-5 font-bold ${
+                                                getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                                                getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-50 border-rose-200 text-rose-700' :
+                                                'bg-yellow-50 border-yellow-200 text-yellow-700'
+                                            }`}>
+                                                <span className="text-[10px] uppercase tracking-widest opacity-60 mb-0.5">Your Booking Status</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`w-2 h-2 rounded-full ${
+                                                        getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-500' :
+                                                        getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-500' :
+                                                        'bg-yellow-500 animate-pulse'
+                                                    }`} />
+                                                    <span className="text-sm">{getBookingForResource(resource.id).status}</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <button 
+                                                onClick={() => handleBook(resource)}
+                                                className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-lg transition-all font-bold shadow-sm text-sm"
+                                                disabled={resource.status !== 'ACTIVE'}
+                                            >
+                                                <FiCalendar size={16} /> Book Now
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>

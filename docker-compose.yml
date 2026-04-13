@@ -2,7 +2,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "8082:8082"
+      - "8082:8080"
     # මේ ටික අලුතින් ඇඩ් කරන්න
     volumes:
       - ./backend:/app              # ඔයාගේ කෝඩ් එක මැප් කරනවා
