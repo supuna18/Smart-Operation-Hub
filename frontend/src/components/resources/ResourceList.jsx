@@ -10,15 +10,15 @@ const ResourceList = ({ onEdit, onAdd }) => {
     const [filterStatus, setFilterStatus] = useState('');
     const [loading, setLoading] = useState(true);
     const [userBookings, setUserBookings] = useState([]);
-    const admin = isAdmin();
-    const user = getUser();
+    const admin = React.useMemo(() => isAdmin(), []);
+    const user = React.useMemo(() => getUser(), []);
 
     useEffect(() => {
         fetchResources();
         if (!admin && user) {
             fetchUserBookings();
         }
-    }, [search, filterType, filterStatus, admin, user]);
+    }, [search, filterType, filterStatus, admin]); // Removed user from dependencies as it's memoized and we only need to fetch on init or filter change
 
     const fetchUserBookings = async () => {
         try {
