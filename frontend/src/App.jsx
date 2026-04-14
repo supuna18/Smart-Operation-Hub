@@ -5,6 +5,8 @@ import Home from './components/Home';
 import About from './components/About';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import AdminDashboard from './components/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import TicketDashboard from './components/TicketDashboard';
 
@@ -12,6 +14,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col">
+        
         {/* Navbar is persistent across pages */}
         <Navbar />
 
@@ -21,7 +24,19 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+
+            {/* Ticket Dashboard (public or adjust later if needed) */}
             <Route path="/tickets" element={<TicketDashboard />} />
+
+            {/* Admin Dashboard (protected route) */}
+            <Route
+              path="/AdminDashboard"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
 

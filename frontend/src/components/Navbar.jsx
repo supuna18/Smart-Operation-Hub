@@ -1,23 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, LogOut, Ticket } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearAuth, getUser, isAdmin, isLoggedIn } from '../utils/auth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, [location]);
+  const user = getUser();
+  const loggedIn = isLoggedIn();
+  const admin = isAdmin();
 
   const handleLogout = () => {
-    localStorage.clear();
-    setIsLoggedIn(false);
+    clearAuth();
     navigate('/login');
   };
 
@@ -25,11 +23,13 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/#services', isHash: true },
     { name: 'About', path: '/about' },
-    { name: 'Tickets', path: '/tickets' } // මෙන්න මෙතනට Tickets එක එකතු කළා
+    { name: 'Tickets', path: '/tickets' }
   ];
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 py-5 sticky top-0 bg-white/70 backdrop-blur-xl z-50 border-b border-gray-200/30 font-poppins transition-all">
+      
+      {/* Logo */}
       <Link to="/" className="text-2xl font-bold tracking-tight text-[#262626]">
         Smart<span className="text-[#FACC15]">Sync</span>
       </Link>
@@ -37,12 +37,19 @@ const Navbar = () => {
       {/* Desktop Menu */}
       <div className="hidden md:flex space-x-10 font-medium items-center">
         {navLinks.map((link) => {
-          const isActive = currentPath === link.path || (link.isHash && location.hash === link.path.split('#')[1]);
+          const isActive =
+            currentPath === link.path ||
+            (link.isHash && location.hash === link.path.split('#')[1]);
+
           return (
             <Link 
               key={link.name} 
               to={link.path} 
-              className={`relative transition-colors ${isActive ? 'text-[#262626]' : 'text-[#262626]/60 hover:text-[#262626]'}`}
+              className={`relative transition-colors ${
+                isActive
+                  ? 'text-[#262626]'
+                  : 'text-[#262626]/60 hover:text-[#262626]'
+              }`}
             >
               {link.name}
               {isActive && (
@@ -55,64 +62,127 @@ const Navbar = () => {
             </Link>
           );
         })}
+
+        {/* Admin Link */}
+        {admin && (
+          <Link
+            to="/AdminDashboard"
+            className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors"
+          >
+            Admin Dashboard
+          </Link>
+        )}
+
+        {/* Auth Section */}
         <div className="flex items-center space-x-4">
-          {!isLoggedIn ? (
+          {!loggedIn ? (
             <>
-              <Link to="/login" className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors">
+              <Link
+                to="/login"
+                className="text-[#262626] font-semibold hover:text-[#FACC15] transition-colors"
+              >
                 Login
               </Link>
-              <Link to="/signup" className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 transition-all">
+              <Link
+                to="/signup"
+                className="bg-[#FACC15] text-[#262626] px-7 py-2.5 rounded-full font-bold shadow-lg hover:-translate-y-0.5 transition-all"
+              >
                 Get Started
               </Link>
             </>
           ) : (
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-[#262626] font-semibold hover:text-red-500 transition-colors"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
+            <>
+              <span className="text-sm text-gray-600">
+                {user?.username}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-[#262626] font-semibold hover:text-red-500 transition-colors"
+              >
+                Logout
+              </button>
+            </>
           )}
         </div>
       </div>
 
       {/* Mobile Menu Button */}
       <div className="md:hidden flex items-center">
-        <button onClick={() => setIsOpen(!isOpen)} className="text-[#262626] hover:bg-gray-100 p-2 rounded-lg transition-colors">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-[#262626] hover:bg-gray-100 p-2 rounded-lg transition-colors"
+        >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-xl flex flex-col p-6 md:hidden space-y-4"
+            className="absolute top-full left-0 w-full bg-white border-b shadow-xl flex flex-col p-6 md:hidden space-y-4"
           >
             {navLinks.map((link) => {
               const isActive = currentPath === link.path;
               return (
-                <Link 
-                  key={link.name} 
-                  to={link.path} 
+                <Link
+                  key={link.name}
+                  to={link.path}
                   onClick={() => setIsOpen(false)}
-                  className={`font-semibold p-4 rounded-2xl transition-all ${isActive ? 'bg-yellow-50 text-[#FACC15]' : 'text-[#262626] hover:bg-gray-50'}`}
+                  className={`font-semibold p-4 rounded-2xl ${
+                    isActive
+                      ? 'bg-yellow-50 text-[#FACC15]'
+                      : 'text-[#262626] hover:bg-gray-50'
+                  }`}
                 >
                   {link.name}
                 </Link>
               );
             })}
+
             <div className="flex flex-col space-y-3 pt-2">
-              <Link to="/login" onClick={() => setIsOpen(false)} className="text-[#262626] text-center font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                Login
-              </Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)} className="bg-[#FACC15] text-[#262626] px-6 py-3 rounded-xl font-bold shadow-md inline-flex justify-center w-full">
-                Get Started
-              </Link>
+              {!loggedIn ? (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="text-center font-semibold p-3 border rounded-xl"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setIsOpen(false)}
+                    className="bg-[#FACC15] text-[#262626] py-3 rounded-xl font-bold text-center"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {admin && (
+                    <Link
+                      to="/AdminDashboard"
+                      onClick={() => setIsOpen(false)}
+                      className="text-center font-semibold p-3 border rounded-xl"
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      handleLogout();
+                    }}
+                    className="text-center font-semibold p-3 border rounded-xl"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           </motion.div>
         )}

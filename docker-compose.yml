@@ -1,21 +1,28 @@
-
 services:
   backend:
     build: ./backend
     ports:
       - "8082:8082"
+    # මේ ටික අලුතින් ඇඩ් කරන්න
+    volumes:
+      - ./backend:/app              # ඔයාගේ කෝඩ් එක මැප් කරනවා
+      - /app/target                 # build files මැප් වෙන්න දෙන්න එපා
     networks:
       - app-network
-
     dns:
       - 8.8.8.8
       - 8.8.4.4
 
   frontend:
-    # මෙතන ඔබේ React folder එකේ නම දෙන්න (උදා: ./frontend)
     build: ./frontend 
     ports:
       - "5174:5173"
+    # මේ ටික අලුතින් ඇඩ් කරන්න
+    volumes:
+      - ./frontend:/app             # Frontend එක මැප් කරනවා
+      - /app/node_modules           # මේක අනිවාර්යයි! නැත්නම් node_modules අවුල් යනවා
+    environment:
+      - CHOKIDAR_USEPOLLING=true    # සමහර වෙලාවට මේක නැතුව auto-refresh වෙන්නේ නැහැ
     stdin_open: true
     tty: true
     networks:

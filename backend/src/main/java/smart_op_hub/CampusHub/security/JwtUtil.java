@@ -17,6 +17,7 @@ public class JwtUtil {
 
     // Usually store in env variables, but using a static one here for prototyping
     private static final String SECRET = "A_VERY_LONG_SECRET_KEY_THAT_MUST_BE_MINIMUM_256_BITS_FOR_HMAC_SHA";
+
     private Key getSignKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
@@ -42,8 +43,9 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
         return createToken(claims, username);
     }
 
@@ -56,8 +58,15 @@ public class JwtUtil {
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 
-    public Boolean validateToken(String token, org.springframework.security.core.userdetails.UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    public Boolean validateToken(String token) {
+        try {
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
