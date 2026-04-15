@@ -58,13 +58,13 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="bg-white/90 backdrop-blur-xl w-full max-w-xl rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden border border-white/20"
+                    className="bg-white/95 backdrop-blur-2xl w-full max-w-xl rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden border border-white/40 max-h-[90vh] flex flex-col"
                 >
-                    <div className="p-10">
-                        <div className="flex justify-between items-center mb-10">
+                    <div className="p-10 overflow-y-auto scrollbar-hide">
+                        <div className="flex justify-between items-start mb-10">
                             <div>
-                                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Report an Issue</h2>
-                                <p className="text-gray-500 font-medium">Help us keep the campus in top shape</p>
+                                <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-1">Report an Issue</h2>
+                                <p className="text-gray-500 font-bold text-sm tracking-tight opacity-80">Help us keep the campus in top shape</p>
                             </div>
                             <button 
                                 onClick={onClose} 
@@ -74,18 +74,20 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Issue Category</label>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-3 px-1">Issue Category</label>
                                     <div className="relative group">
-                                        <Type className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                                            <Type className="text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                        </div>
                                         <input 
                                             list="issue-types"
                                             required
                                             value={formData.issueTitle}
                                             onChange={(e) => setFormData({...formData, issueTitle: e.target.value})}
-                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.25rem] py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700"
+                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.5rem] py-4.5 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700"
                                             placeholder="Select or type..."
                                         />
                                         <datalist id="issue-types">
@@ -95,14 +97,16 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Location</label>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-3 px-1">Location</label>
                                     <div className="relative group">
-                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                                            <MapPin className="text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                        </div>
                                         <input 
                                             required
                                             value={formData.location}
                                             onChange={(e) => setFormData({...formData, location: e.target.value})}
-                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.25rem] py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700"
+                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.5rem] py-4.5 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700"
                                             placeholder="e.g. Lab 03, Block B"
                                         />
                                     </div>
@@ -110,45 +114,84 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                             </div>
 
                             <div>
-                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Detailed Description</label>
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-3 px-1">Detailed Description</label>
                                 <div className="relative group">
-                                    <FileText className="absolute left-4 top-5 text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                    <div className="absolute left-4 top-5 pointer-events-none">
+                                        <FileText className="text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                    </div>
                                     <textarea 
                                         required
                                         rows="4"
                                         value={formData.description}
                                         onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                        className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.25rem] py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700 resize-none"
+                                        className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.5rem] py-5 pl-12 pr-5 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700 resize-none min-h-[120px]"
                                         placeholder="Describe the problem, e.g., 'The lamp is flickering then went black'..."
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex flex-col md:flex-row gap-6 items-end">
-                                <div className="flex-grow w-full">
-                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Attachment URL</label>
-                                    <div className="relative group">
-                                        <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-3 px-1">Attachment</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+                                    {/* Upload Area */}
+                                    <div className="relative group/upload h-[120px]">
                                         <input 
-                                            type="url"
-                                            value={formData.imageUrl}
-                                            onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.25rem] py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700"
-                                            placeholder="https://example.com/photo.jpg"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setFormData({ ...formData, imageUrl: reader.result });
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                         />
+                                        <div className="w-full h-full bg-gray-50/80 border-2 border-dashed border-gray-100 rounded-[1.5rem] flex flex-col items-center justify-center gap-3 group-hover/upload:border-yellow-400 group-hover/upload:bg-yellow-50/20 transition-all">
+                                            <div className="p-2.5 bg-white rounded-xl shadow-sm group-hover/upload:scale-110 group-hover/upload:rotate-3 transition-all duration-300">
+                                                <ImageIcon className="text-gray-400 group-hover/upload:text-yellow-500 w-6 h-6" />
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover/upload:text-yellow-600 transition-colors">Click to Upload</span>
+                                        </div>
+                                    </div>
+
+                                    {/* URL / Preview Area */}
+                                    <div className="h-[120px]">
+                                        {formData.imageUrl ? (
+                                            <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden border border-gray-100 group">
+                                                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                                                        className="p-2 bg-red-500 text-white rounded-xl hover:scale-110 transition-transform flex items-center gap-2 font-black text-[10px] uppercase tracking-widest"
+                                                    >
+                                                        <X size={14} /> Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="w-full h-full bg-gray-50/30 border border-gray-100 rounded-[1.5rem] flex items-center justify-center px-4 hover:border-gray-200 transition-colors group">
+                                                <input 
+                                                    type="url"
+                                                    value={formData.imageUrl}
+                                                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                                                    className="w-full bg-transparent outline-none text-center font-bold text-gray-400 text-[11px] group-hover:text-gray-600 transition-colors"
+                                                    placeholder="...OR PASTE IMAGE URL"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                {formData.imageUrl && (
-                                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-yellow-400/30 shrink-0">
-                                        <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                                    </div>
-                                )}
                             </div>
 
                             <button 
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-[#262626] text-[#FACC15] py-5 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all disabled:opacity-70 mt-6 group"
+                                className="w-full bg-[#262626] text-[#FACC15] py-5 rounded-[1.5rem] font-black text-xl flex items-center justify-center gap-3 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all disabled:opacity-70 group"
                             >
                                 {loading ? (
                                     <Loader2 className="w-7 h-7 animate-spin" />
@@ -164,7 +207,6 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                 </motion.div>
             </div>
         </AnimatePresence>
-    );
     );
 };
 

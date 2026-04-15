@@ -116,7 +116,7 @@ const TicketDashboard = () => {
                             />
                         </div>
                         
-                        {(userRole === 'Student' || userRole === 'Lecturer') && (
+                        {userRole !== 'Admin' && (
                             <button 
                                 onClick={() => setIsModalOpen(true)}
                                 className="bg-[#262626] text-[#FACC15] px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:shadow-2xl hover:shadow-yellow-400/20 active:scale-95 transition-all whitespace-nowrap"
@@ -185,7 +185,7 @@ const TicketDashboard = () => {
                                             ? `No results found for "${searchQuery}". Try a different term.`
                                             : "Everything seems operational. No incidents to display at this moment."}
                                     </p>
-                                    {(userRole === 'Student' || userRole === 'Lecturer') && !searchQuery && (
+                                    {userRole !== 'Admin' && !searchQuery && (
                                         <button 
                                             onClick={() => setIsModalOpen(true)}
                                             className="bg-yellow-400 text-gray-900 px-10 py-4 rounded-2xl font-black hover:shadow-2xl hover:shadow-yellow-400/30 transition-all"
