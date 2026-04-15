@@ -48,7 +48,7 @@ const ResourceList = ({ onEdit, onAdd }) => {
             setResources(response.data);
         } catch (error) {
             console.error('Error fetching resources:', error);
-            // Fallback to all resources if search fails or initially
+            // Fallback to all resou.rces if search fails or initially
             const response = await ResourceService.getAllResources();
             setResources(response.data);
         } finally {
