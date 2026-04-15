@@ -1,28 +1,28 @@
+
+version: "3.8"
+
 services:
   backend:
     build: ./backend
+    container_name: smart-operation-hub-backend
     ports:
       - "8082:8080"
-    # මේ ටික අලුතින් ඇඩ් කරන්න
     volumes:
-      - ./backend:/app              # ඔයාගේ කෝඩ් එක මැප් කරනවා
-      - /app/target                 # build files මැප් වෙන්න දෙන්න එපා
+      - ./backend:/app
+      - /app/target
     networks:
       - app-network
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
 
   frontend:
-    build: ./frontend 
+    build: ./frontend
+    container_name: smart-operation-hub-frontend
     ports:
       - "5174:5173"
-    # මේ ටික අලුති.න් ඇඩ් කරන්න
     volumes:
-      - ./frontend:/app             # Frontend එක මැප් කරනවා
-      - /app/node_modules           # මේක අනිවාර්යයි! නැත්නම් node_modules අවුල් යනවා
+      - ./frontend:/app
+      - /app/node_modules
     environment:
-      - CHOKIDAR_USEPOLLING=true    # සමහර වෙලාවට මේක නැතුව auto-refresh වෙන්නේ නැහැ
+      - CHOKIDAR_USEPOLLING=true
     stdin_open: true
     tty: true
     networks:
@@ -31,3 +31,4 @@ services:
 networks:
   app-network:
     driver: bridge
+
