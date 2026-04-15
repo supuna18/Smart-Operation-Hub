@@ -8,6 +8,9 @@ export default defineConfig({
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups'
-    }
+    }, // මෙතන කොමාව (comma) අනිවාර්යයි
+    host: true,
+    port: 5174,
+    strictPort: true,
   }
 })
