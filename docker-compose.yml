@@ -1,28 +1,13 @@
 services:
-  # 1. Database එක ඇඩ් කළා
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    networks:
-      - app-network
-
-  # 2. Backend එක නිවැරදි කළා
   backend:
     build: ./backend
     container_name: smart-operation-hub-backend
     ports:
       - "8082:8082"
-    # volumes: - ./backend:/app  <-- මේක අයින් කළා, නැත්නම් app.jar එක නැති වෙනවා
-    depends_on:
-      - mongodb
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/CampusHubDB
+    # මෙතන තිබුණ mongodb එකට අදාළ environment variable එක සහ depends_on අයින් කරන්න
     networks:
       - app-network
 
-  # 3. Frontend එක
   frontend:
     build: ./frontend 
     container_name: smart-operation-hub-frontend
@@ -36,3 +21,5 @@ services:
 networks:
   app-network:
     driver: bridge
+
+# මෙතන යටින් තිබුණ mongodb service එක සම්පූර්ණයෙන්ම අයින් කරලා දාන්න
