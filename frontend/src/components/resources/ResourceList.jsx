@@ -8,6 +8,8 @@ const ResourceList = ({ onEdit, onAdd }) => {
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
+    const [filterMinCapacity, setFilterMinCapacity] = useState('');
+    const [filterLocation, setFilterLocation] = useState('');
     const [loading, setLoading] = useState(true);
     const [userBookings, setUserBookings] = useState([]);
     const admin = React.useMemo(() => isAdmin(), []);
@@ -18,7 +20,7 @@ const ResourceList = ({ onEdit, onAdd }) => {
         if (!admin && user) {
             fetchUserBookings();
         }
-    }, [search, filterType, filterStatus, admin]); // Removed user from dependencies as it's memoized and we only need to fetch on init or filter change
+    }, [search, filterType, filterStatus, filterMinCapacity, filterLocation, admin]);
 
     const fetchUserBookings = async () => {
         try {
@@ -39,6 +41,8 @@ const ResourceList = ({ onEdit, onAdd }) => {
             if (search) params.name = search;
             if (filterType) params.type = filterType;
             if (filterStatus) params.status = filterStatus;
+            if (filterMinCapacity) params.minCapacity = filterMinCapacity;
+            if (filterLocation) params.location = filterLocation;
 
             const response = await ResourceService.searchResources(params);
             setResources(response.data);
@@ -92,7 +96,7 @@ const ResourceList = ({ onEdit, onAdd }) => {
 
             {/* Filters */}
             <div className="p-6 md:p-8 bg-slate-50 border-b border-slate-100">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     <div className="relative">
                         <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input 
@@ -128,6 +132,26 @@ const ResourceList = ({ onEdit, onAdd }) => {
                             <option value="ACTIVE">Active & Available</option>
                             <option value="OUT_OF_SERVICE">Under Maintenance</option>
                         </select>
+                    </div>
+                    <div className="relative">
+                        <FiUsers className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input 
+                            type="number" 
+                            placeholder="Min Capacity..." 
+                            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none text-sm"
+                            value={filterMinCapacity}
+                            onChange={(e) => setFilterMinCapacity(e.target.value)}
+                        />
+                    </div>
+                    <div className="relative">
+                        <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input 
+                            type="text" 
+                            placeholder="Location..." 
+                            className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none text-sm"
+                            value={filterLocation}
+                            onChange={(e) => setFilterLocation(e.target.value)}
+                        />
                     </div>
                 </div>
             </div>
@@ -183,6 +207,12 @@ const ResourceList = ({ onEdit, onAdd }) => {
                                             <FiMapPin className="text-slate-400" size={14} />
                                             <span className="truncate">{resource.location}</span>
                                         </div>
+                                        {resource.availabilityWindows && (
+                                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                                                <FiCalendar className="text-slate-400" size={14} />
+                                                <span className="truncate font-medium text-slate-500 italic">{resource.availabilityWindows}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

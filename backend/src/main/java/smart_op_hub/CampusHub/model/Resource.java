@@ -19,4 +19,5 @@ public class Resource {
     private Integer quantity;
     private String location;
     private String status;
+    private String availabilityWindows; // New field for operating hours
 }

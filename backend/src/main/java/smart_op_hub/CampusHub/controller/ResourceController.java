@@ -55,7 +55,9 @@ public class ResourceController {
     public List<Resource> searchResources(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String type,
-            @RequestParam(required = false) String status) {
-        return resourceService.searchResources(name, type, status);
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer minCapacity,
+            @RequestParam(required = false) String location) {
+        return resourceService.searchResources(name, type, status, minCapacity, location);
     }
 }

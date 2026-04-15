@@ -34,6 +34,7 @@ public class ResourceService {
             resource.setQuantity(resourceDetails.getQuantity());
             resource.setLocation(resourceDetails.getLocation());
             resource.setStatus(resourceDetails.getStatus());
+            resource.setAvailabilityWindows(resourceDetails.getAvailabilityWindows());
             return resourceRepository.save(resource);
         }).orElseThrow(() -> new RuntimeException("Resource not found with id: " + id));
     }
@@ -42,7 +43,7 @@ public class ResourceService {
         resourceRepository.deleteById(id);
     }
 
-    public List<Resource> searchResources(String name, String type, String status) {
+    public List<Resource> searchResources(String name, String type, String status, Integer minCapacity, String location) {
         List<Resource> resources = resourceRepository.findAll();
 
         if (name != null && !name.isEmpty()) {
@@ -57,9 +58,21 @@ public class ResourceService {
                     .collect(Collectors.toList());
         }
 
-        if (status != null) {
+        if (status != null && !status.isEmpty()) {
             resources = resources.stream()
                     .filter(r -> r.getStatus() != null && r.getStatus().equalsIgnoreCase(status))
+                    .collect(Collectors.toList());
+        }
+
+        if (minCapacity != null) {
+            resources = resources.stream()
+                    .filter(r -> r.getCapacity() != null && r.getCapacity() >= minCapacity)
+                    .collect(Collectors.toList());
+        }
+
+        if (location != null && !location.isEmpty()) {
+            resources = resources.stream()
+                    .filter(r -> r.getLocation() != null && r.getLocation().toLowerCase().contains(location.toLowerCase()))
                     .collect(Collectors.toList());
         }
 

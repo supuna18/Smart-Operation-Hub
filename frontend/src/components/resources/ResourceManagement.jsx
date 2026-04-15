@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ResourceList from './ResourceList';
 import ResourceForm from './ResourceForm';
 import heroImage from '../../assets/reso1.jpeg';
+import libraryVideo from '../../assets/library.mp4';
 
 const ResourceManagement = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -59,11 +60,18 @@ const ResourceManagement = () => {
                             {/* Decorative backing for the image */}
                             <div className="absolute inset-0 bg-yellow-400 rounded-3xl translate-x-3 translate-y-3 opacity-20 hidden md:block" />
                             <div className="absolute -inset-4 bg-yellow-100/50 blur-3xl -z-10 rounded-full" />
-                            <img
-                                src={heroImage}
-                                alt="Modern Campus Facility"
-                                className="relative z-10 w-full object-cover rounded-3xl shadow-xl border-4 border-white aspect-[4/3] object-center"
-                            />
+                            <div className="relative z-10 w-full rounded-3xl shadow-2xl border-4 border-white overflow-hidden aspect-[4/3]">
+                                <video
+                                    src={libraryVideo}
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    className="w-full h-full object-cover object-center"
+                                />
+                                {/* Soft overlay to ensure premium feel */}
+                                <div className="absolute inset-0 bg-slate-900/5 pointer-events-none" />
+                            </div>
                         </div>
                     </div>
                 </div>

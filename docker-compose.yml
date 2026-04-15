@@ -6,18 +6,20 @@ services:
     build: ./backend
     container_name: smart-operation-hub-backend
     ports:
-      - "8082:8080"
-    volumes:
-      - ./backend:/app
-      - /app/target
+      - "8082:8082"
+    # volumes:
+    #   - ./backend:/app
+    #   - /app/target
     networks:
       - app-network
+    dns:
+      - 8.8.8.8
 
   frontend:
     build: ./frontend
     container_name: smart-operation-hub-frontend
     ports:
-      - "5174:5173"
+      - "5174:5174"
     volumes:
       - ./frontend:/app
       - /app/node_modules

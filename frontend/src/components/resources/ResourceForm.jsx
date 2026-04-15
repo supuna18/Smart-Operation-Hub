@@ -8,7 +8,8 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
         type: 'Lecture Hall',
         capacity: 0,
         location: '',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        availabilityWindows: ''
     });
 
     useEffect(() => {
@@ -157,9 +158,22 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
                                         className="hidden"
                                     />
                                     <span className={`w-2 h-2 rounded-full ${formData.status === 'OUT_OF_SERVICE' ? 'bg-yellow-500' : 'bg-slate-300'}`} />
-                                    Maintenance
                                 </label>
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
+                                <FiCalendar size={14} className="text-yellow-500" /> Availability Windows
+                            </label>
+                            <input
+                                type="text"
+                                name="availabilityWindows"
+                                value={formData.availabilityWindows}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none shadow-sm"
+                                placeholder="E.g. 08:00 AM - 05:00 PM (Mon-Fri)"
+                            />
                         </div>
                     </div>
 
