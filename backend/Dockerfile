@@ -2,13 +2,13 @@
 FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
 
-# මුලින්ම pom.xml සහ mvnw කොපි කරලා dependencies download කරගන්න (Cache එක පාවිච්චි කරන්න පුළුවන් එතකොට)
+# Maven wrapper සහ dependencies මුලින්ම ලෑස්ති කරගන්නවා (Build එක වේගවත් කිරීමට)
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 RUN chmod +x mvnw
 RUN ./mvnw dependency:go-offline
 
-# ඉතිරි source code ටික කොපි කරලා build කරනවා
+# Source code එක කොපි කරලා build කරනවා
 COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
@@ -16,10 +16,12 @@ RUN ./mvnw clean package -DskipTests
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Build stage එකේදී හැදුණු jar එක මෙතනට කොපි කරනවා
-COPY --from=build /app/target/*.jar app.jar
+# Build stage එකේ හැදුණු නිවැරදි JAR එක app.jar නමින් කොපි කරනවා
+# (ඔයාගේ project එකේ හැදෙන්නේ CampusHub-0.0.1-SNAPSHOT.jar කියන එකයි)
+COPY --from=build /app/target/CampusHub-0.0.1-SNAPSHOT.jar app.jar
 
+# Backend එක run වෙන port එක
 EXPOSE 8082
 
-# මෙතන කිසිම අමතර අකුරක් (උදා: cd..) තියෙන්න බැහැ
-ENTRYPOINT ["java", "-jar", "app.jar"]dock
+# Application එක start කරන command එක
+ENTRYPOINT ["java", "-jar", "app.jar"]

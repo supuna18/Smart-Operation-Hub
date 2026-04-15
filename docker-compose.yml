@@ -1,28 +1,33 @@
 services:
-  backend:
-    build: ./backend
+  # 1. Database එක ඇඩ් කළා
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
     ports:
-      - "8082:8082"
-    # මේ ටික අලුතින් ඇඩ් කරන්න
-    volumes:
-      - ./backend:/app              # ඔයාගේ කෝඩ් එක මැප් කරනවා
-      - /app/target                 # build files මැප් වෙන්න දෙන්න එපා
+      - "27017:27017"
     networks:
       - app-network
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
 
+  # 2. Backend එක නිවැරදි කළා
+  backend:
+    build: ./backend
+    container_name: smart-operation-hub-backend
+    ports:
+      - "8082:8082"
+    # volumes: - ./backend:/app  <-- මේක අයින් කළා, නැත්නම් app.jar එක නැති වෙනවා
+    depends_on:
+      - mongodb
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/CampusHubDB
+    networks:
+      - app-network
+
+  # 3. Frontend එක
   frontend:
     build: ./frontend 
+    container_name: smart-operation-hub-frontend
     ports:
       - "5174:5173"
-    # මේ ටික අලුතින් ඇඩ් කරන්න
-    volumes:
-      - ./frontend:/app             # Frontend එක මැප් කරනවා
-      - /app/node_modules           # මේක අනිවාර්යයි! නැත්නම් node_modules අවුල් යනවා
-    environment:
-      - CHOKIDAR_USEPOLLING=true    # සමහර වෙලාවට මේක නැතුව auto-refresh වෙන්නේ නැහැ
     stdin_open: true
     tty: true
     networks:
