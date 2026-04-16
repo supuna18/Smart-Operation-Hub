@@ -128,12 +128,6 @@ const AdminDashboard = () => {
             <p className="text-gray-600 mt-2">Manage users, facilities, and campus resources.</p>
             <p className="text-gray-500 mt-1 text-sm">Signed in as {currentUser?.username || 'Admin'} ({currentUser?.email})</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center justify-center rounded-full bg-[#FACC15] px-6 py-3 font-semibold text-[#262626] transition hover:bg-yellow-300"
-          >
-            Sign Out
-          </button>
         </div>
 
         {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">{error}</div>}
