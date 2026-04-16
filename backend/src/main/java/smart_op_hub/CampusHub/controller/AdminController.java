@@ -115,6 +115,8 @@ public class AdminController {
             resource.setCapacity(request.getCapacity() != null ? request.getCapacity() : resource.getCapacity());
             resource.setLocation(request.getLocation() != null ? request.getLocation() : resource.getLocation());
             resource.setStatus(request.getStatus() != null ? request.getStatus() : resource.getStatus());
+            resource.setImageUrl(request.getImageUrl() != null ? request.getImageUrl() : resource.getImageUrl());
+            resource.setAvailabilityWindows(request.getAvailabilityWindows() != null ? request.getAvailabilityWindows() : resource.getAvailabilityWindows());
             return ResponseEntity.ok(resourceRepository.save(resource));
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }

@@ -9,6 +9,15 @@ import confetti from 'canvas-confetti';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
+// Categories and local asset defaults
+import lectureHallImg from '../assets/reso1.jpeg';
+import labImg from '../assets/labR.jpeg';
+import equipmentImg from '../assets/equipmentR.jpeg';
+import studyAreaImg from '../assets/studyareaR.jpeg';
+import loungeImg from '../assets/loungeR.jpeg';
+import sportsImg from '../assets/sportfacilityR.jpeg';
+import otherImg from '../assets/otherR.jpeg';
+
 const RESOURCE_TYPES = [
   'Lecture Hall', 'Laboratory', 'Equipment', 'Study Area', 'Lounge', 'Sports Facility', 'Other'
 ];
@@ -27,6 +36,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('users');
   const [facilityDraft, setFacilityDraft] = useState({ name: '', description: '', location: '', capacity: '' });
   const [resourceDraft, setResourceDraft] = useState({ name: '', type: '', quantity: '', status: '', imageUrl: '' });
+  const [editingResource, setEditingResource] = useState(null);
   const [error, setError] = useState('');
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -108,6 +118,21 @@ const AdminDashboard = () => {
     }
   };
 
+  const getTypeDefaultImage = (type) => {
+    const defaults = {
+      'Lecture Hall': lectureHallImg,
+      'Lab': labImg,
+      'Laboratory': labImg,
+      'Auditorium': lectureHallImg,
+      'Equipment': equipmentImg,
+      'Study Area': studyAreaImg,
+      'Lounge': loungeImg,
+      'Sports Facility': sportsImg,
+      'Other': otherImg
+    };
+    return defaults[type] || otherImg;
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -123,20 +148,51 @@ const AdminDashboard = () => {
     }
   };
 
-  const createResource = async (e) => {
+  const handleEdit = (resource) => {
+    setResourceDraft({
+      name: resource.name,
+      type: resource.type,
+      quantity: resource.quantity,
+      status: resource.status,
+      imageUrl: resource.imageUrl || ''
+    });
+    setEditingResource(resource);
+    // Smooth scroll to the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast(`Editing: ${resource.name}`, 'info');
+  };
+
+  const cancelEdit = () => {
+    setResourceDraft({ name: '', type: '', quantity: '', status: '', imageUrl: '' });
+    setEditingResource(null);
+  };
+
+  const handleSubmitResource = async (e) => {
     e.preventDefault();
     if (Number(resourceDraft.quantity) < 0) {
       showToast('Quantity cannot be negative.', 'error');
       return;
     }
     try {
-      const response = await api.post('/admin/resources', {
-        ...resourceDraft,
-        quantity: Number(resourceDraft.quantity),
-      });
-      setResources((current) => [...current, response.data]);
-      setResourceDraft({ name: '', type: '', quantity: '', status: '', imageUrl: '' });
-      showToast('Resource registered successfully!', 'success');
+      if (editingResource) {
+        // UPDATE MODE
+        const response = await api.put(`/admin/resources/${editingResource.id}`, {
+          ...resourceDraft,
+          quantity: Number(resourceDraft.quantity),
+        });
+        setResources((current) => current.map(res => res.id === editingResource.id ? response.data : res));
+        showToast('Resource updated successfully!', 'success');
+        cancelEdit();
+      } else {
+        // CREATE MODE
+        const response = await api.post('/admin/resources', {
+          ...resourceDraft,
+          quantity: Number(resourceDraft.quantity),
+        });
+        setResources((current) => [...current, response.data]);
+        setResourceDraft({ name: '', type: '', quantity: '', status: '', imageUrl: '' });
+        showToast('Resource registered successfully!', 'success');
+      }
       
       confetti({
         particleCount: 100,
@@ -145,7 +201,7 @@ const AdminDashboard = () => {
         colors: ['#FACC15', '#262626']
       });
     } catch (err) {
-      showToast('Failed to create resource.', 'error');
+      showToast(`Failed to ${editingResource ? 'update' : 'create'} resource.`, 'error');
     }
   };
 
@@ -395,12 +451,20 @@ const AdminDashboard = () => {
                     <span className="w-10 h-10 rounded-2xl bg-[#FACC15] text-[#262626] flex items-center justify-center">
                       <FiPlus size={20} className="stroke-[3px]" />
                     </span>
-                    Register New Asset
+                    {editingResource ? 'Update Existing Asset' : 'Register New Asset'}
                   </h3>
                 </div>
+                {editingResource && (
+                  <button 
+                    onClick={cancelEdit}
+                    className="flex items-center gap-2 px-6 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
               </div>
               
-              <form onSubmit={createResource} className="grid gap-6 md:grid-cols-2 relative z-10">
+              <form onSubmit={handleSubmitResource} className="grid gap-6 md:grid-cols-2 relative z-10">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest ml-1">Asset Name</label>
                   <input
@@ -499,47 +563,80 @@ const AdminDashboard = () => {
                 </div>
                 <button
                   type="submit"
-                  className="col-span-full rounded-2xl bg-[#FACC15] py-4 text-center font-black text-[#262626] hover:bg-yellow-300 transition-all shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 active:translate-y-0"
+                  className="col-span-full rounded-2xl bg-[#FACC15] py-4 text-center font-black text-[#262626] hover:bg-yellow-300 transition-all shadow-lg shadow-[#FACC15]/20 hover:shadow-[#FACC15]/40 hover:-translate-y-0.5 active:translate-y-0 uppercase tracking-widest"
                 >
-                  ADD ASSET TO INVENTORY
+                  {editingResource ? 'Update Asset Details' : 'ADD ASSET TO INVENTORY'}
                 </button>
               </form>
             </div>
 
             {/* Custom Visual Card Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {resources.map((item) => (
-                <div key={item.id} className="group relative bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col border-b-4 border-b-[#FACC15]">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gray-50 text-[#262626] flex items-center justify-center group-hover:bg-[#FACC15] transition-colors">
-                      <FiBox size={24} />
-                    </div>
-                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase ${
-                      item.status?.toUpperCase() === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {item.status || 'Unknown'}
-                    </span>
-                  </div>
+                <div key={item.id} className="group relative bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden hover:border-yellow-400 transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col">
+                  {/* Status Bar */}
+                  <div className={`h-1.5 w-full ${item.status?.toUpperCase() === 'ACTIVE' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
                   
-                  <div className="mb-6">
-                    <h4 className="text-xl font-black text-[#262626] leading-tight mb-1">{item.name}</h4>
-                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
-                      <FiLayers /> {item.type}
-                    </p>
+                  {/* Image Header */}
+                  <div className="h-48 w-full relative overflow-hidden bg-slate-100 flex items-center justify-center">
+                    <img 
+                      src={item.imageUrl || getTypeDefaultImage(item.type)} 
+                      alt={item.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      onError={(e) => {
+                        if (e.target.src !== getTypeDefaultImage(item.type)) {
+                          e.target.src = getTypeDefaultImage(item.type);
+                        } else {
+                          e.target.onerror = null;
+                          e.target.style.display = 'none';
+                          e.target.parentNode.innerHTML = '<div class="text-slate-300"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="48" width="48" xmlns="http://www.w3.org/2000/svg"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>';
+                        }
+                      }}
+                    />
+                    <div className="absolute top-4 right-4 z-10">
+                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-lg backdrop-blur-md ${
+                        item.status?.toUpperCase() === 'ACTIVE' ? 'bg-emerald-500/90 text-white' : 'bg-yellow-500/90 text-slate-900'
+                      }`}>
+                        {item.status || 'Unknown'}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-50">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">In Stock</span>
-                      <span className="text-2xl font-black text-[#262626]">{item.quantity}</span>
+                  <div className="p-7 flex flex-col flex-1">
+                    <div className="mb-6">
+                      <div className="flex items-center gap-2 mb-2">
+                         <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                           {item.type}
+                         </span>
+                      </div>
+                      <h4 className="text-2xl font-black text-slate-900 leading-tight group-hover:text-yellow-600 transition-colors uppercase tracking-tight">{item.name}</h4>
                     </div>
-                    <button
-                      onClick={() => deleteResource(item.id)}
-                      className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors"
-                      title="Delete Asset"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
+
+                    <div className="grid grid-cols-2 gap-4 mt-auto">
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Stock Level</span>
+                        <div className="flex items-center gap-3">
+                          <FiBox size={16} className="text-yellow-500" />
+                          <span className="text-xl font-black text-slate-900">{item.quantity}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="w-14 h-14 rounded-2xl bg-yellow-50 text-yellow-600 border border-yellow-200 flex items-center justify-center hover:bg-yellow-400 hover:text-white transition-all shadow-sm hover:shadow-xl hover:-translate-y-1 active:translate-y-0"
+                          title="Modify Asset Data"
+                        >
+                          <FiTrendingUp size={24} className="stroke-[2.5px]" />
+                        </button>
+                        <button
+                          onClick={() => deleteResource(item.id)}
+                          className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm hover:shadow-xl hover:-translate-y-1 active:translate-y-0"
+                          title="Permanently Remove Asset"
+                        >
+                          <FiTrash2 size={24} className="stroke-[2.5px]" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}

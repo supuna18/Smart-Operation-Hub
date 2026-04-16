@@ -116,6 +116,19 @@ const ResourceList = ({ onEdit, onAdd }) => {
         return defaults[type] || otherImg;
     };
 
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to remove this resource?')) {
+            try {
+                await ResourceService.deleteResource(id);
+                showToast('Resource removed successfully!', 'success');
+                fetchResources();
+            } catch (error) {
+                console.error('Error deleting resource:', error);
+                showToast('Failed to delete resource.', 'error');
+            }
+        }
+    };
+
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
