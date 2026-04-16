@@ -7,6 +7,15 @@ import { ResourceCardSkeleton } from '../common/Skeleton';
 import confetti from 'canvas-confetti';
 import ResourceCalendarModal from './ResourceCalendarModal';
 
+// Categories and local asset defaults
+import lectureHallImg from '../../assets/reso1.jpeg';
+import labImg from '../../assets/labR.jpeg';
+import equipmentImg from '../../assets/equipmentR.jpeg';
+import studyAreaImg from '../../assets/studyareaR.jpeg';
+import loungeImg from '../../assets/loungeR.jpeg';
+import sportsImg from '../../assets/sportfacilityR.jpeg';
+import otherImg from '../../assets/otherR.jpeg';
+
 const ResourceList = ({ onEdit, onAdd }) => {
     const { showToast } = useToast();
     const [resources, setResources] = useState([]);
@@ -94,15 +103,17 @@ const ResourceList = ({ onEdit, onAdd }) => {
 
     const getTypeDefaultImage = (type) => {
         const defaults = {
-            'Lecture Hall': 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=600',
-            'Lab': 'https://images.unsplash.com/photo-1581093191612-40c26210fbed?auto=format&fit=crop&q=80&w=600',
-            'Laboratory': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600',
-            'Auditorium': 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&q=80&w=600',
-            'Equipment': 'https://images.unsplash.com/photo-1517077304055-6e89abc9058a?auto=format&fit=crop&q=80&w=600',
-            'Study Area': 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=600',
-            'Lounge': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=600'
+            'Lecture Hall': lectureHallImg,
+            'Lab': labImg,
+            'Laboratory': labImg,
+            'Auditorium': lectureHallImg, // Fallback to lecture hall if no auditorium img
+            'Equipment': equipmentImg,
+            'Study Area': studyAreaImg,
+            'Lounge': loungeImg,
+            'Sports Facility': sportsImg,
+            'Other': otherImg
         };
-        return defaults[type] || 'https://images.unsplash.com/photo-1517077304055-6e89abc9058a?auto=format&fit=crop&q=80&w=600';
+        return defaults[type] || otherImg;
     };
 
     return (
