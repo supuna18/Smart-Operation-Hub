@@ -92,6 +92,19 @@ const ResourceList = ({ onEdit, onAdd }) => {
         return userBookings.find(b => b.resourceId === resourceId);
     };
 
+    const getTypeDefaultImage = (type) => {
+        const defaults = {
+            'Lecture Hall': 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=600',
+            'Lab': 'https://images.unsplash.com/photo-1581093191612-40c26210fbed?auto=format&fit=crop&q=80&w=600',
+            'Laboratory': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600',
+            'Auditorium': 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&q=80&w=600',
+            'Equipment': 'https://images.unsplash.com/photo-1517077304055-6e89abc9058a?auto=format&fit=crop&q=80&w=600',
+            'Study Area': 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=600',
+            'Lounge': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=600'
+        };
+        return defaults[type] || 'https://images.unsplash.com/photo-1517077304055-6e89abc9058a?auto=format&fit=crop&q=80&w=600';
+    };
+
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -187,23 +200,20 @@ const ResourceList = ({ onEdit, onAdd }) => {
                                 
                                 {/* Image Section */}
                                 <div className="h-44 w-full relative overflow-hidden bg-slate-100 group-hover:after:opacity-20 flex items-center justify-center">
-                                    {resource.imageUrl ? (
-                                        <img 
-                                            src={resource.imageUrl} 
-                                            alt={resource.name} 
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                            onError={(e) => {
+                                    <img 
+                                        src={resource.imageUrl || getTypeDefaultImage(resource.type)} 
+                                        alt={resource.name} 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        onError={(e) => {
+                                            if (e.target.src !== getTypeDefaultImage(resource.type)) {
+                                                e.target.src = getTypeDefaultImage(resource.type);
+                                            } else {
                                                 e.target.onerror = null;
                                                 e.target.style.display = 'none';
                                                 e.target.parentNode.innerHTML = '<div class="text-slate-300 flex flex-col items-center gap-2"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="40" width="40" xmlns="http://www.w3.org/2000/svg"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>';
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-2 text-slate-300">
-                                            <FiBox size={40} />
-                                            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">No Image Available</span>
-                                        </div>
-                                    )}
+                                            }
+                                        }}
+                                    />
                                     <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors pointer-events-none" />
                                 </div>
 

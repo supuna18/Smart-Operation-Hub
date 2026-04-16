@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { FiX, FiCalendar, FiClock, FiAlertCircle } from 'react-icons/fi';
+import { FiX, FiCalendar, FiClock, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import ResourceService from '../../services/ResourceService';
 
 const ResourceCalendarModal = ({ resource, onClose }) => {

@@ -108,6 +108,21 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Image size should be less than 2MB', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setResourceDraft({ ...resourceDraft, imageUrl: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const createResource = async (e) => {
     e.preventDefault();
     if (Number(resourceDraft.quantity) < 0) {
@@ -437,13 +452,50 @@ const AdminDashboard = () => {
                   </select>
                 </div>
                 <div className="space-y-1 col-span-full">
-                  <label className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest ml-1">Asset Image URL</label>
-                  <input
-                    value={resourceDraft.imageUrl}
-                    onChange={(e) => setResourceDraft({ ...resourceDraft, imageUrl: e.target.value })}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-white focus:ring-2 focus:ring-[#FACC15] outline-none transition-all placeholder:text-white/20"
-                  />
+                  <label className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest ml-1 text-yellow-500">Asset Image (Link or Upload)</label>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 space-y-2">
+                       <input
+                        value={resourceDraft.imageUrl}
+                        onChange={(e) => setResourceDraft({ ...resourceDraft, imageUrl: e.target.value })}
+                        placeholder="https://images.unsplash.com/..."
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-white focus:ring-2 focus:ring-[#FACC15] outline-none transition-all placeholder:text-white/20 text-sm"
+                      />
+                      <div className="flex items-center gap-3">
+                        <label className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl cursor-pointer transition-all border border-dashed border-white/20">
+                          <FiPlus /> <span>Pick Local Image</span>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={handleFileChange}
+                          />
+                        </label>
+                        {resourceDraft.imageUrl && (
+                          <button 
+                            type="button"
+                            onClick={() => setResourceDraft({ ...resourceDraft, imageUrl: '' })}
+                            className="bg-red-500/20 hover:bg-red-500/40 text-red-500 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {resourceDraft.imageUrl && (
+                      <div className="w-full md:w-32 h-32 rounded-2xl border-2 border-[#FACC15]/30 overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
+                        <img 
+                          src={resourceDraft.imageUrl} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentNode.innerHTML = '<span class="text-[10px] text-red-400 p-2 text-center font-bold uppercase">Invalid URL</span>';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <button
                   type="submit"

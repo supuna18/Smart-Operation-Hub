@@ -52,6 +52,21 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
         }
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Image size should be less than 2MB', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, imageUrl: reader.result });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
             <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -188,16 +203,37 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
                         
                         <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
-                                <FiImage size={14} className="text-yellow-500" /> Resource Image URL
+                                <FiImage size={14} className="text-yellow-500" /> Resource Image (Link or Upload)
                             </label>
-                            <input
-                                type="text"
-                                name="imageUrl"
-                                value={formData.imageUrl}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none shadow-sm"
-                                placeholder="https://images.unsplash.com/..."
-                            />
+                            <div className="flex flex-col gap-3">
+                                <input
+                                    type="text"
+                                    name="imageUrl"
+                                    value={formData.imageUrl}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none shadow-sm text-sm"
+                                    placeholder="https://images.unsplash.com/..."
+                                />
+                                <div className="flex items-center gap-4">
+                                    <label className="flex-1 flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 py-2.5 px-4 rounded-xl border-2 border-dashed border-slate-200 cursor-pointer transition-all text-sm font-bold">
+                                        <FiPlus /> Pick from Computer
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                                    </label>
+                                    
+                                    {formData.imageUrl && (
+                                        <div className="w-16 h-16 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 relative group">
+                                            <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                            <button 
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                                                className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <FiX size={16} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
