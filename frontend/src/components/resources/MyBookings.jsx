@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import ResourceService from '../../services/ResourceService';
 import { getUser, isAdmin } from '../../utils/auth';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiInfo } from 'react-icons/fi';
 
 const MyBookings = () => {
+    const { showToast } = useToast();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const user = getUser();
@@ -23,6 +25,7 @@ const MyBookings = () => {
                 setBookings(response.data);
             } catch (error) {
                 console.error('Error fetching bookings:', error);
+                showToast('Unable to load your bookings. Please try again later.', 'error');
             } finally {
                 setLoading(false);
             }

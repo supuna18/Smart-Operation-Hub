@@ -12,11 +12,13 @@ import Footer from './components/Footer';
 
 import ResourceManagement from './components/resources/ResourceManagement';
 import MyBookings from './components/resources/MyBookings';
+import { ToastProvider } from './context/ToastContext';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col">
+    <ToastProvider>
+      <Router>
+        <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col">
         {/* Navbar is persistent across pages */}
         <Navbar />
 
@@ -57,6 +59,7 @@ function App() {
         <Footer />
       </div>
     </Router>
+    </ToastProvider>
   );
 }
 

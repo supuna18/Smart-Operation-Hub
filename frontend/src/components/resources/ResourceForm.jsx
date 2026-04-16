@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import ResourceService from '../../services/ResourceService';
-import { FiX, FiCheck, FiInfo, FiLayers, FiUsers, FiMapPin, FiEdit2, FiPlus } from 'react-icons/fi';
+import { useToast } from '../../context/ToastContext';
+import { FiX, FiCheck, FiInfo, FiLayers, FiUsers, FiMapPin, FiEdit2, FiPlus, FiImage } from 'react-icons/fi';
 
 const ResourceForm = ({ resource, onClose, onSave }) => {
+    const { showToast } = useToast();
     const [formData, setFormData] = useState({
         name: '',
         type: 'Lecture Hall',
         capacity: 0,
         location: '',
         status: 'ACTIVE',
-        availabilityWindows: ''
+        availabilityWindows: '',
+        imageUrl: ''
     });
 
     useEffect(() => {
@@ -28,18 +31,24 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (Number(formData.capacity) < 0) {
+            showToast('Capacity cannot be negative.', 'error');
+            return;
+        }
         try {
             if (resource?.id) {
                 await ResourceService.updateResource(resource.id, formData);
+                showToast('Resource updated successfully!', 'success');
             } else {
                 await ResourceService.createResource(formData);
+                showToast('Resource added successfully!', 'success');
             }
             onSave();
             onClose();
         } catch (error) {
             console.error('Error saving resource:', error);
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to save resource. Please check the backend connection.';
-            alert(`Error: ${errorMessage}`);
+            const errorMessage = error.response?.data?.message || 'Failed to save resource.';
+            showToast(errorMessage, 'error');
         }
     };
 
@@ -112,6 +121,7 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
                                     value={formData.capacity}
                                     onChange={handleChange}
                                     required
+                                    min="0"
                                     className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none shadow-sm"
                                     placeholder="Seats"
                                 />
@@ -173,6 +183,20 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
                                 onChange={handleChange}
                                 className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none shadow-sm"
                                 placeholder="E.g. 08:00 AM - 05:00 PM (Mon-Fri)"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-2">
+                                <FiImage size={14} className="text-yellow-500" /> Resource Image URL
+                            </label>
+                            <input
+                                type="text"
+                                name="imageUrl"
+                                value={formData.imageUrl}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none shadow-sm"
+                                placeholder="https://images.unsplash.com/..."
                             />
                         </div>
                     </div>

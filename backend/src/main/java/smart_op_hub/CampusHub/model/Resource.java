@@ -20,4 +20,5 @@ public class Resource {
     private String location;
     private String status;
     private String availabilityWindows; // New field for operating hours
+    private String imageUrl; // Field for resource image URL
 }

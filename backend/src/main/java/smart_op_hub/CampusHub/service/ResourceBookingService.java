@@ -27,6 +27,10 @@ public class ResourceBookingService {
         return repository.findAll();
     }
 
+    public List<ResourceBooking> getBookingsByResourceId(String resourceId) {
+        return repository.findByResourceId(resourceId);
+    }
+
     public ResourceBooking updateBookingStatus(String id, String status) {
         return repository.findById(id).map(booking -> {
             booking.setStatus(status);

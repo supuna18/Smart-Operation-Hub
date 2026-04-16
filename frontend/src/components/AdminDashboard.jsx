@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { getUser, clearAuth } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 import heroImage from '../assets/reso1.jpeg';
-import { FiPlus, FiTrash2, FiActivity, FiBox, FiLayers, FiInfo, FiTrendingUp } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiActivity, FiBox, FiLayers, FiInfo, FiTrendingUp, FiDownload } from 'react-icons/fi';
+import confetti from 'canvas-confetti';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const RESOURCE_TYPES = [
   'Lecture Hall', 'Laboratory', 'Equipment', 'Study Area', 'Lounge', 'Sports Facility', 'Other'
@@ -22,8 +26,9 @@ const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [activeTab, setActiveTab] = useState('users');
   const [facilityDraft, setFacilityDraft] = useState({ name: '', description: '', location: '', capacity: '' });
-  const [resourceDraft, setResourceDraft] = useState({ name: '', type: '', quantity: '', status: '' });
+  const [resourceDraft, setResourceDraft] = useState({ name: '', type: '', quantity: '', status: '', imageUrl: '' });
   const [error, setError] = useState('');
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const loadAll = async () => {
@@ -61,8 +66,9 @@ const AdminDashboard = () => {
     try {
       const response = await api.put(`/admin/users/${id}`, { role });
       setUsers((current) => current.map((item) => (item.id === id ? response.data : item)));
+      showToast('User role updated successfully!', 'success');
     } catch (err) {
-      setError('Failed to update user role.');
+      showToast('Failed to update user role.', 'error');
     }
   };
 
@@ -70,13 +76,18 @@ const AdminDashboard = () => {
     try {
       await api.delete(`/admin/users/${id}`);
       setUsers((current) => current.filter((item) => item.id !== id));
+      showToast('User removed successfully.', 'success');
     } catch (err) {
-      setError('Failed to remove user.');
+      showToast('Failed to remove user.', 'error');
     }
   };
 
   const createFacility = async (e) => {
     e.preventDefault();
+    if (Number(facilityDraft.capacity) < 0) {
+      showToast('Capacity cannot be negative.', 'error');
+      return;
+    }
     try {
       const response = await api.post('/admin/facilities', {
         ...facilityDraft,
@@ -84,22 +95,42 @@ const AdminDashboard = () => {
       });
       setFacilities((current) => [...current, response.data]);
       setFacilityDraft({ name: '', description: '', location: '', capacity: '' });
+      showToast('Facility added successfully!', 'success');
+      
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#FACC15', '#262626']
+      });
     } catch (err) {
-      setError('Failed to create facility.');
+      showToast('Failed to create facility.', 'error');
     }
   };
 
   const createResource = async (e) => {
     e.preventDefault();
+    if (Number(resourceDraft.quantity) < 0) {
+      showToast('Quantity cannot be negative.', 'error');
+      return;
+    }
     try {
       const response = await api.post('/admin/resources', {
         ...resourceDraft,
         quantity: Number(resourceDraft.quantity),
       });
       setResources((current) => [...current, response.data]);
-      setResourceDraft({ name: '', type: '', quantity: '', status: '' });
+      setResourceDraft({ name: '', type: '', quantity: '', status: '', imageUrl: '' });
+      showToast('Resource registered successfully!', 'success');
+      
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#FACC15', '#262626']
+      });
     } catch (err) {
-      setError('Failed to create resource.');
+      showToast('Failed to create resource.', 'error');
     }
   };
 
@@ -107,8 +138,9 @@ const AdminDashboard = () => {
     try {
       await api.delete(`/admin/facilities/${id}`);
       setFacilities((current) => current.filter((item) => item.id !== id));
+      showToast('Facility deleted.', 'success');
     } catch (err) {
-      setError('Failed to delete facility.');
+      showToast('Failed to delete facility.', 'error');
     }
   };
 
@@ -116,8 +148,9 @@ const AdminDashboard = () => {
     try {
       await api.delete(`/admin/resources/${id}`);
       setResources((current) => current.filter((item) => item.id !== id));
+      showToast('Resource removed from inventory.', 'success');
     } catch (err) {
-      setError('Failed to delete resource.');
+      showToast('Failed to delete resource.', 'error');
     }
   };
 
@@ -125,8 +158,9 @@ const AdminDashboard = () => {
     try {
       const response = await api.put(`/admin/safety/reports/${id}/status`, { status });
       setSafetyReports((current) => current.map((item) => (item.id === id ? response.data : item)));
+      showToast(`Report ${status.toLowerCase()} successfully.`, 'success');
     } catch (err) {
-      setError('Failed to update report status.');
+      showToast('Failed to update report status.', 'error');
     }
   };
 
@@ -134,9 +168,37 @@ const AdminDashboard = () => {
     try {
       const response = await api.put(`/resources/bookings/${id}/status?status=${status}`);
       setBookings((current) => current.map((item) => (item.id === id ? response.data : item)));
+      showToast(`Booking ${status.toLowerCase()}!`, 'success');
     } catch (err) {
-      setError('Failed to update booking status.');
+      showToast('Failed to update booking status.', 'error');
     }
+  };
+
+  const generatePDFReport = () => {
+    const doc = new jsPDF();
+    const tableColumn = ["Asset Name", "Type", "Status", "Quantity", "Location"];
+    const tableRows = [];
+
+    resources.forEach(res => {
+      const resourceData = [
+        res.name,
+        res.type,
+        res.status,
+        res.quantity,
+        res.location || 'N/A'
+      ];
+      tableRows.push(resourceData);
+    });
+
+    doc.setFontSize(20);
+    doc.text("Campus Resource Inventory Report", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    
+    doc.autoTable(tableColumn, tableRows, { startY: 40, theme: 'grid', headStyles: { fillColor: [250, 204, 21], textColor: [38, 38, 38] } });
+    doc.save(`Campus_Inventory_${new Date().getTime()}.pdf`);
+    showToast('Report generated successfully!', 'success');
   };
 
   const currentUser = getUser();
@@ -238,6 +300,7 @@ const AdminDashboard = () => {
                 onChange={(e) => setFacilityDraft({ ...facilityDraft, capacity: e.target.value })}
                 placeholder="Capacity"
                 type="number"
+                min="0"
                 className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
                 required
               />
@@ -354,6 +417,7 @@ const AdminDashboard = () => {
                     onChange={(e) => setResourceDraft({ ...resourceDraft, quantity: e.target.value })}
                     placeholder="00"
                     type="number"
+                    min="0"
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-white focus:ring-2 focus:ring-[#FACC15] outline-none transition-all placeholder:text-white/20"
                     required
                   />
@@ -371,6 +435,15 @@ const AdminDashboard = () => {
                       <option key={status} value={status} className="bg-[#262626] font-bold">{status}</option>
                     ))}
                   </select>
+                </div>
+                <div className="space-y-1 col-span-full">
+                  <label className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest ml-1">Asset Image URL</label>
+                  <input
+                    value={resourceDraft.imageUrl}
+                    onChange={(e) => setResourceDraft({ ...resourceDraft, imageUrl: e.target.value })}
+                    placeholder="https://images.unsplash.com/..."
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-white focus:ring-2 focus:ring-[#FACC15] outline-none transition-all placeholder:text-white/20"
+                  />
                 </div>
                 <button
                   type="submit"
@@ -548,6 +621,15 @@ const AdminDashboard = () => {
 
         {activeTab === 'analytics' && analytics && (
           <div className="space-y-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black text-[#262626]">System Insights</h2>
+              <button 
+                onClick={generatePDFReport}
+                className="flex items-center gap-2 bg-[#262626] text-[#FACC15] px-6 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
+              >
+                <FiDownload size={18} /> Download Inventory Report
+              </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 { label: 'Total Users', value: analytics.userCount, color: 'blue' },

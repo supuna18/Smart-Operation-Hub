@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import ResourceService from '../../services/ResourceService';
-import { FiSearch, FiEdit2, FiTrash2, FiPlus, FiFilter, FiUsers, FiMapPin, FiCalendar } from 'react-icons/fi';
+import { FiSearch, FiEdit2, FiTrash2, FiPlus, FiFilter, FiUsers, FiMapPin, FiCalendar, FiBox } from 'react-icons/fi';
 import { isAdmin, getUser } from '../../utils/auth';
+import { useToast } from '../../context/ToastContext';
+import { ResourceCardSkeleton } from '../common/Skeleton';
+import confetti from 'canvas-confetti';
+import ResourceCalendarModal from './ResourceCalendarModal';
 
 const ResourceList = ({ onEdit, onAdd }) => {
+    const { showToast } = useToast();
     const [resources, setResources] = useState([]);
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('');
@@ -12,6 +17,7 @@ const ResourceList = ({ onEdit, onAdd }) => {
     const [filterLocation, setFilterLocation] = useState('');
     const [loading, setLoading] = useState(true);
     const [userBookings, setUserBookings] = useState([]);
+    const [calendarResource, setCalendarResource] = useState(null);
     const admin = React.useMemo(() => isAdmin(), []);
     const user = React.useMemo(() => getUser(), []);
 
@@ -65,11 +71,20 @@ const ResourceList = ({ onEdit, onAdd }) => {
                 username: user.username,
             };
             await ResourceService.createBooking(bookingData);
-            alert(`Booking request for ${resource.name} submitted successfully!`);
+            showToast(`Booking request for ${resource.name} submitted successfully!`, 'success');
+            
+            // Trigger celebration
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FACC15', '#262626', '#ffffff']
+            });
+
             fetchUserBookings(); // Refresh bookings after submission
         } catch (error) {
             console.error('Error booking resource:', error);
-            alert('Failed to submit booking request.');
+            showToast('Failed to submit booking request.', 'error');
         }
     };
 
@@ -138,6 +153,7 @@ const ResourceList = ({ onEdit, onAdd }) => {
                         <input 
                             type="number" 
                             placeholder="Min Capacity..." 
+                            min="0"
                             className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none text-sm"
                             value={filterMinCapacity}
                             onChange={(e) => setFilterMinCapacity(e.target.value)}
@@ -159,9 +175,8 @@ const ResourceList = ({ onEdit, onAdd }) => {
             {/* List */}
             <div className="p-6 md:p-8">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-yellow-500 animate-spin" />
-                        <p className="text-slate-500 font-medium text-sm">Loading assets...</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[1, 2, 3, 4, 5, 6].map(i => <ResourceCardSkeleton key={i} />)}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -170,6 +185,28 @@ const ResourceList = ({ onEdit, onAdd }) => {
                                 {/* Top Color Bar */}
                                 <div className={`h-1.5 w-full ${resource.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
                                 
+                                {/* Image Section */}
+                                <div className="h-44 w-full relative overflow-hidden bg-slate-100 group-hover:after:opacity-20 flex items-center justify-center">
+                                    {resource.imageUrl ? (
+                                        <img 
+                                            src={resource.imageUrl} 
+                                            alt={resource.name} 
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.style.display = 'none';
+                                                e.target.parentNode.innerHTML = '<div class="text-slate-300 flex flex-col items-center gap-2"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="40" width="40" xmlns="http://www.w3.org/2000/svg"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>';
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-2 text-slate-300">
+                                            <FiBox size={40} />
+                                            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">No Image Available</span>
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors pointer-events-none" />
+                                </div>
+
                                 <div className="p-5 flex-1">
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
@@ -227,38 +264,54 @@ const ResourceList = ({ onEdit, onAdd }) => {
                                         {resource.status === 'ACTIVE' ? 'Available' : 'Maintenance'}
                                     </span>
                                 </div>
-                                {!admin && (
-                                    <div className="px-5 py-4 border-t border-slate-100">
-                                        {getBookingForResource(resource.id) ? (
-                                            <div className={`w-full flex flex-col items-center justify-center py-2 rounded-lg border bg-opacity-5 font-bold ${
-                                                getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
-                                                getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-50 border-rose-200 text-rose-700' :
-                                                'bg-yellow-50 border-yellow-200 text-yellow-700'
-                                            }`}>
-                                                <span className="text-[10px] uppercase tracking-widest opacity-60 mb-0.5">Your Booking Status</span>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`w-2 h-2 rounded-full ${
-                                                        getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-500' :
-                                                        getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-500' :
-                                                        'bg-yellow-500 animate-pulse'
-                                                    }`} />
-                                                    <span className="text-sm">{getBookingForResource(resource.id).status}</span>
-                                                </div>
+                                
+                                <div className="px-5 py-4 flex gap-2 border-t border-slate-50">
+                                    <button 
+                                        onClick={() => setCalendarResource(resource)}
+                                        className="flex-1 flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 py-2 rounded-lg transition-all font-bold text-xs"
+                                    >
+                                        <FiCalendar size={14} /> Schedule
+                                    </button>
+                                    {!admin && !getBookingForResource(resource.id) && (
+                                        <button 
+                                            onClick={() => handleBook(resource)}
+                                            className="flex-1 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg transition-all font-bold text-xs shadow-sm"
+                                            disabled={resource.status !== 'ACTIVE'}
+                                        >
+                                            Book Now
+                                        </button>
+                                    )}
+                                </div>
+
+                                {!admin && getBookingForResource(resource.id) && (
+                                    <div className="px-5 pb-4">
+                                        <div className={`w-full flex flex-col items-center justify-center py-2 rounded-lg border bg-opacity-5 font-bold ${
+                                            getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                                            getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-50 border-rose-200 text-rose-700' :
+                                            'bg-yellow-50 border-yellow-200 text-yellow-700'
+                                        }`}>
+                                            <span className="text-[10px] uppercase tracking-widest opacity-60 mb-0.5">Your Booking Status</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`w-2 h-2 rounded-full ${
+                                                    getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-500' :
+                                                    getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-500' :
+                                                    'bg-yellow-500 animate-pulse'
+                                                }`} />
+                                                <span className="text-sm">{getBookingForResource(resource.id).status}</span>
                                             </div>
-                                        ) : (
-                                            <button 
-                                                onClick={() => handleBook(resource)}
-                                                className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-lg transition-all font-bold shadow-sm text-sm"
-                                                disabled={resource.status !== 'ACTIVE'}
-                                            >
-                                                <FiCalendar size={16} /> Book Now
-                                            </button>
-                                        )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         ))}
                     </div>
+                )}
+
+                {calendarResource && (
+                    <ResourceCalendarModal 
+                        resource={calendarResource} 
+                        onClose={() => setCalendarResource(null)} 
+                    />
                 )}
 
                 {!loading && resources.length === 0 && (

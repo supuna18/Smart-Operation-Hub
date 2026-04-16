@@ -26,6 +26,11 @@ public class ResourceBookingController {
         return ResponseEntity.ok(service.getMyBookings(userId));
     }
 
+    @GetMapping("/resource/{resourceId}")
+    public ResponseEntity<List<ResourceBooking>> getBookingsByResourceId(@PathVariable String resourceId) {
+        return ResponseEntity.ok(service.getBookingsByResourceId(resourceId));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<List<ResourceBooking>> getAllBookings() {

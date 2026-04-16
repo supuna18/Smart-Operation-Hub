@@ -42,6 +42,10 @@ const updateBookingStatus = (id, status) => {
     return api.put(`${API_URL}/bookings/${id}/status?status=${status}`);
 };
 
+const getBookingsByResourceId = (resourceId) => {
+    return api.get(`${API_URL}/bookings/resource/${resourceId}`);
+};
+
 const ResourceService = {
     getAllResources,
     getResourceById,
@@ -52,7 +56,8 @@ const ResourceService = {
     createBooking,
     getMyBookings,
     getAllBookings,
-    updateBookingStatus
+    updateBookingStatus,
+    getBookingsByResourceId
 };
 
 export default ResourceService;
