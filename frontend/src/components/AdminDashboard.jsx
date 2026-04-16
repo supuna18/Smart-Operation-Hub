@@ -18,7 +18,7 @@ const AdminDashboard = () => {
   const loadAll = async () => {
     try {
       const [usersResponse, facilitiesResponse, resourcesResponse, safetyResponse, analyticsResponse] = await Promise.all([
-        api.get('/admin/users'),
+        api.get('/users'),
         api.get('/admin/facilities'),
         api.get('/admin/resources'),
         api.get('/admin/safety/reports'),
@@ -46,7 +46,7 @@ const AdminDashboard = () => {
 
   const updateUserRole = async (id, role) => {
     try {
-      const response = await api.put(`/admin/users/${id}`, { role });
+      const response = await api.patch(`/users/${id}/role`, { role });
       setUsers((current) => current.map((item) => (item.id === id ? response.data : item)));
     } catch (err) {
       setError('Failed to update user role.');
@@ -55,7 +55,7 @@ const AdminDashboard = () => {
 
   const deleteUser = async (id) => {
     try {
-      await api.delete(`/admin/users/${id}`);
+      await api.delete(`/users/${id}`);
       setUsers((current) => current.filter((item) => item.id !== id));
     } catch (err) {
       setError('Failed to remove user.');
@@ -152,7 +152,6 @@ const AdminDashboard = () => {
                   <tr>
                     <th className="px-6 py-4">Name</th>
                     <th className="px-6 py-4">Email</th>
-                    <th className="px-6 py-4">Role</th>
                     <th className="px-6 py-4">Actions</th>
                   </tr>
                 </thead>
@@ -161,21 +160,19 @@ const AdminDashboard = () => {
                     <tr key={user.id} className="border-t border-gray-100 hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-800">{user.username}</td>
                       <td className="px-6 py-4 text-gray-600">{user.email}</td>
-                      <td className="px-6 py-4 text-gray-600">
+                      <td className="px-6 py-4 flex items-center space-x-3">
                         <select
                           value={user.role}
                           onChange={(e) => updateUserRole(user.id, e.target.value)}
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                          className="rounded-full border border-gray-200 px-3 py-1.5 text-sm bg-white hover:bg-gray-50 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#FACC15]"
                         >
                           <option value="Admin">Admin</option>
                           <option value="Student">Student</option>
                           <option value="Lecturer">Lecturer</option>
                         </select>
-                      </td>
-                      <td className="px-6 py-4 space-x-2">
                         <button
                           onClick={() => deleteUser(user.id)}
-                          className="rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200"
+                          className="rounded-full bg-red-100 px-4 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
                         >
                           Delete
                         </button>
