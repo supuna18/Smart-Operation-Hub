@@ -48,9 +48,17 @@ const CSS = `
     display:flex;
     font-family:'Poppins',sans-serif;
     background:#FAFAF8;
-    min-height:calc(100vh - 73px);
+    height:calc(100vh - 73px);
+    overflow:hidden;
   }
-  .adm-main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .adm-main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    overflow-y:auto;
+    scroll-behavior:smooth;
+  }
 
   /* ── SIDEBAR (default = desktop) ── */
   .adm-sb{
@@ -63,7 +71,9 @@ const CSS = `
     transition:width .4s cubic-bezier(0.4, 0, 0.2, 1), transform .4s ease, opacity .3s ease;
     will-change: width, transform, opacity;
     width:260px;
+    height: 100%;
     align-self:flex-start;
+    overflow-y:auto;
   }
   .adm-sb.collapsed{width:80px;}
   .adm-sb.hidden-sb{width:0; opacity: 0; border-right: none;}
@@ -79,7 +89,6 @@ const CSS = `
       transform:translateX(-100%);
       z-index:200;
       opacity: 1!important;
-      overflow-y:auto;
     }
     .adm-sb.sb-open{transform:translateX(0);}
     .adm-sb.hidden-sb{width:260px!important; opacity: 1!important;}
@@ -92,11 +101,8 @@ const CSS = `
   /* ── DESKTOP (> 900px): sticky sidebar ── */
   @media(min-width:901px){
     .adm-sb{
-      position:sticky;
-      top:73px; /* Stick below navbar */
-      height:calc(100vh - 73px);
+      position:relative;
       transform:none!important;
-      overflow-y:auto;
     }
     .adm-overlay{display:none!important;}
     .mobile-only{display:none!important;}
@@ -198,7 +204,9 @@ const AdminDashboard = () => {
 
   // Smooth scroll to top on tab change
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [activeTab]);
 
   const logout = () => { clearAuth(); navigate('/login'); };
