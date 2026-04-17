@@ -178,12 +178,7 @@ const Navbar = () => {
                 <span className="text-sm font-semibold text-[#262626] hidden lg:block">{user?.username}</span>
               </Link>
 
-              <button
-                onClick={handleLogout}
-                className="text-[#262626] font-semibold hover:text-red-500 transition-colors text-sm"
-              >
-                Logout
-              </button>
+
             </>
           )}
         </div>
@@ -235,16 +230,7 @@ const Navbar = () => {
                       Admin Dashboard
                     </Link>
                   )}
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      clearAuth();
-                      navigate('/login');
-                    }}
-                    className="text-[#262626] text-center font-semibold p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-                  >
-                    Logout
-                  </button>
+
                 </>
               )}
             </div>
