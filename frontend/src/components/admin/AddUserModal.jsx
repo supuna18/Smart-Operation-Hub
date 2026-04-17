@@ -20,7 +20,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="relative bg-white p-10 rounded-[3rem] w-full max-w-md shadow-2xl">
-            <h2 className="text-2xl font-black mb-6">Create New Member</h2>
+            <h2 className="text-2xl font-black mb-6 text-[#FACC15]">Create New Member</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input type="text" placeholder="Username" className="w-full p-4 bg-gray-50 rounded-2xl border" onChange={(e) => setNewUser({...newUser, username: e.target.value})} />
               <input type="email" placeholder="Email" className="w-full p-4 bg-gray-50 rounded-2xl border" onChange={(e) => setNewUser({...newUser, email: e.target.value})} />

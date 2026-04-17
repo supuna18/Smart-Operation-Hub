@@ -59,6 +59,8 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  const isAdminView = currentPath === '/AdminDashboard';
+
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 py-5 sticky top-0 bg-white/70 backdrop-blur-xl z-50 border-b border-gray-200/30 font-poppins transition-all">
       <Link to="/" className="text-2xl font-bold tracking-tight text-[#262626]">
@@ -67,7 +69,7 @@ const Navbar = () => {
       
       {/* Desktop Menu */}
       <div className="hidden md:flex space-x-10 font-medium items-center">
-        {navLinks.map((link) => {
+        {!isAdminView && navLinks.map((link) => {
           const isActive = currentPath === link.path || (link.isHash && location.hash === link.path.split('#')[1]);
           return (
             <Link 
