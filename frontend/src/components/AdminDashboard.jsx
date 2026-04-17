@@ -1,445 +1,436 @@
-import React, { useEffect, useState } from 'react';
-import api from '../utils/api';
+import React, { useState } from 'react';
 import { getUser, clearAuth } from '../utils/auth';
+import UserManagement from './admin/UserManagement';
+import {
+  Users, Building2, Wrench, BookOpen,
+  LayoutDashboard, ChevronRight, ShieldCheck,
+  Bell, Settings, LogOut, TrendingUp, AlertCircle
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+/* ─── Brand tokens (matches About Us page) ─── */
+const GOLD   = '#FACC15';
+const DARK   = '#262626';
+const WHITE  = '#FFFFFF';
+
+const TABS = [
+  { id: 'overview',    label: 'Overview',    icon: LayoutDashboard },
+  { id: 'users',       label: 'Users',        icon: Users },
+  { id: 'facilities',  label: 'Facilities',   icon: Building2 },
+  { id: 'resources',   label: 'Resources',    icon: BookOpen },
+  { id: 'maintenance', label: 'Maintenance',  icon: Wrench },
+];
+
+const STATS = [
+  { label: 'Total Users',      value: '1,284', change: '+12%', up: true,  icon: Users    },
+  { label: 'Facilities',       value: '48',    change: '+3%',  up: true,  icon: Building2 },
+  { label: 'Active Resources', value: '326',   change: '+8%',  up: true,  icon: BookOpen  },
+  { label: 'Open Tickets',     value: '17',    change: '-5%',  up: false, icon: Wrench   },
+];
+
+/* ─── Inline style helpers ─── */
+const S = {
+  sidebar: (open) => ({
+    width: open ? 260 : 80,
+    transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)',
+    background: DARK,
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'sticky',
+    top: 0,
+    height: '100vh',
+    overflowX: 'hidden',
+    flexShrink: 0,
+    zIndex: 10,
+    borderRight: `1px solid rgba(250,204,21,0.12)`,
+  }),
+  navBtn: (active, open) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 14,
+    width: '100%',
+    padding: open ? '12px 18px' : '12px',
+    justifyContent: open ? 'flex-start' : 'center',
+    borderRadius: 12,
+    border: 'none',
+    cursor: 'pointer',
+    marginBottom: 4,
+    transition: 'all 0.2s ease',
+    background: active ? `${GOLD}18` : 'transparent',
+    color: active ? GOLD : 'rgba(255,255,255,0.5)',
+    fontFamily: "'Poppins', sans-serif",
+    fontWeight: active ? 700 : 500,
+    fontSize: 14,
+    position: 'relative',
+    outline: 'none',
+    whiteSpace: 'nowrap',
+  }),
+};
+
 const AdminDashboard = () => {
-  const [users, setUsers] = useState([]);
-  const [facilities, setFacilities] = useState([]);
-  const [resources, setResources] = useState([]);
-  const [safetyReports, setSafetyReports] = useState([]);
-  const [analytics, setAnalytics] = useState(null);
-  const [activeTab, setActiveTab] = useState('users');
-  const [facilityDraft, setFacilityDraft] = useState({ name: '', description: '', location: '', capacity: '' });
-  const [resourceDraft, setResourceDraft] = useState({ name: '', type: '', quantity: '', status: '' });
-  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
-
-  const loadAll = async () => {
-    try {
-      const [usersResponse, facilitiesResponse, resourcesResponse, safetyResponse, analyticsResponse] = await Promise.all([
-        api.get('/admin/users'),
-        api.get('/admin/facilities'),
-        api.get('/admin/resources'),
-        api.get('/admin/safety/reports'),
-        api.get('/admin/analytics'),
-      ]);
-
-      setUsers(usersResponse.data);
-      setFacilities(facilitiesResponse.data);
-      setResources(resourcesResponse.data);
-      setSafetyReports(safetyResponse.data);
-      setAnalytics(analyticsResponse.data);
-    } catch (err) {
-      setError('Unable to load admin data. Please make sure you are logged in as an admin.');
-    }
-  };
-
-  useEffect(() => {
-    loadAll();
-  }, []);
-
-  const handleLogout = () => {
-    clearAuth();
-    navigate('/login');
-  };
-
-  const updateUserRole = async (id, role) => {
-    try {
-      const response = await api.put(`/admin/users/${id}`, { role });
-      setUsers((current) => current.map((item) => (item.id === id ? response.data : item)));
-    } catch (err) {
-      setError('Failed to update user role.');
-    }
-  };
-
-  const deleteUser = async (id) => {
-    try {
-      await api.delete(`/admin/users/${id}`);
-      setUsers((current) => current.filter((item) => item.id !== id));
-    } catch (err) {
-      setError('Failed to remove user.');
-    }
-  };
-
-  const createFacility = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.post('/admin/facilities', {
-        ...facilityDraft,
-        capacity: Number(facilityDraft.capacity),
-      });
-      setFacilities((current) => [...current, response.data]);
-      setFacilityDraft({ name: '', description: '', location: '', capacity: '' });
-    } catch (err) {
-      setError('Failed to create facility.');
-    }
-  };
-
-  const createResource = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.post('/admin/resources', {
-        ...resourceDraft,
-        quantity: Number(resourceDraft.quantity),
-      });
-      setResources((current) => [...current, response.data]);
-      setResourceDraft({ name: '', type: '', quantity: '', status: '' });
-    } catch (err) {
-      setError('Failed to create resource.');
-    }
-  };
-
-  const deleteFacility = async (id) => {
-    try {
-      await api.delete(`/admin/facilities/${id}`);
-      setFacilities((current) => current.filter((item) => item.id !== id));
-    } catch (err) {
-      setError('Failed to delete facility.');
-    }
-  };
-
-  const deleteResource = async (id) => {
-    try {
-      await api.delete(`/admin/resources/${id}`);
-      setResources((current) => current.filter((item) => item.id !== id));
-    } catch (err) {
-      setError('Failed to delete resource.');
-    }
-  };
-
-  const updateSafetyStatus = async (id, status) => {
-    try {
-      const response = await api.put(`/admin/safety/reports/${id}/status`, { status });
-      setSafetyReports((current) => current.map((item) => (item.id === id ? response.data : item)));
-    } catch (err) {
-      setError('Failed to update report status.');
-    }
-  };
-
   const currentUser = getUser();
 
+  const handleLogout = () => { clearAuth(); navigate('/login'); };
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-10 px-4 md:px-10">
-      <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl p-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
-          <div>
-            <h1 className="text-4xl font-bold text-[#262626]">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-2">Manage users, facilities, and campus resources.</p>
-            <p className="text-gray-500 mt-1 text-sm">Signed in as {currentUser?.username || 'Admin'} ({currentUser?.email})</p>
-          </div>
+    <div style={{ fontFamily: "'Poppins', sans-serif", minHeight: '100vh', background: '#FAFAF8', display: 'flex' }}>
+
+      {/* ════════════════ SIDEBAR ════════════════ */}
+      <aside style={S.sidebar(sidebarOpen)}>
+
+        {/* Logo */}
+        <div style={{ padding: '26px 18px 20px', borderBottom: '1px solid rgba(250,204,21,0.1)' }}>
           <button
-            onClick={handleLogout}
-            className="inline-flex items-center justify-center rounded-full bg-[#FACC15] px-6 py-3 font-semibold text-[#262626] transition hover:bg-yellow-300"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: 0 }}
           >
-            Sign Out
+            <div style={{
+              width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+              background: GOLD,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: `0 4px 14px ${GOLD}55`,
+            }}>
+              <ShieldCheck size={20} color={DARK} strokeWidth={2.5} />
+            </div>
+            {sidebarOpen && (
+              <span style={{ color: WHITE, fontWeight: 800, fontSize: 16, letterSpacing: '-0.3px', whiteSpace: 'nowrap' }}>
+                Smart<span style={{ color: GOLD }}>Sync</span> Admin
+              </span>
+            )}
           </button>
         </div>
 
-        {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">{error}</div>}
+        {/* Label */}
+        {sidebarOpen && (
+          <div style={{ padding: '18px 20px 6px' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.14em' }}>
+              Navigation
+            </span>
+          </div>
+        )}
 
-        <div className="flex flex-wrap gap-3 mb-10">
-          {['users', 'facilities', 'resources', 'safety', 'analytics'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-3 rounded-full font-semibold transition ${activeTab === tab ? 'bg-[#262626] text-[#FACC15]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-            >
-              {tab === 'safety' ? 'Safety Approvals' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+        {/* Nav */}
+        <nav style={{ padding: '4px 12px', flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+          {TABS.map(({ id, label, icon: Icon }) => {
+            const active = activeTab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                style={S.navBtn(active, sidebarOpen)}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = WHITE; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; } }}
+              >
+                {active && (
+                  <span style={{ position: 'absolute', left: 0, top: '18%', bottom: '18%', width: 3, background: GOLD, borderRadius: 99 }} />
+                )}
+                <Icon size={20} strokeWidth={active ? 2.5 : 2} style={{ flexShrink: 0 }} />
+                {sidebarOpen && <span>{label}</span>}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Bottom user card + logout */}
+        <div style={{ padding: '14px 12px 20px', borderTop: '1px solid rgba(250,204,21,0.1)' }}>
+          {/* Avatar row */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: sidebarOpen ? '12px 14px' : '12px',
+            justifyContent: sidebarOpen ? 'flex-start' : 'center',
+            borderRadius: 12,
+            background: 'rgba(255,255,255,0.05)',
+            marginBottom: 8,
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+              background: GOLD,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 800, fontSize: 14, color: DARK,
+            }}>
+              {currentUser?.username?.charAt(0).toUpperCase()}
+            </div>
+            {sidebarOpen && (
+              <div style={{ overflow: 'hidden' }}>
+                <p style={{ margin: 0, color: WHITE, fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {currentUser?.username}
+                </p>
+                <p style={{ margin: 0, color: `${GOLD}99`, fontSize: 11, fontWeight: 600 }}>Administrator</p>
+              </div>
+            )}
+          </div>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              width: '100%', padding: sidebarOpen ? '11px 14px' : '11px',
+              justifyContent: sidebarOpen ? 'flex-start' : 'center',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.15)',
+              borderRadius: 12, cursor: 'pointer',
+              color: '#f87171', fontFamily: "'Poppins', sans-serif",
+              fontWeight: 600, fontSize: 13, transition: 'all 0.2s', outline: 'none',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.16)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+          >
+            <LogOut size={17} style={{ flexShrink: 0 }} />
+            {sidebarOpen && <span>Logout</span>}
+          </button>
         </div>
+      </aside>
 
-        {activeTab === 'users' && (
+      {/* ════════════════ MAIN AREA ════════════════ */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+
+        {/* Top header */}
+        <header style={{
+          padding: '18px 32px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(38,38,38,0.08)',
+          position: 'sticky', top: 0, zIndex: 5,
+        }}>
           <div>
-            <div className="overflow-x-auto rounded-3xl border border-gray-200">
-              <table className="min-w-full bg-white">
-                <thead className="bg-[#FACC15]/15 text-left text-sm uppercase tracking-wide text-gray-500">
-                  <tr>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Email</th>
-                    <th className="px-6 py-4">Role</th>
-                    <th className="px-6 py-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-800">{user.username}</td>
-                      <td className="px-6 py-4 text-gray-600">{user.email}</td>
-                      <td className="px-6 py-4 text-gray-600">
-                        <select
-                          value={user.role}
-                          onChange={(e) => updateUserRole(user.id, e.target.value)}
-                          className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                        >
-                          <option value="Admin">Admin</option>
-                          <option value="Student">Student</option>
-                          <option value="Lecturer">Lecturer</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 space-x-2">
-                        <button
-                          onClick={() => deleteUser(user.id)}
-                          className="rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: DARK, letterSpacing: '-0.4px' }}>
+              {TABS.find(t => t.id === activeTab)?.label}
+            </h1>
+            <p style={{ margin: 0, fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
           </div>
-        )}
-
-        {activeTab === 'facilities' && (
-          <div className="space-y-8">
-            <form onSubmit={createFacility} className="grid gap-4 md:grid-cols-2">
-              <input
-                value={facilityDraft.name}
-                onChange={(e) => setFacilityDraft({ ...facilityDraft, name: e.target.value })}
-                placeholder="Facility name"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <input
-                value={facilityDraft.location}
-                onChange={(e) => setFacilityDraft({ ...facilityDraft, location: e.target.value })}
-                placeholder="Location"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <input
-                value={facilityDraft.capacity}
-                onChange={(e) => setFacilityDraft({ ...facilityDraft, capacity: e.target.value })}
-                placeholder="Capacity"
-                type="number"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <textarea
-                value={facilityDraft.description}
-                onChange={(e) => setFacilityDraft({ ...facilityDraft, description: e.target.value })}
-                placeholder="Description"
-                className="col-span-full rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                rows={3}
-                required
-              />
-              <button
-                type="submit"
-                className="col-span-full rounded-3xl bg-[#262626] py-3 text-center font-semibold text-[#FACC15] hover:bg-gray-900"
-              >
-                Add Facility
-              </button>
-            </form>
-
-            <div className="overflow-x-auto rounded-3xl border border-gray-200">
-              <table className="min-w-full bg-white">
-                <thead className="bg-[#FACC15]/15 text-left text-sm uppercase tracking-wide text-gray-500">
-                  <tr>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Location</th>
-                    <th className="px-6 py-4">Capacity</th>
-                    <th className="px-6 py-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {facilities.map((facility) => (
-                    <tr key={facility.id} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-800">{facility.name}</td>
-                      <td className="px-6 py-4 text-gray-600">{facility.location}</td>
-                      <td className="px-6 py-4 text-gray-600">{facility.capacity}</td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => deleteFacility(facility.id)}
-                          className="rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Gold accent badge */}
+            <span style={{
+              padding: '6px 14px', borderRadius: 99,
+              background: `${GOLD}20`, border: `1px solid ${GOLD}50`,
+              color: DARK, fontSize: 11, fontWeight: 700,
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+            }}>
+              ● Live
+            </span>
+            <button style={{ padding: 9, background: WHITE, border: '1px solid #e5e7eb', borderRadius: 10, cursor: 'pointer', display: 'flex' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+              onMouseLeave={e => e.currentTarget.style.background = WHITE}
+            >
+              <Bell size={17} color="#6b7280" />
+            </button>
+            <button style={{ padding: 9, background: WHITE, border: '1px solid #e5e7eb', borderRadius: 10, cursor: 'pointer', display: 'flex' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+              onMouseLeave={e => e.currentTarget.style.background = WHITE}
+            >
+              <Settings size={17} color="#6b7280" />
+            </button>
           </div>
-        )}
+        </header>
 
-        {activeTab === 'resources' && (
-          <div className="space-y-8">
-            <form onSubmit={createResource} className="grid gap-4 md:grid-cols-2">
-              <input
-                value={resourceDraft.name}
-                onChange={(e) => setResourceDraft({ ...resourceDraft, name: e.target.value })}
-                placeholder="Resource name"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <input
-                value={resourceDraft.type}
-                onChange={(e) => setResourceDraft({ ...resourceDraft, type: e.target.value })}
-                placeholder="Type"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <input
-                value={resourceDraft.quantity}
-                onChange={(e) => setResourceDraft({ ...resourceDraft, quantity: e.target.value })}
-                placeholder="Quantity"
-                type="number"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <input
-                value={resourceDraft.status}
-                onChange={(e) => setResourceDraft({ ...resourceDraft, status: e.target.value })}
-                placeholder="Status"
-                className="rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3"
-                required
-              />
-              <button
-                type="submit"
-                className="col-span-full rounded-3xl bg-[#262626] py-3 text-center font-semibold text-[#FACC15] hover:bg-gray-900"
-              >
-                Add Resource
-              </button>
-            </form>
+        {/* Page content */}
+        <main style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
 
-            <div className="overflow-x-auto rounded-3xl border border-gray-200">
-              <table className="min-w-full bg-white">
-                <thead className="bg-[#FACC15]/15 text-left text-sm uppercase tracking-wide text-gray-500">
-                  <tr>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Type</th>
-                    <th className="px-6 py-4">Quantity</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {resources.map((item) => (
-                    <tr key={item.id} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-800">{item.name}</td>
-                      <td className="px-6 py-4 text-gray-600">{item.type}</td>
-                      <td className="px-6 py-4 text-gray-600">{item.quantity}</td>
-                      <td className="px-6 py-4 text-gray-600">{item.status}</td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => deleteResource(item.id)}
-                          className="rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
+          {/* ── OVERVIEW TAB ── */}
+          {activeTab === 'overview' && (
+            <div>
+              {/* Stats grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 18, marginBottom: 28 }}>
+                {STATS.map(({ label, value, change, up, icon: Icon }, i) => (
+                  <div
+                    key={label}
+                    style={{
+                      background: WHITE, borderRadius: 20,
+                      padding: '24px 26px',
+                      border: '1px solid rgba(38,38,38,0.07)',
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      cursor: 'default',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.09)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.04)'; }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+                      <div style={{
+                        width: 46, height: 46, borderRadius: 14,
+                        background: i === 0 ? GOLD : `${GOLD}20`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Icon size={20} color={i === 0 ? DARK : DARK} strokeWidth={2} />
+                      </div>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700,
+                        color: up ? '#16a34a' : '#dc2626',
+                        background: up ? '#f0fdf4' : '#fef2f2',
+                        padding: '4px 10px', borderRadius: 99,
+                      }}>
+                        {change}
+                      </span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: '-1px' }}>{value}</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Activity + Quick Actions row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 18 }}>
+
+                {/* Recent Activity */}
+                <div style={{ background: WHITE, borderRadius: 20, padding: '26px', border: '1px solid rgba(38,38,38,0.07)', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 4, height: 20, background: GOLD, borderRadius: 99 }} />
+                      <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: DARK }}>Recent Activity</h2>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: DARK, cursor: 'pointer', borderBottom: `1.5px solid ${GOLD}` }}>
+                      View all
+                    </span>
+                  </div>
+                  {[
+                    { action: 'New user registered',        detail: 'anna.silva@campus.edu',     time: '2 min ago',  dot: GOLD },
+                    { action: 'Facility booking approved',  detail: 'Lab B — Floor 3',           time: '18 min ago', dot: DARK },
+                    { action: 'Resource flagged for review',detail: 'CS301 Lecture Notes',       time: '45 min ago', dot: GOLD },
+                    { action: 'Maintenance ticket opened',  detail: 'Projector fault — Hall A',  time: '1 hr ago',   dot: '#ef4444' },
+                    { action: 'User role updated',          detail: 'john.doe → LECTURER',       time: '2 hr ago',   dot: DARK },
+                  ].map((item, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, paddingBottom: 16, marginBottom: 16, borderBottom: i < 4 ? '1px solid #f3f4f6' : 'none' }}>
+                      <div style={{ width: 9, height: 9, borderRadius: '50%', background: item.dot, marginTop: 5, flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: DARK }}>{item.action}</p>
+                        <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>{item.detail}</p>
+                      </div>
+                      <span style={{ fontSize: 11, color: '#d1d5db', fontWeight: 500, whiteSpace: 'nowrap' }}>{item.time}</span>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-        {activeTab === 'safety' && (
-          <div>
-            <div className="overflow-x-auto rounded-3xl border border-gray-200">
-              <table className="min-w-full bg-white">
-                <thead className="bg-[#FACC15]/15 text-left text-sm uppercase tracking-wide text-gray-500">
-                  <tr>
-                    <th className="px-6 py-4">Reported By</th>
-                    <th className="px-6 py-4">Location</th>
-                    <th className="px-6 py-4">Incident</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {safetyReports.map((report) => (
-                    <tr key={report.id} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-800">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold">
-                            {report.reporterName ? report.reporterName.charAt(0) : 'U'}
-                          </div>
-                          <span>{report.reporterName || report.userId || 'Unknown Reporter'}</span>
+                </div>
+
+                {/* Quick Actions — Gold/Dark theme matching About CTA sections */}
+                <div style={{ background: DARK, borderRadius: 20, padding: '26px', border: `1px solid ${GOLD}20` }}>
+                  {/* Grid overlay decoration */}
+                  <div style={{
+                    position: 'absolute', inset: 0, borderRadius: 20, overflow: 'hidden', pointerEvents: 'none',
+                    backgroundImage: 'linear-gradient(rgba(250,204,21,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(250,204,21,0.07) 1px, transparent 1px)',
+                    backgroundSize: '28px 28px',
+                  }} />
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
+                      <div style={{ width: 4, height: 20, background: GOLD, borderRadius: 99 }} />
+                      <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: WHITE }}>Quick Actions</h2>
+                    </div>
+                    {[
+                      { label: 'Manage Users',         sub: 'Add, edit or remove users',   tab: 'users',       icon: Users     },
+                      { label: 'View Facilities',      sub: 'Bookings & availability',      tab: 'facilities',  icon: Building2 },
+                      { label: 'Review Resources',     sub: 'Approve or flag content',      tab: 'resources',   icon: BookOpen  },
+                      { label: 'Maintenance Tickets',  sub: 'Open incidents & faults',      tab: 'maintenance', icon: Wrench    },
+                    ].map(({ label, sub, tab, icon: Icon }) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 14,
+                          width: '100%', background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(250,204,21,0.12)',
+                          borderRadius: 14, padding: '13px 15px', marginBottom: 10,
+                          cursor: 'pointer', textAlign: 'left',
+                          transition: 'all 0.2s ease',
+                          fontFamily: "'Poppins', sans-serif",
+                          outline: 'none',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${GOLD}18`; e.currentTarget.style.borderColor = `${GOLD}40`; e.currentTarget.style.transform = 'translateX(4px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(250,204,21,0.12)'; e.currentTarget.style.transform = 'translateX(0)'; }}
+                      >
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: `${GOLD}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Icon size={17} color={GOLD} />
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">{report.location}</td>
-                      <td className="px-6 py-4 text-gray-600 max-w-xs truncate">{report.description}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          report.status === 'Approved' ? 'bg-green-100 text-green-700' :
-                          report.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {report.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 space-x-2">
-                        <button
-                          onClick={() => updateSafetyStatus(report.id, 'Approved')}
-                          className="text-xs font-bold text-green-600 hover:underline"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => updateSafetyStatus(report.id, 'Rejected')}
-                          className="text-xs font-bold text-red-600 hover:underline"
-                        >
-                          Reject
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {safetyReports.length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="px-6 py-10 text-center text-gray-400">No safety reports found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                        <div style={{ flex: 1 }}>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: WHITE }}>{label}</p>
+                          <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>{sub}</p>
+                        </div>
+                        <ChevronRight size={15} color={`${GOLD}80`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-        {activeTab === 'analytics' && analytics && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { label: 'Total Users', value: analytics.userCount, color: 'blue' },
-                { label: 'Facilities', value: analytics.facilityCount, color: 'green' },
-                { label: 'Resources', value: analytics.resourceCount, color: 'purple' },
-                { label: 'Incidents', value: analytics.safetyReportCount, color: 'red' }
-              ].map((stat, i) => (
-                <div key={i} className="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm">
-                  <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
-                  <p className={`text-4xl font-black text-${stat.color}-500 mt-2`}>{stat.value}</p>
-                </div>
-              ))}
-            </div>
+              </div>
 
-            <div className="p-8 bg-[#262626] rounded-[2.5rem] text-white">
-              <h3 className="text-2xl font-black mb-6 flex items-center gap-3">
-                <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                System Health
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                <div>
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Status</p>
-                  <p className="text-xl font-bold">{analytics.systemHealth.status}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Database</p>
-                  <p className="text-xl font-bold">{analytics.systemHealth.database}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Uptime</p>
-                  <p className="text-xl font-bold">{analytics.systemHealth.uptime}</p>
-                </div>
+              {/* Bottom wide stats strip — matches About's #FACC15 strip */}
+              <div style={{
+                marginTop: 18, borderRadius: 20, overflow: 'hidden',
+                background: GOLD, padding: '28px 32px',
+                display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0,
+                position: 'relative',
+              }}>
+                <div style={{
+                  position: 'absolute', inset: 0, opacity: 0.08,
+                  backgroundImage: 'repeating-linear-gradient(45deg, #262626 0, #262626 1px, transparent 0, transparent 50%)',
+                  backgroundSize: '20px 20px',
+                }} />
+                {[
+                  { value: '12', label: 'Admins Online',    icon: ShieldCheck },
+                  { value: '98%', label: 'System Uptime',   icon: TrendingUp  },
+                  { value: '47',  label: 'Pending Actions', icon: AlertCircle },
+                  { value: '24/7', label: 'Monitoring',     icon: Bell        },
+                ].map(({ value, label, icon: Icon }, i) => (
+                  <div key={label} style={{ textAlign: 'center', position: 'relative', zIndex: 1, padding: '0 8px', borderRight: i < 3 ? `1px solid ${DARK}20` : 'none' }}>
+                    <Icon size={20} color={DARK} style={{ marginBottom: 8, opacity: 0.6 }} />
+                    <p style={{ margin: 0, fontSize: 28, fontWeight: 900, color: DARK, letterSpacing: '-1px' }}>{value}</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 11, fontWeight: 700, color: `${DARK}70`, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</p>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* ── USERS TAB ── */}
+          {activeTab === 'users' && (
+            <div>
+              <div style={{ marginBottom: 22 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px', borderRadius: 99, background: `${GOLD}20`, border: `1px solid ${GOLD}50`, marginBottom: 10 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: GOLD, display: 'inline-block' }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: DARK, textTransform: 'uppercase', letterSpacing: '0.12em' }}>User Management</span>
+                </div>
+                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: DARK }}>System Users</h2>
+                <p style={{ margin: '4px 0 0', fontSize: 13, color: '#9ca3af', fontWeight: 500 }}>Manage accounts, roles, and permissions across the platform</p>
+              </div>
+              <UserManagement />
+            </div>
+          )}
+
+          {/* ── PLACEHOLDER TABS ── */}
+          {['facilities', 'resources', 'maintenance'].includes(activeTab) && (() => {
+            const tab = TABS.find(t => t.id === activeTab);
+            const Icon = tab?.icon;
+            return (
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '80px 40px', background: WHITE, borderRadius: 24,
+                border: `2px dashed ${GOLD}40`, textAlign: 'center',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+              }}>
+                <div style={{
+                  width: 72, height: 72, borderRadius: 20,
+                  background: `${GOLD}15`,
+                  border: `2px solid ${GOLD}40`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20
+                }}>
+                  {Icon && <Icon size={30} color={DARK} />}
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 14px', borderRadius: 99, background: `${GOLD}15`, marginBottom: 12 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: DARK, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{tab?.label}</span>
+                </div>
+                <h3 style={{ margin: '0 0 10px', fontSize: 22, fontWeight: 800, color: DARK }}>{tab?.label} Module</h3>
+                <p style={{ margin: 0, fontSize: 14, color: '#9ca3af', fontWeight: 500, maxWidth: 320, lineHeight: 1.7 }}>
+                  This section is under development and will be available in the next release.
+                </p>
+              </div>
+            );
+          })()}
+
+        </main>
       </div>
     </div>
   );
