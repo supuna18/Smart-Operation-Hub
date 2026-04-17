@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import smart_op_hub.CampusHub.model.AuthRequest;
 import smart_op_hub.CampusHub.model.User;
 import smart_op_hub.CampusHub.repository.UserRepository;
 
@@ -21,6 +22,37 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    /**
+     * Update user password.
+     * Member 4 Task: Account Security.
+     */
+    @PatchMapping("/update-password")
+    public ResponseEntity<?> updatePassword(@RequestBody AuthRequest.PasswordUpdateRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOptional.get();
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Incorrect current password"));
+        }
+
+        // Update to new password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+    }
 
     /**
      * Get the profile of the currently logged-in user.
@@ -38,6 +70,29 @@ public class UserController {
             return ResponseEntity.ok(u);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Create a new user manually.
+     * Restricted to: ADMIN only.
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<User> createUser(@RequestBody AuthRequest.SignupRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole() != null ? request.getRole().toUpperCase() : "STUDENT");
+        user.setAuthProvider("local");
+
+        userRepository.save(user);
+        user.setPassword(null);
+        return ResponseEntity.ok(user);
     }
 
     /**

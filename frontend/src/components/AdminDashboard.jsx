@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { getUser, clearAuth } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -9,6 +10,27 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: 'STUDENT' });
+  const [validationErrors, setValidationErrors] = useState({});
+
+  const validateForm = () => {
+    const errors = {};
+    if (!newUser.username.trim()) errors.username = 'Username is required';
+    if (!newUser.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(newUser.email)) {
+      errors.email = 'Invalid email format';
+    }
+    if (!newUser.password) {
+      errors.password = 'Password is required';
+    } else if (newUser.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -27,6 +49,22 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    
+    try {
+      const response = await api.post('/users', newUser);
+      setUsers((current) => [...current, response.data]);
+      setIsAddModalOpen(false);
+      setNewUser({ username: '', email: '', password: '', role: 'STUDENT' });
+      setValidationErrors({});
+    } catch (err) {
+      console.error(err);
+      setError('Failed to create new user. Email might already be in use.');
+    }
+  };
 
   const updateUserRole = async (id, role) => {
     try {
@@ -120,6 +158,13 @@ const AdminDashboard = () => {
               <span className="text-2xl font-black text-[#262626]">{users.length}</span>
             </div>
             <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-6 py-4 bg-[#FACC15] text-[#262626] rounded-[1.5rem] font-black text-sm uppercase tracking-widest hover:shadow-lg hover:shadow-[#FACC15]/20 transition-all active:scale-95 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Add User
+            </button>
+            <button 
               onClick={fetchUsers}
               className="p-4 bg-[#262626] text-[#FACC15] rounded-[1.5rem] hover:shadow-lg hover:shadow-black/20 transition-all active:scale-95"
               title="Refresh Data"
@@ -136,68 +181,65 @@ const AdminDashboard = () => {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredUsers.map((user) => (
-                <div key={user.id} className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 -mr-16 -mt-16 rounded-full group-hover:scale-110 transition-transform duration-700" />
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-start justify-between mb-8">
-                      <div className="w-20 h-20 rounded-3xl overflow-hidden bg-gray-50 border-2 border-white shadow-md flex-shrink-0 group-hover:rotate-3 transition-transform duration-500">
-                        {user.profileImageUrl ? (
-                          <img src={user.profileImageUrl} alt={user.username} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-3xl font-black text-[#FACC15]">
-                            {user.username.charAt(0).toUpperCase()}
+            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100">
+                      <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">User</th>
+                      <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Email</th>
+                      <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Auth</th>
+                      <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">System Role</th>
+                      <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map((user) => (
+                      <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-[#FACC15]/10 flex items-center justify-center font-bold text-[#FACC15]">
+                              {user.username.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="font-bold text-[#262626]">{user.username}</span>
                           </div>
-                        )}
-                      </div>
-                      
-                      <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
-                        user.authProvider === 'google' 
-                          ? 'bg-blue-50 text-blue-600 border-blue-100' 
-                          : 'bg-gray-50 text-gray-400 border-gray-100'
-                      }`}>
-                        {user.authProvider || 'Local'}
-                      </div>
-                    </div>
-
-                    <div className="mb-8">
-                      <h3 className="text-2xl font-black text-[#262626] truncate mb-1">{user.username}</h3>
-                      <p className="text-sm text-gray-400 font-bold truncate flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        {user.email}
-                      </p>
-                    </div>
-
-                    <div className="space-y-6 pt-6 border-t border-gray-50">
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Assigned Role</label>
-                        <select
-                          value={user.role}
-                          onChange={(e) => updateUserRole(user.id, e.target.value)}
-                          className="w-full text-sm font-black text-[#262626] bg-gray-50 border-2 border-transparent rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#FACC15] focus:bg-white focus:border-white outline-none cursor-pointer transition-all appearance-none"
-                        >
-                          <option value="ADMIN">System Admin</option>
-                          <option value="STUDENT">Student Member</option>
-                          <option value="LECTURER">Academic Staff</option>
-                        </select>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">UID: {user.id?.slice(-12)}</span>
-                        <button
-                          onClick={() => deleteUser(user.id)}
-                          className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                          Terminate
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                        </td>
+                        <td className="px-8 py-6 text-sm text-gray-500 font-medium">{user.email}</td>
+                        <td className="px-8 py-6">
+                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                            user.authProvider === 'google' 
+                              ? 'bg-blue-50 text-blue-600 border-blue-100' 
+                              : 'bg-gray-50 text-gray-400 border-gray-100'
+                          }`}>
+                            {user.authProvider || 'Local'}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6">
+                          <select
+                            value={user.role}
+                            onChange={(e) => updateUserRole(user.id, e.target.value)}
+                            className="bg-transparent text-sm font-bold text-[#262626] focus:outline-none cursor-pointer hover:text-[#FACC15] transition-colors"
+                          >
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="STUDENT">STUDENT</option>
+                            <option value="LECTURER">LECTURER</option>
+                            <option value="TECHNICIAN">TECHNICIAN</option>
+                          </select>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          <button
+                            onClick={() => deleteUser(user.id)}
+                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                            title="Delete User"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {filteredUsers.length === 0 && (
@@ -217,6 +259,98 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Add User Modal */}
+      <AnimatePresence>
+        {isAddModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAddModalOpen(false)}
+              className="absolute inset-0 bg-[#262626]/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[3rem] shadow-2xl overflow-hidden"
+            >
+              <div className="p-10">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-3xl font-black text-[#262626]">Add New User</h2>
+                  <button 
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                </div>
+
+                <form onSubmit={handleAddUser} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Username</label>
+                    <input
+                      type="text"
+                      value={newUser.username}
+                      onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                      className={`w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 outline-none transition-all font-medium ${validationErrors.username ? 'border-red-500' : 'border-transparent focus:bg-white focus:border-[#FACC15]'}`}
+                      placeholder="Enter full name"
+                    />
+                    {validationErrors.username && <p className="text-red-500 text-[10px] font-bold ml-1">{validationErrors.username}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                      className={`w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 outline-none transition-all font-medium ${validationErrors.email ? 'border-red-500' : 'border-transparent focus:bg-white focus:border-[#FACC15]'}`}
+                      placeholder="email@campus.com"
+                    />
+                    {validationErrors.email && <p className="text-red-500 text-[10px] font-bold ml-1">{validationErrors.email}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Default Password</label>
+                    <input
+                      type="password"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                      className={`w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 outline-none transition-all font-medium ${validationErrors.password ? 'border-red-500' : 'border-transparent focus:bg-white focus:border-[#FACC15]'}`}
+                      placeholder="••••••••"
+                    />
+                    {validationErrors.password && <p className="text-red-500 text-[10px] font-bold ml-1">{validationErrors.password}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">System Role</label>
+                    <select
+                      value={newUser.role}
+                      onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-bold appearance-none cursor-pointer"
+                    >
+                      <option value="STUDENT">Student Member</option>
+                      <option value="LECTURER">Academic Staff</option>
+                      <option value="TECHNICIAN">Technician</option>
+                      <option value="ADMIN">System Administrator</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-5 bg-[#262626] text-[#FACC15] rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-black/10 hover:shadow-black/20 hover:-translate-y-1 transition-all active:scale-95 mt-4"
+                  >
+                    Confirm & Create User
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

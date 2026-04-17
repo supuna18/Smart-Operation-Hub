@@ -32,6 +32,14 @@ public class AuthRequest {
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PasswordUpdateRequest {
+        private String currentPassword;
+        private String newPassword;
+    }
+
+    @Data
     public static class AuthResponse {
         private String token;
         private User user;
