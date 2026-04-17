@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { getUser, clearAuth } from '../utils/auth';
 import UserManagement from './admin/UserManagement';
 import {
   Users, Building2, Wrench, BookOpen, LayoutDashboard,
   ChevronRight, ShieldCheck, Bell, Settings, LogOut,
-  TrendingUp, AlertCircle, Menu, X,
+  TrendingUp, AlertCircle, Menu, X, ChevronLeft,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -48,10 +48,9 @@ const CSS = `
     display:flex;
     font-family:'Poppins',sans-serif;
     background:#FAFAF8;
-    height:calc(100vh - 73px);
-    overflow:hidden;
+    min-height:calc(100vh - 73px);
   }
-  .adm-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow-y:auto;overflow-x:hidden;}
+  .adm-main{flex:1;display:flex;flex-direction:column;min-width:0;}
 
   /* ── SIDEBAR (default = desktop) ── */
   .adm-sb{
@@ -60,15 +59,14 @@ const CSS = `
     display:flex;
     flex-direction:column;
     border-right:1px solid rgba(250,204,21,.12);
-    overflow:hidden;
     z-index:40;
-    transition:width .3s cubic-bezier(0.4, 0, 0.2, 1), transform .3s ease;
-    will-change: width, transform;
+    transition:width .4s cubic-bezier(0.4, 0, 0.2, 1), transform .4s ease, opacity .3s ease;
+    will-change: width, transform, opacity;
     width:260px;
-    height: 100%;
     align-self:flex-start;
   }
   .adm-sb.collapsed{width:80px;}
+  .adm-sb.hidden-sb{width:0; opacity: 0; border-right: none;}
 
   /* ── MOBILE (≤ 900px): slide-over drawer ── */
   @media(max-width:900px){
@@ -80,8 +78,11 @@ const CSS = `
       width:260px!important;
       transform:translateX(-100%);
       z-index:200;
+      opacity: 1!important;
+      overflow-y:auto;
     }
     .adm-sb.sb-open{transform:translateX(0);}
+    .adm-sb.hidden-sb{width:260px!important; opacity: 1!important;}
     .adm-overlay.active{display:block;}
     .desktop-only{display:none!important;}
     .mobile-only{display:flex!important;}
@@ -92,8 +93,10 @@ const CSS = `
   @media(min-width:901px){
     .adm-sb{
       position:sticky;
-      top:0;
+      top:73px; /* Stick below navbar */
+      height:calc(100vh - 73px);
       transform:none!important;
+      overflow-y:auto;
     }
     .adm-overlay{display:none!important;}
     .mobile-only{display:none!important;}
@@ -186,12 +189,23 @@ const CSS = `
 const AdminDashboard = () => {
   const [activeTab, setActiveTab]         = useState('overview');
   const [sbCollapsed, setSbCollapsed]     = useState(false);
+  const [sbHidden, setSbHidden]           = useState(false);
   const [sbMobileOpen, setSbMobileOpen]   = useState(false);
+  
+  const mainRef     = useRef(null);
   const navigate    = useNavigate();
   const currentUser = getUser();
 
+  // Smooth scroll to top on tab change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
+
   const logout = () => { clearAuth(); navigate('/login'); };
-  const goTab  = (id) => { setActiveTab(id); setSbMobileOpen(false); };
+  const goTab  = (id) => { 
+    setActiveTab(id); 
+    setSbMobileOpen(false);
+  };
 
   return (
     <>
@@ -206,7 +220,7 @@ const AdminDashboard = () => {
       <div className="adm-wrap">
 
         {/* ══════════════ SIDEBAR ══════════════ */}
-        <aside className={`adm-sb ${sbCollapsed ? 'collapsed' : ''} ${sbMobileOpen ? 'sb-open' : ''}`}>
+        <aside className={`adm-sb ${sbCollapsed ? 'collapsed' : ''} ${sbHidden ? 'hidden-sb' : ''} ${sbMobileOpen ? 'sb-open' : ''}`}>
 
           {/* Logo row */}
           <div style={{ padding: '22px 16px 18px', borderBottom: '1px solid rgba(250,204,21,.1)', flexShrink: 0 }}>
@@ -215,27 +229,37 @@ const AdminDashboard = () => {
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: G, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 12px ${G}55` }}>
                   <ShieldCheck size={18} color={D} strokeWidth={2.5} />
                 </div>
-                <span style={{ 
-                  color: W, 
-                  fontWeight: 800, 
-                  fontSize: 14.5, 
-                  letterSpacing: '-0.3px', 
-                  whiteSpace: 'nowrap',
-                  opacity: sbCollapsed ? 0 : 1,
-                  transform: sbCollapsed ? 'translateX(-10px)' : 'translateX(0)',
-                  transition: 'opacity 0.2s ease, transform 0.2s ease',
-                  pointerEvents: sbCollapsed ? 'none' : 'auto'
-                }}>
-                  Smart<span style={{ color: G }}>Sync</span> Admin
-                </span>
+                {!sbCollapsed && (
+                  <span style={{ 
+                    color: W, 
+                    fontWeight: 800, 
+                    fontSize: 14.5, 
+                    letterSpacing: '-0.3px', 
+                    whiteSpace: 'nowrap',
+                    opacity: 1,
+                    transform: 'translateX(0)',
+                    transition: 'opacity 0.2s ease, transform 0.2s ease',
+                  }}>
+                    Smart<span style={{ color: G }}>Sync</span> Admin
+                  </span>
+                )}
               </div>
 
-              {/* Desktop collapse button */}
-              <button className="desktop-only"
-                onClick={() => setSbCollapsed(p => !p)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.35)', padding: 4, borderRadius: 7, flexShrink: 0 }}>
-                {sbCollapsed ? <ChevronRight size={15} /> : <X size={15} />}
-              </button>
+              {/* Desktop collapse/hide controls */}
+              <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <button 
+                  onClick={() => setSbCollapsed(p => !p)}
+                  title={sbCollapsed ? "Expand" : "Collapse"}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.35)', padding: 4, borderRadius: 7, display: 'flex' }}>
+                  {sbCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+                </button>
+                <button 
+                  onClick={() => setSbHidden(true)}
+                  title="Hide Sidebar"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.35)', padding: 4, borderRadius: 7, display: 'flex' }}>
+                  <X size={15} />
+                </button>
+              </div>
 
               {/* Mobile close button */}
               <button className="mobile-only"
@@ -277,14 +301,16 @@ const AdminDashboard = () => {
                   <div style={{ width: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon size={18} strokeWidth={on ? 2.5 : 1.8} />
                   </div>
-                  <span style={{ 
-                    opacity: sbCollapsed ? 0 : 1, 
-                    transform: sbCollapsed ? 'translateX(-10px)' : 'translateX(0)',
-                    transition: 'opacity 0.2s ease, transform 0.2s ease',
-                    marginLeft: 4
-                  }}>
-                    {label}
-                  </span>
+                  {!sbCollapsed && (
+                    <span style={{ 
+                      opacity: 1, 
+                      transform: 'translateX(0)',
+                      transition: 'opacity 0.2s ease, transform 0.2s ease',
+                      marginLeft: 4
+                    }}>
+                      {label}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -303,19 +329,21 @@ const AdminDashboard = () => {
                   {currentUser?.username?.charAt(0).toUpperCase()}
                 </div>
               </div>
-              <div style={{ 
-                overflow: 'hidden', 
-                flex: 1,
-                opacity: sbCollapsed ? 0 : 1,
-                transform: sbCollapsed ? 'translateX(-10px)' : 'translateX(0)',
-                transition: 'opacity 0.2s ease, transform 0.2s ease',
-                marginLeft: 4
-              }}>
-                <p style={{ margin: 0, color: W, fontWeight: 700, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {currentUser?.username}
-                </p>
-                <p style={{ margin: 0, color: `${G}AA`, fontSize: 10.5, fontWeight: 600 }}>Administrator</p>
-              </div>
+              {!sbCollapsed && (
+                <div style={{ 
+                  overflow: 'hidden', 
+                  flex: 1,
+                  opacity: 1,
+                  transform: 'translateX(0)',
+                  transition: 'opacity 0.2s ease, transform 0.2s ease',
+                  marginLeft: 4
+                }}>
+                  <p style={{ margin: 0, color: W, fontWeight: 700, fontSize: 12.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {currentUser?.username}
+                  </p>
+                  <p style={{ margin: 0, color: `${G}AA`, fontSize: 10.5, fontWeight: 600 }}>Administrator</p>
+                </div>
+              )}
             </div>
             <button onClick={logout}
               style={{
@@ -333,21 +361,23 @@ const AdminDashboard = () => {
               <div style={{ width: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <LogOut size={16} />
               </div>
-              <span style={{ 
-                opacity: sbCollapsed ? 0 : 1, 
-                transform: sbCollapsed ? 'translateX(-10px)' : 'translateX(0)',
-                transition: 'opacity 0.2s ease, transform 0.2s ease',
-                marginLeft: 4,
-                whiteSpace: 'nowrap'
-              }}>
-                Logout
-              </span>
+              {!sbCollapsed && (
+                <span style={{ 
+                  opacity: 1, 
+                  transform: 'translateX(0)',
+                  transition: 'opacity 0.2s ease, transform 0.2s ease',
+                  marginLeft: 4,
+                  whiteSpace: 'nowrap'
+                }}>
+                  Logout
+                </span>
+              )}
             </button>
           </div>
         </aside>
 
         {/* ══════════════ MAIN AREA ══════════════ */}
-        <div className="adm-main">
+        <div className="adm-main" ref={mainRef}>
 
           {/* Top header */}
           <header style={{
@@ -357,10 +387,14 @@ const AdminDashboard = () => {
             position: 'sticky', top: 0, zIndex: 30, flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {/* Mobile hamburger */}
-              <button className="mobile-only"
-                onClick={() => setSbMobileOpen(true)}
-                style={{ padding: '7px', background: W, border: '1px solid #e5e7eb', borderRadius: 9, cursor: 'pointer', outline: 'none', flexShrink: 0 }}>
+              {/* Sidebar toggle - ALWAYS visible on mobile, visible on desktop if sidebar is hidden */}
+              <button className={sbHidden ? "" : "mobile-only"}
+                onClick={() => {
+                  if (window.innerWidth <= 900) setSbMobileOpen(true);
+                  else setSbHidden(false);
+                }}
+                title="Expand Sidebar"
+                style={{ padding: '7px', background: W, border: '1px solid #e5e7eb', borderRadius: 9, cursor: 'pointer', outline: 'none', flexShrink: 0, display: 'flex' }}>
                 <Menu size={17} color={D} />
               </button>
               <div>

@@ -320,7 +320,7 @@ const UserManagement = () => {
         </div>
 
         {/* ══════════ DESKTOP: Table ══════════ */}
-        <div className="um-table-card" style={{ background: W, borderRadius: 18, border: '1px solid rgba(38,38,38,.07)', boxShadow: '0 2px 12px rgba(0,0,0,.04)', overflow: 'hidden' }}>
+        <div className="um-table-card" style={{ background: W, borderRadius: 18, border: '1px solid rgba(38,38,38,.07)', boxShadow: '0 2px 12px rgba(0,0,0,.04)', overflowX: 'auto' }}>
           <table className="um-table">
             <thead>
               <tr>
