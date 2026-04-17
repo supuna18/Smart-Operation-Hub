@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { 
     Calendar, MapPin, User, Clock, CheckCircle, 
     AlertCircle, PlayCircle, HelpCircle, Trash2, 
-    ChevronRight, MessageSquare, Shield, ExternalLink
+    ChevronRight, MessageSquare, Shield, ExternalLink, XCircle, Loader2
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
+const TicketCard = ({ ticket, isAdmin, onUpdate, user }) => {
     const [isResolving, setIsResolving] = useState(false);
+    const [isRejecting, setIsRejecting] = useState(false);
     const [resolutionNotes, setResolutionNotes] = useState('');
+    const [rejectionNotes, setRejectionNotes] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
 
     const statusConfig = {
@@ -32,13 +34,18 @@ const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
             color: 'text-gray-600 bg-gray-50 border-gray-100', 
             icon: <Clock size={14} />,
             label: 'Closed'
+        },
+        REJECTED: {
+            color: 'text-red-600 bg-red-50 border-red-100',
+            icon: <XCircle size={14} />,
+            label: 'Rejected'
         }
     };
 
     const handleAssignToMe = async () => {
-        const userName = localStorage.getItem('userName');
+        const userName = user?.username || 'System Admin';
         try {
-            await axios.put(`http://localhost:8082/api/tickets/${ticket.id}/assign?technicianId=${userName}`);
+            await axios.put(`http://localhost:8082/api/tickets/${ticket.id}/assign?technicianId=${encodeURIComponent(userName)}`);
             onUpdate();
         } catch (err) {
             console.error('Failed to assign ticket', err);
@@ -53,8 +60,9 @@ const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
 
         try {
             let url = `http://localhost:8082/api/tickets/${ticket.id}/status?status=${newStatus}`;
-            if (resolutionNotes) {
-                url += `&notes=${encodeURIComponent(resolutionNotes)}`;
+            const notes = newStatus === 'REJECTED' ? rejectionNotes : resolutionNotes;
+            if (notes) {
+                url += `&notes=${encodeURIComponent(notes)}`;
             }
             await axios.put(url);
             setIsResolving(false);
@@ -126,15 +134,15 @@ const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
 
             {/* Resolution Display */}
             {ticket.resolutionNotes && (
-                <div className="mt-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 relative overflow-hidden">
+                <div className={`mt-4 p-4 ${ticket.status === 'REJECTED' ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100'} rounded-2xl border relative overflow-hidden`}>
                     <div className="absolute top-0 right-0 p-2 opacity-10">
-                        <CheckCircle size={40} className="text-emerald-600" />
+                        {ticket.status === 'REJECTED' ? <XCircle size={40} className="text-red-600" /> : <CheckCircle size={40} className="text-emerald-600" />}
                     </div>
-                    <div className="flex items-center gap-2 mb-1 text-emerald-700 font-black text-[10px] uppercase tracking-widest">
+                    <div className={`flex items-center gap-2 mb-1 ${ticket.status === 'REJECTED' ? 'text-red-700' : 'text-emerald-700'} font-black text-[10px] uppercase tracking-widest`}>
                         <MessageSquare size={12} />
-                        Resolution Notes
+                        {ticket.status === 'REJECTED' ? 'Rejection Notes' : 'Resolution Notes'}
                     </div>
-                    <p className="text-emerald-800 text-xs font-bold leading-relaxed">
+                    <p className={`${ticket.status === 'REJECTED' ? 'text-red-800' : 'text-emerald-800'} text-xs font-bold leading-relaxed`}>
                         {ticket.resolutionNotes}
                     </p>
                 </div>
@@ -164,7 +172,7 @@ const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {(isAdmin || ticket.createdBy === localStorage.getItem('userName')) && (
+                    {(isAdmin || ticket.createdBy === user?.username) && (
                         <button 
                             onClick={handleDelete}
                             disabled={isDeleting}
@@ -177,16 +185,24 @@ const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
             </div>
 
             {/* Admin Action Panel */}
-            {isAdmin && !isResolving && (
+            {isAdmin && !isResolving && !isRejecting && (
                 <div className="mt-5 grid grid-cols-1 gap-2">
-                    {!ticket.assignedTo ? (
-                        <button 
-                            onClick={handleAssignToMe}
-                            className="w-full py-3 bg-[#262626] text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center justify-center gap-2 group"
-                        >
-                            Assign to Me <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
-                    ) : (
+                    {(!ticket.assignedTo && ticket.status !== 'REJECTED') ? (
+                        <div className="grid grid-cols-2 gap-2">
+                            <button 
+                                onClick={handleAssignToMe}
+                                className="py-3 bg-[#262626] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center justify-center gap-2 group"
+                            >
+                                Accept <CheckCircle size={14} className="group-hover:scale-110 transition-transform" />
+                            </button>
+                            <button 
+                                onClick={() => setIsRejecting(true)}
+                                className="py-3 bg-white text-red-500 border border-red-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-2 group"
+                            >
+                                Reject <XCircle size={14} className="group-hover:scale-110 transition-transform" />
+                            </button>
+                        </div>
+                    ) : ticket.status !== 'REJECTED' && ticket.status !== 'CLOSED' && (
                         <div className="grid grid-cols-2 gap-2">
                             {ticket.status === 'OPEN' && (
                                 <button 
@@ -217,18 +233,55 @@ const TicketCard = ({ ticket, isAdmin, onUpdate }) => {
                 </div>
             )}
 
+            {/* Rejection Modal/Overlay inside Card */}
+            <AnimatePresence>
+                {isRejecting && (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 p-6 flex flex-col"
+                    >
+                        <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-sm font-black text-red-600 uppercase tracking-wider">Reject Ticket</h4>
+                            <button onClick={() => setIsRejecting(false)} className="text-gray-400 hover:text-gray-900">
+                                <XCircle size={16} />
+                            </button>
+                        </div>
+                        <textarea 
+                            autoFocus
+                            placeholder="Reason for rejection..."
+                            className="flex-grow w-full bg-red-50/30 border border-red-100 rounded-2xl p-4 text-sm font-bold outline-none focus:bg-white focus:border-red-400 transition-all resize-none shadow-inner"
+                            value={rejectionNotes}
+                            onChange={(e) => setRejectionNotes(e.target.value)}
+                        />
+                        <button 
+                            onClick={() => {
+                                handleStatusChange('REJECTED');
+                                setIsRejecting(false);
+                            }}
+                            disabled={!rejectionNotes.trim()}
+                            className="mt-4 w-full py-4 bg-red-600 text-white rounded-xl font-black uppercase tracking-widest text-xs disabled:opacity-50 transition-all hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/20"
+                        >
+                            Confirm Rejection
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Resolution Modal/Overlay inside Card */}
             <AnimatePresence>
                 {isResolving && (
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
                         className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 p-6 flex flex-col"
                     >
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-sm font-black text-gray-900 uppercase tracking-wider">Final Resolution</h4>
                             <button onClick={() => setIsResolving(false)} className="text-gray-400 hover:text-gray-900">
-                                <Trash2 size={16} />
+                                <XCircle size={16} />
                             </button>
                         </div>
                         <textarea 

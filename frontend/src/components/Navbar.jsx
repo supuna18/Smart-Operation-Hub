@@ -23,7 +23,8 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/#services', isHash: true },
     { name: 'About', path: '/about' },
-    { name: 'Tickets', path: '/tickets' }
+    { name: 'Tickets', path: '/tickets' },
+    ...(admin ? [{ name: 'Ticket Approvals', path: '/admin/tickets' }] : [])
   ];
 
   return (

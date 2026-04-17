@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import About from './components/About';
@@ -9,6 +9,8 @@ import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import TicketDashboard from './components/TicketDashboard';
+import TicketApprovalHub from './components/TicketApprovalHub';
+import { getUser, isAdmin } from './utils/auth';
 
 function App() {
   return (
@@ -25,8 +27,18 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
-            {/* Ticket Dashboard (public or adjust later if needed) */}
+            {/* Ticket Dashboard (Standard for Users) */}
             <Route path="/tickets" element={<TicketDashboard />} />
+
+            {/* Ticket Approval Hub (Dedicated for Admins) */}
+            <Route 
+              path="/admin/tickets" 
+              element={
+                <ProtectedRoute>
+                  <TicketApprovalHub />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* Admin Dashboard (protected route) */}
             <Route

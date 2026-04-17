@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, MapPin, Type, FileText, ImageIcon, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { getUser } from '../utils/auth';
 
 const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
+    const user = getUser();
     const [formData, setFormData] = useState({
         issueTitle: '',
         location: '',
         description: '',
         imageUrl: '',
-        createdBy: localStorage.getItem('userName') || 'Anonymous'
+        createdBy: user?.username || 'Anonymous'
     });
     const [loading, setLoading] = useState(false);
 
