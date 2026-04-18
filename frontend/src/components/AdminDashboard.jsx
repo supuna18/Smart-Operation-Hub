@@ -7,6 +7,7 @@ import {
   TrendingUp, AlertCircle, Menu, X, ChevronLeft,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import TicketApprovalHub from './TicketApprovalHub';
 
 /* ── Brand tokens ── */
 const G = '#FACC15';   // Gold
@@ -18,7 +19,7 @@ const TABS = [
   { id: 'users',       label: 'Users',        icon: Users           },
   { id: 'facilities',  label: 'Facilities',   icon: Building2       },
   { id: 'resources',   label: 'Resources',    icon: BookOpen        },
-  { id: 'maintenance', label: 'Maintenance',  icon: Wrench          },
+  { id: 'tickets',     label: 'Tickets',      icon: Wrench          },
 ];
 
 const STATS = [
@@ -39,7 +40,7 @@ const QUICK = [
   { label: 'Manage Users',        sub: 'Add, edit or remove users',  tab: 'users',       icon: Users     },
   { label: 'View Facilities',     sub: 'Bookings & availability',     tab: 'facilities',  icon: Building2 },
   { label: 'Review Resources',    sub: 'Approve or flag content',     tab: 'resources',   icon: BookOpen  },
-  { label: 'Maintenance Tickets', sub: 'Open incidents & faults',     tab: 'maintenance', icon: Wrench    },
+  { label: 'Maintenance Tickets', sub: 'Open incidents & faults',     tab: 'tickets',     icon: Wrench    },
 ];
 
 /* ── Responsive CSS ── */
@@ -571,8 +572,22 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {activeTab === 'tickets' && (
+              <div>
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 99, background: `${G}20`, border: `1px solid ${G}45`, marginBottom: 8 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: G, display: 'inline-block' }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: D, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Incident Management</span>
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: D }}>Maintenance Ticketing</h2>
+                  <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#9ca3af', fontWeight: 500 }}>Review and manage campus infrastructure issues</p>
+                </div>
+                <TicketApprovalHub isEmbedded={true} />
+              </div>
+            )}
+
             {/* ── EMPTY TABS ── */}
-            {['facilities', 'resources', 'maintenance'].includes(activeTab) && (() => {
+            {['facilities', 'resources'].includes(activeTab) && (() => {
               const tab = TABS.find(t => t.id === activeTab);
               const Icon = tab?.icon;
               return (

@@ -20,7 +20,8 @@ const Features = () => {
       icon: <AlertCircle />,
       title: "Incident Tracking",
       desc: "Report maintenance issues and track resolution status in real-time.",
-      delay: 0.3
+      delay: 0.3,
+      link: "/tickets"
     },
     {
       icon: <Lock />,
