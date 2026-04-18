@@ -202,7 +202,7 @@ const TicketDashboard = () => {
                                             onClick={() => setIsModalOpen(true)}
                                             className="bg-yellow-400 text-gray-900 px-10 py-4 rounded-2xl font-black hover:shadow-2xl hover:shadow-yellow-400/30 transition-all"
                                         >
-                                            Create First Ticket
+                                            Create New Ticket
                                         </button>
                                     )}
                                 </motion.div>
