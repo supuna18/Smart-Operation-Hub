@@ -16,6 +16,7 @@ const TicketDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [ticketToEdit, setTicketToEdit] = useState(null);
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     
@@ -207,7 +208,10 @@ const TicketDashboard = () => {
                                     </p>
                                     {!isAdmin && !searchQuery && (
                                         <button 
-                                            onClick={() => setIsModalOpen(true)}
+                                            onClick={() => {
+                                                setTicketToEdit(null);
+                                                setIsModalOpen(true);
+                                            }}
                                             className="bg-yellow-400 text-gray-900 px-10 py-4 rounded-2xl font-black hover:shadow-2xl hover:shadow-yellow-400/30 transition-all"
                                         >
                                             Create New Ticket
@@ -223,6 +227,10 @@ const TicketDashboard = () => {
                                             isAdmin={isAdmin}
                                             onUpdate={fetchTickets}
                                             user={user}
+                                            onEdit={(t) => {
+                                                setTicketToEdit(t);
+                                                setIsModalOpen(true);
+                                            }}
                                         />
                                     ))}
                                 </div>
@@ -305,15 +313,20 @@ const TicketDashboard = () => {
                 </div>
             </div>
 
-            {/* Create Ticket Modal */}
+            {/* Create / Edit Ticket Modal */}
             {isModalOpen && (
                 <CreateTicketModal 
                     isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setTicketToEdit(null);
+                    }} 
                     onCreated={() => {
                         fetchTickets();
                         setIsModalOpen(false);
+                        setTicketToEdit(null);
                     }}
+                    editTicket={ticketToEdit}
                 />
             )}
         </div>

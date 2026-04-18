@@ -53,6 +53,19 @@ public class TicketService {
         throw new RuntimeException("Ticket not found with id: " + id);
     }
 
+    public Ticket updateTicket(String id, Ticket updatedData) {
+        Optional<Ticket> ticketOpt = ticketRepository.findById(id);
+        if (ticketOpt.isPresent()) {
+            Ticket ticket = ticketOpt.get();
+            ticket.setIssueTitle(updatedData.getIssueTitle());
+            ticket.setLocation(updatedData.getLocation());
+            ticket.setDescription(updatedData.getDescription());
+            ticket.setImageUrl(updatedData.getImageUrl());
+            return ticketRepository.save(ticket);
+        }
+        throw new RuntimeException("Ticket not found with id: " + id);
+    }
+
     public List<Ticket> getTicketsByCreator(String userId) {
         return ticketRepository.findByCreatedBy(userId);
     }

@@ -38,6 +38,11 @@ public class TicketController {
         return ticketService.updateTicketStatus(id, status, notes);
     }
 
+    @PutMapping("/{id}")
+    public Ticket updateTicket(@PathVariable String id, @RequestBody Ticket updatedTicket) {
+        return ticketService.updateTicket(id, updatedTicket);
+    }
+
     @GetMapping("/user/{userId}")
     public List<Ticket> getTicketsByCreator(@PathVariable String userId) {
         return ticketService.getTicketsByCreator(userId);

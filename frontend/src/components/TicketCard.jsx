@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { 
     Calendar, MapPin, User, Clock, CheckCircle, 
-    AlertCircle, PlayCircle, HelpCircle, Trash2, 
+    AlertCircle, PlayCircle, HelpCircle, Trash2, Edit2,
     ChevronRight, MessageSquare, Shield, ExternalLink, XCircle, Loader2
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const TicketCard = ({ ticket, isAdmin, onUpdate, user }) => {
+const TicketCard = ({ ticket, isAdmin, onUpdate, user, onEdit }) => {
     const [isResolving, setIsResolving] = useState(false);
     const [isRejecting, setIsRejecting] = useState(false);
     const [resolutionNotes, setResolutionNotes] = useState('');
@@ -172,6 +172,15 @@ const TicketCard = ({ ticket, isAdmin, onUpdate, user }) => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {ticket.status === 'OPEN' && (isAdmin || ticket.createdBy === user?.username) && (
+                        <button 
+                            onClick={() => onEdit(ticket)}
+                            className="p-2.5 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
+                            title="Edit Ticket"
+                        >
+                            <Edit2 size={16} />
+                        </button>
+                    )}
                     {(isAdmin || ticket.createdBy === user?.username) && (
                         <button 
                             onClick={handleDelete}

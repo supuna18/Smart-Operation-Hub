@@ -4,14 +4,14 @@ import { X, Send, MapPin, Type, FileText, ImageIcon, Loader2 } from 'lucide-reac
 import axios from 'axios';
 import { getUser } from '../utils/auth';
 
-const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
+const CreateTicketModal = ({ isOpen, onClose, onCreated, editTicket = null }) => {
     const user = getUser();
     const [formData, setFormData] = useState({
-        issueTitle: '',
-        location: '',
-        description: '',
-        imageUrl: '',
-        createdBy: user?.username || 'Anonymous'
+        issueTitle: editTicket?.issueTitle || '',
+        location: editTicket?.location || '',
+        description: editTicket?.description || '',
+        imageUrl: editTicket?.imageUrl || '',
+        createdBy: editTicket?.createdBy || user?.username || 'Anonymous'
     });
     const [loading, setLoading] = useState(false);
 
@@ -29,17 +29,22 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
         e.preventDefault();
         setLoading(true);
         try {
-            // Ensure status is OPEN on creation
-            const ticketToCreate = {
-                ...formData,
-                status: 'OPEN',
-                createdAt: new Date().toISOString()
-            };
-            await axios.post('http://localhost:8082/api/tickets', ticketToCreate);
+            if (editTicket) {
+                // Update existing ticket
+                await axios.put(`http://localhost:8082/api/tickets/${editTicket.id}`, formData);
+            } else {
+                // Create new ticket
+                const ticketToCreate = {
+                    ...formData,
+                    status: 'OPEN',
+                    createdAt: new Date().toISOString()
+                };
+                await axios.post('http://localhost:8082/api/tickets', ticketToCreate);
+            }
             onCreated();
         } catch (err) {
-            console.error('Error creating ticket:', err);
-            alert('Failed to create ticket. Please try again.');
+            console.error('Error saving ticket:', err);
+            alert('Failed to save ticket. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -65,7 +70,7 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                     <div className="p-10 overflow-y-auto scrollbar-hide">
                         <div className="flex justify-between items-start mb-10">
                             <div>
-                                <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-1">Report an Issue</h2>
+                                <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-1">{editTicket ? 'Edit Ticket' : 'Report an Issue'}</h2>
                                 <p className="text-gray-600 font-bold text-sm tracking-tight">Help us keep the campus in top shape</p>
                             </div>
                             <button 
@@ -199,7 +204,7 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                                     <Loader2 className="w-7 h-7 animate-spin" />
                                 ) : (
                                     <>
-                                        Submit Ticket 
+                                        {editTicket ? 'Update Ticket' : 'Submit Ticket'} 
                                         <Send size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                     </>
                                 )}
