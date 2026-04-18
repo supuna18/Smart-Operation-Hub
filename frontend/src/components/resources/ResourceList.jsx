@@ -27,7 +27,7 @@ const ResourceList = ({ onEdit, onAdd }) => {
     const [loading, setLoading] = useState(true);
     const [userBookings, setUserBookings] = useState([]);
     const [calendarResource, setCalendarResource] = useState(null);
-    const admin = React.useMemo(() => isAdmin(), []);
+    const admin = isAdmin();
     const user = React.useMemo(() => getUser(), []);
 
     useEffect(() => {
@@ -130,24 +130,30 @@ const ResourceList = ({ onEdit, onAdd }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                <div>
-                    <h2 className="text-xl font-bold text-slate-800">Assets & Facilities</h2>
-                    <p className="text-sm text-slate-500 mt-1">Manage and track all campus resources in one place.</p>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
+            <div className="p-6 md:p-8 bg-[#262626] border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+                {/* Subtle pattern overlay */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #FACC15 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+                
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-1.5 h-6 bg-yellow-400 rounded-full" />
+                        <h2 className="text-2xl font-black text-white tracking-tight">Assets & <span className="text-yellow-400">Facilities</span></h2>
+                    </div>
+                    <p className="text-sm text-slate-400 font-medium">Manage and optimize campus resources from a single, high-performance interface.</p>
                 </div>
                 {admin && (
                     <button 
                         onClick={onAdd}
-                        className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-yellow-400 text-slate-900 px-6 py-2.5 rounded-lg transition-colors font-semibold shadow-sm border border-yellow-400"
+                        className="relative z-10 w-full md:w-auto flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-yellow-400 text-slate-900 px-7 py-3 rounded-xl transition-all font-bold shadow-[0_4px_20px_-5px_rgba(250,204,21,0.5)] active:scale-95"
                     >
-                        <FiPlus size={18} className="stroke-[2.5px]" /> New Resource
+                        <FiPlus size={18} className="stroke-[3px]" /> New Resource
                     </button>
                 )}
             </div>
 
             {/* Filters */}
-            <div className="p-6 md:p-8 bg-slate-50 border-b border-slate-100">
+            <div className="p-6 md:p-8 bg-slate-50/50 border-b border-slate-100 backdrop-blur-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     <div className="relative">
                         <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />

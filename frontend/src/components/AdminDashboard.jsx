@@ -199,6 +199,7 @@ const AdminDashboard = () => {
   const [sbCollapsed, setSbCollapsed]     = useState(false);
   const [sbHidden, setSbHidden]           = useState(false);
   const [sbMobileOpen, setSbMobileOpen]   = useState(false);
+  const [addTrigger, setAddTrigger]       = useState(0);
   
   const mainRef     = useRef(null);
   const navigate    = useNavigate();
@@ -417,6 +418,31 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              {activeTab === 'resources' && (
+                <button
+                  onClick={() => setAddTrigger(p => p + 1)}
+                  style={{
+                    padding: '7px 14px',
+                    background: D,
+                    border: 'none',
+                    borderRadius: 9,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    color: G,
+                    fontFamily: "'Poppins',sans-serif",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#1a1a1a'}
+                  onMouseLeave={e => e.currentTarget.style.background = D}
+                >
+                  <BookOpen size={14} strokeWidth={2.5} />
+                  Add Resource
+                </button>
+              )}
               <span style={{ padding: '5px 11px', borderRadius: 99, background: `${G}20`, border: `1px solid ${G}45`, color: D, fontSize: 10.5, fontWeight: 700 }}>
                 ● Live
               </span>
@@ -597,7 +623,7 @@ const AdminDashboard = () => {
                   <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: D }}>Facilities & Assets</h2>
                   <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#9ca3af', fontWeight: 500 }}>Register and manage campus resources</p>
                 </div>
-                <ResourceManagement isEmbedded={true} />
+                <ResourceManagement isEmbedded={true} onAddTrigger={addTrigger} />
               </div>
             )}
 

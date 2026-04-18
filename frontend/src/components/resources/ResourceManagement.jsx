@@ -6,10 +6,16 @@ import ResourceForm from './ResourceForm';
 import heroImage from '../../assets/reso1.jpeg';
 import libraryVideo from '../../assets/library.mp4';
 
-const ResourceManagement = ({ isEmbedded = false }) => {
+const ResourceManagement = ({ isEmbedded = false, onAddTrigger = 0 }) => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedResource, setSelectedResource] = useState(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (onAddTrigger > 0) {
+            handleAdd();
+        }
+    }, [onAddTrigger]);
 
     // Removed the automatic redirect to allow admins to manage resources directly
     // and to support embedding in the AdminDashboard.
@@ -34,7 +40,7 @@ const ResourceManagement = ({ isEmbedded = false }) => {
         <div className={`font-poppins selection:bg-yellow-200 ${!isEmbedded ? 'min-h-screen bg-slate-50' : ''}`}>
             {/* Header Section (Only if not embedded) */}
             {!isEmbedded && (
-                <div className="bg-white border-b border-slate-200 pt-16 pb-20 relative overflow-hidden">
+                <div className="bg-[#262626] border-b border-white/5 pt-16 pb-20 relative overflow-hidden">
                     {/* Subtle top decoration */}
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-300 to-transparent" />
 
@@ -42,34 +48,34 @@ const ResourceManagement = ({ isEmbedded = false }) => {
                         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
                             {/* Left Text */}
                             <div className="max-w-2xl text-center lg:text-left">
-                                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-bold uppercase tracking-wider mb-6">
+                                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-yellow-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-8">
                                     <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-                                    Facility Management
+                                    Facility Management V2.0
                                 </span>
-                                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight mb-5 leading-tight">
-                                    Campus <span className="text-yellow-500">Resource</span> Hub
+                                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight mb-6 leading-[1.1]">
+                                    Campus <span className="text-yellow-400">Resource</span> Hub
                                 </h1>
-                                <p className="text-slate-500 text-lg font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
-                                    A centralized dashboard to track, manage, and optimize university assets and infrastructure automatically.
+                                <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
+                                    A centralized ecosystem to track, manage, and optimize university assets with precision and real-time intelligence.
                                 </p>
                             </div>
 
-                            {/* Right Image */}
+                            {/* Right Image/Video Section */}
                             <div className="w-full lg:w-[500px] flex-shrink-0 relative">
                                 {/* Decorative backing for the image */}
-                                <div className="absolute inset-0 bg-yellow-400 rounded-3xl translate-x-3 translate-y-3 opacity-20 hidden md:block" />
-                                <div className="absolute -inset-4 bg-yellow-100/50 blur-3xl -z-10 rounded-full" />
-                                <div className="relative z-10 w-full rounded-3xl shadow-2xl border-4 border-white overflow-hidden aspect-[4/3]">
+                                <div className="absolute inset-0 bg-yellow-400 rounded-[2rem] translate-x-4 translate-y-4 opacity-10 hidden md:block" />
+                                <div className="absolute -inset-10 bg-yellow-400/20 blur-[100px] -z-10 rounded-full opacity-30" />
+                                <div className="relative z-10 w-full rounded-[2rem] shadow-2xl border-8 border-[#ffffff08] overflow-hidden aspect-[4/3] backdrop-blur-3xl">
                                     <video
                                         src={libraryVideo}
                                         autoPlay
                                         loop
                                         muted
                                         playsInline
-                                        className="w-full h-full object-cover object-center"
+                                        className="w-full h-full object-cover object-center scale-[1.02]"
                                     />
                                     {/* Soft overlay to ensure premium feel */}
-                                    <div className="absolute inset-0 bg-slate-900/5 pointer-events-none" />
+                                    <div className="absolute inset-0 bg-slate-900/20 pointer-events-none" />
                                 </div>
                             </div>
                         </div>

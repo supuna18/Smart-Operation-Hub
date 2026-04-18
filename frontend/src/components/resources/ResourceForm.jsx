@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ResourceService from '../../services/ResourceService';
 import { useToast } from '../../context/ToastContext';
-import { FiX, FiCheck, FiInfo, FiLayers, FiUsers, FiMapPin, FiEdit2, FiPlus, FiImage } from 'react-icons/fi';
+import { FiX, FiCheck, FiInfo, FiLayers, FiUsers, FiMapPin, FiEdit2, FiPlus, FiImage, FiCalendar } from 'react-icons/fi';
 
 const ResourceForm = ({ resource, onClose, onSave }) => {
     const { showToast } = useToast();
@@ -70,17 +70,18 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
             <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                {/* Heade.r */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50">
-                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-lg bg-yellow-400 flex items-center justify-center text-slate-900 shadow-sm">
-                            {resource ? <FiEdit2 size={16} /> : <FiPlus size={16} />}
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#262626] relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #FACC15 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                    <h3 className="text-xl font-bold text-white flex items-center gap-3 relative z-10">
+                        <span className="w-8 h-8 rounded-lg bg-[#FACC15] flex items-center justify-center text-[#262626] shadow-lg shadow-yellow-500/20">
+                            {resource ? <FiEdit2 size={16} strokeWidth={2.5} /> : <FiPlus size={16} strokeWidth={2.5} />}
                         </span>
-                        {resource ? 'Edit Resource' : 'Add New Resource'}
+                        {resource ? 'Edit Resource' : 'Register New Asset'}
                     </h3>
                     <button
                         onClick={onClose}
-                        className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 rounded-lg transition-colors"
+                        className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all relative z-10"
                     >
                         <FiX size={20} />
                     </button>
