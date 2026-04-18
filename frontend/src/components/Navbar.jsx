@@ -21,15 +21,6 @@ const Navbar = () => {
 
   const isAdminView = currentPath === '/AdminDashboard';
 
-  // Fetch notifications
-  useEffect(() => {
-    if (loggedIn && user?.id) {
-      fetchNotifications();
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [loggedIn, user?.id]);
-
   const fetchNotifications = async () => {
     try {
       const response = await api.get(`/notifications/${user.id}`);
@@ -53,6 +44,15 @@ const Navbar = () => {
     }
   };
 
+  // Fetch notifications
+  useEffect(() => {
+    if (loggedIn && user?.id) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [loggedIn, user?.id]);
+
   const handleLogout = () => {
     clearAuth();
     navigate('/login');
@@ -61,19 +61,9 @@ const Navbar = () => {
   const navLinks = admin ? [] : [
     { name: 'Home', path: '/' },
     { name: 'Resources', path: '/resources' },
-    { name: 'About', path: '/about' }
     { name: 'Services', path: '/#services', isHash: true },
     { name: 'About', path: '/about' },
     ...(loggedIn ? [{ name: 'Tickets', path: '/tickets' }] : [])
-  ];
-
-  const adminLinks = [
-    { name: 'Overview', path: '/' },
-    { name: 'Admin Dashboard', path: '/AdminDashboard' }
-  ];
-
-  const studentLinks = [
-    { name: 'My Bookings', path: '/my-bookings' }
   ];
 
   return (

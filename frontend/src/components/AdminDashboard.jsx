@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getUser, clearAuth } from '../utils/auth';
 import UserManagement from './admin/UserManagement';
+import ResourceManagement from './resources/ResourceManagement';
 import {
   Users, Building2, Wrench, BookOpen, LayoutDashboard,
   ChevronRight, ShieldCheck, Bell, Settings, LogOut,
@@ -586,8 +587,22 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {activeTab === 'resources' && (
+              <div>
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 99, background: `${G}20`, border: `1px solid ${G}45`, marginBottom: 8 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: G, display: 'inline-block' }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: D, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Resource Management</span>
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: D }}>Facilities & Assets</h2>
+                  <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#9ca3af', fontWeight: 500 }}>Register and manage campus resources</p>
+                </div>
+                <ResourceManagement isEmbedded={true} />
+              </div>
+            )}
+
             {/* ── EMPTY TABS ── */}
-            {['facilities', 'resources'].includes(activeTab) && (() => {
+            {['facilities'].includes(activeTab) && (() => {
               const tab = TABS.find(t => t.id === activeTab);
               const Icon = tab?.icon;
               return (
