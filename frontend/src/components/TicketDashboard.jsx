@@ -21,7 +21,7 @@ const TicketDashboard = () => {
     
     const user = getUser();
     const userRole = user?.role;
-    const userId = user?.id;
+    const userName = user?.username;
     
     // Defensive admin check
     const rawAuth = localStorage.getItem('authUser');
@@ -41,17 +41,25 @@ const TicketDashboard = () => {
         setLoading(true);
         try {
             let url = 'http://localhost:8082/api/tickets';
-            if (filterStatus !== 'ALL') {
+            
+            if (!isAdmin && userName) {
+                // Normal users ALWAYS fetch only their own tickets
+                url = `http://localhost:8082/api/tickets/user/${userName}`;
+            } else if (isAdmin && filterStatus !== 'ALL') {
+                // Admins can use the backend status filter
                 url = `http://localhost:8082/api/tickets/status/${filterStatus}`;
-            } else if (isAdmin) {
-                url = 'http://localhost:8082/api/tickets';
-            } else if (userId) {
-                url = `http://localhost:8082/api/tickets/user/${userId}`;
             }
             
             const response = await axios.get(url);
+            let resultData = response.data;
+
+            // If a normal user is filtering by status, filter the data on the client side
+            if (!isAdmin && filterStatus !== 'ALL') {
+                resultData = resultData.filter(t => t.status === filterStatus);
+            }
+
             // Sort by creation date (newest first)
-            const sortedTickets = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const sortedTickets = resultData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setTickets(sortedTickets);
             setError(null);
         } catch (err) {
