@@ -58,10 +58,10 @@ const Features = () => {
               Our Ecosystem
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-black text-[#262626] leading-tight">
+            <h2 className="text-4xl md:text-5xl font-black text-yellow-500 leading-tight">
               Comprehensive solutions{' '}
               <span className="relative inline-block">
-                <span className="text-yellow-500">for campus</span>
+                <span>for campus</span>
                 <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 260 10" fill="none">
                   <path d="M2 8C50 2 130 1 258 8" stroke="#FACC15" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
                 </svg>
