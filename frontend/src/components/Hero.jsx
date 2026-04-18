@@ -47,14 +47,14 @@ const Hero = () => {
             transition={{ duration: 0.8 }}
             className="text-5xl sm:text-6xl md:text-7xl font-black leading-[1.04] tracking-tight text-[#262626]"
           >
-            <span className="text-yellow-500">Elevating</span>{' '}
+            <span className="text-[#FACC15]">Elevating</span>{' '}
             <span className="relative inline-block">
-              <span className="text-yellow-500">Campus</span>
+              <span className="text-[#FACC15]">Campus</span>
               <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 280 10" fill="none">
                 <path d="M2 8C50 2 140 1 278 8" stroke="#FACC15" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
               </svg>
             </span>{' '}
-            <span className="text-yellow-500">Operations</span>.<br />
+            <span className="text-[#FACC15]">Operations</span>.<br />
             <span className="text-[#262626]">Through Smart Tech.</span>
           </motion.h1>
 

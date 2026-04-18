@@ -103,13 +103,8 @@ const About = () => {
               Our Purpose
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-black text-yellow-500 mb-6 leading-tight">
-              Empowering the Future of{' '}
-              <span className="relative">
-                <span>Education</span>
-                <span className="absolute bottom-1 left-0 w-full h-1 bg-yellow-400/30 rounded-full" />
-              </span>
-              .
+            <h2 className="text-4xl md:text-5xl font-black text-[#FACC15] mb-6 leading-tight" style={{ color: '#FACC15' }}>
+              Empowering the Future of Education.
             </h2>
 
             <p className="text-lg text-gray-500 leading-relaxed mb-10 font-medium">
@@ -277,7 +272,7 @@ const About = () => {
                 Our Culture
               </div>
               <h2 className="text-3xl md:text-4xl font-black text-[#262626] mb-5 leading-tight">
-                A team passionate about <span className="text-yellow-500">impact</span>.
+                A team passionate about <span className="text-[#FACC15]">impact</span>.
               </h2>
               <p className="text-gray-500 font-medium leading-relaxed">
                 We bring together engineers, educators, and designers who share one belief: technology should make learning more human, not less.
