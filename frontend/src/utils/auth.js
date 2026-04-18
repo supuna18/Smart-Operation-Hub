@@ -23,7 +23,8 @@ export const clearAuth = () => {
 
 export const isAdmin = () => {
   const user = getUser();
-  return user?.role?.toLowerCase() === 'admin';
+  const role = user?.role || user?.Role || '';
+  return role.toLowerCase().trim() === 'admin';
 };
 
 export const isLoggedIn = () => Boolean(getToken() && getUser());

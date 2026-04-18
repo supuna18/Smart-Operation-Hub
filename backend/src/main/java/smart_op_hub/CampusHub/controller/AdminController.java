@@ -35,35 +35,6 @@ public class AdminController {
     @Autowired
     private SafetyReportRepository safetyReportRepository;
 
-    @GetMapping("/users")
-    public List<User> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        users.forEach(user -> user.setPassword(null));
-        return users;
-    }
-
-    @PutMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User request) {
-        return userRepository.findById(id).map(user -> {
-            user.setUsername(request.getUsername() != null ? request.getUsername() : user.getUsername());
-            user.setEmail(request.getEmail() != null ? request.getEmail() : user.getEmail());
-            if (request.getRole() != null) {
-                user.setRole(request.getRole());
-            }
-            userRepository.save(user);
-            user.setPassword(null);
-            return ResponseEntity.ok(user);
-        }).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-        if (!userRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        userRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @GetMapping("/facilities")
     public List<Facility> getFacilities() {

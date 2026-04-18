@@ -39,7 +39,7 @@ public class AuthService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("Student");
+        user.setRole("STUDENT");
         user.setAuthProvider("local");
 
         userRepository.save(user);
@@ -55,11 +55,12 @@ public class AuthService {
         if (optionalAdmin.isPresent()) {
             Admin admin = optionalAdmin.get();
             if (passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
-                String token = jwtUtil.generateToken(admin.getEmail(), "Admin");
+                System.out.println("Password matched for admin.");
+                String token = jwtUtil.generateToken(admin.getEmail(), "ADMIN");
                 User user = new User();
                 user.setEmail(admin.getEmail());
                 user.setUsername("System Admin");
-                user.setRole("Admin");
+                user.setRole("ADMIN");
                 return new AuthRequest.AuthResponse(token, user);
             }
         }
@@ -113,7 +114,7 @@ public class AuthService {
                 user = new User();
                 user.setEmail(email);
                 user.setUsername(name);
-                user.setRole("Student");
+                user.setRole("STUDENT");
                 user.setAuthProvider("google");
                 user.setProfileImageUrl(pictureUrl);
                 userRepository.save(user);
