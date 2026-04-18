@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { isAdmin } from './utils/auth';
+import { isAdmin, isLoggedIn } from './utils/auth';
 
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -32,7 +32,7 @@ function AppContent() {
           <Route path="/signup" element={<Signup />} />
 
           {/* User Ticket Dashboard */}
-          <Route path="/tickets" element={isAdmin() ? <Navigate to="/AdminDashboard" replace /> : <TicketDashboard />} />
+          <Route path="/tickets" element={!isLoggedIn() ? <Navigate to="/login" replace /> : isAdmin() ? <Navigate to="/AdminDashboard" replace /> : <TicketDashboard />} />
 
 
 

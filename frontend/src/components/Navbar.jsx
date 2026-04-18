@@ -62,7 +62,7 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/#services', isHash: true },
     { name: 'About', path: '/about' },
-    { name: 'Tickets', path: '/tickets' }
+    ...(loggedIn ? [{ name: 'Tickets', path: '/tickets' }] : [])
   ];
 
   return (
