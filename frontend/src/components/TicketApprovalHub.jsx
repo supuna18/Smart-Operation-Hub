@@ -9,7 +9,7 @@ import axios from 'axios';
 import TicketCard from './TicketCard';
 import { getUser, isAdmin as checkIsAdmin } from '../utils/auth';
 
-const TicketApprovalHub = () => {
+const TicketApprovalHub = ({ isEmbedded = false }) => {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -68,10 +68,11 @@ const TicketApprovalHub = () => {
     }, [tickets]);
 
     return (
-        <div className="min-h-screen bg-[#F8F9FA] pt-24 pb-12 px-6 lg:px-12 font-sans overflow-x-hidden">
-            <div className="max-w-[1600px] mx-auto">
+        <div className={isEmbedded ? "w-full overflow-x-hidden" : "min-h-screen bg-[#F8F9FA] pt-24 pb-12 px-6 lg:px-12 font-sans overflow-x-hidden"}>
+            <div className={isEmbedded ? "w-full" : "max-w-[1600px] mx-auto"}>
                 {/* Admin Header Section */}
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-12">
+                {!isEmbedded && (
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-12">
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -110,6 +111,7 @@ const TicketApprovalHub = () => {
                         </div>
                     </motion.div>
                 </div>
+                )}
 
                 <div className="flex flex-col lg:flex-row gap-10">
                     {/* Management List Section (70%) */}

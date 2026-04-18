@@ -58,12 +58,11 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  const navLinks = [
+  const navLinks = admin ? [] : [
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/#services', isHash: true },
     { name: 'About', path: '/about' },
-    { name: 'Tickets', path: '/tickets' },
-    ...(admin ? [{ name: 'Ticket Approvals', path: '/admin/tickets' }] : [])
+    { name: 'Tickets', path: '/tickets' }
   ];
 
   return (

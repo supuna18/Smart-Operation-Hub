@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { isAdmin } from './utils/auth';
 
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -26,23 +26,15 @@ function AppContent() {
       <main className="flex-grow">
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/" element={isAdmin() ? <Navigate to="/AdminDashboard" replace /> : <Home />} />
+          <Route path="/about" element={isAdmin() ? <Navigate to="/AdminDashboard" replace /> : <About />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
           {/* User Ticket Dashboard */}
-          <Route path="/tickets" element={<TicketDashboard />} />
+          <Route path="/tickets" element={isAdmin() ? <Navigate to="/AdminDashboard" replace /> : <TicketDashboard />} />
 
-          {/* Admin Ticket Approval */}
-          <Route
-            path="/admin/tickets"
-            element={
-              <ProtectedRoute>
-                <TicketApprovalHub />
-              </ProtectedRoute>
-            }
-          />
+
 
           {/* Admin Dashboard */}
           <Route
