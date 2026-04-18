@@ -103,10 +103,10 @@ const About = () => {
               Our Purpose
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-black text-[#262626] mb-6 leading-tight">
+            <h2 className="text-4xl md:text-5xl font-black text-yellow-500 mb-6 leading-tight">
               Empowering the Future of{' '}
               <span className="relative">
-                <span className="text-yellow-500">Education</span>
+                <span>Education</span>
                 <span className="absolute bottom-1 left-0 w-full h-1 bg-yellow-400/30 rounded-full" />
               </span>
               .
