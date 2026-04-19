@@ -3,6 +3,7 @@ import { isAdmin } from '../../utils/auth';
 import { useNavigate } from 'react-router-dom';
 import ResourceList from './ResourceList';
 import ResourceForm from './ResourceForm';
+import ResourceApprovalHub from './ResourceApprovalHub';
 import heroImage from '../../assets/reso1.jpeg';
 import libraryVideo from '../../assets/library.mp4';
 
@@ -20,6 +21,7 @@ const ResourceManagement = ({ isEmbedded = false, onAddTrigger = 0 }) => {
     // Removed the automatic redirect to allow admins to manage resources directly
     // and to support embedding in the AdminDashboard.
 
+    const [viewMode, setViewMode] = useState('assets'); // 'assets' or 'bookings'
     const [refreshKey, setRefreshKey] = useState(0);
 
     const handleEdit = (resource) => {
@@ -85,11 +87,42 @@ const ResourceManagement = ({ isEmbedded = false, onAddTrigger = 0 }) => {
 
             {/* Main Content */}
             <div className={`max-w-7xl mx-auto ${!isEmbedded ? 'px-4 sm:px-6 lg:px-8 -mt-12 relative z-20 pb-20' : ''}`}>
-                <ResourceList
-                    key={refreshKey}
-                    onEdit={handleEdit}
-                    onAdd={handleAdd}
-                />
+                
+                {/* Mode Selector - Premium Toggle */}
+                <div className="flex justify-center mb-8">
+                    <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-2">
+                        <button 
+                            onClick={() => setViewMode('assets')}
+                            className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
+                                viewMode === 'assets' 
+                                    ? 'bg-[#262626] text-[#FACC15] shadow-lg shadow-black/20' 
+                                    : 'text-slate-400 hover:text-slate-600'
+                            }`}
+                        >
+                            Asset Registry
+                        </button>
+                        <button 
+                            onClick={() => setViewMode('bookings')}
+                            className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
+                                viewMode === 'bookings' 
+                                    ? 'bg-[#262626] text-[#FACC15] shadow-lg shadow-black/20' 
+                                    : 'text-slate-400 hover:text-slate-600'
+                            }`}
+                        >
+                            Booking Requests
+                        </button>
+                    </div>
+                </div>
+
+                {viewMode === 'assets' ? (
+                    <ResourceList
+                        key={refreshKey}
+                        onEdit={handleEdit}
+                        onAdd={handleAdd}
+                    />
+                ) : (
+                    <ResourceApprovalHub />
+                )}
 
                 {isFormOpen && (
                     <ResourceForm
@@ -100,6 +133,7 @@ const ResourceManagement = ({ isEmbedded = false, onAddTrigger = 0 }) => {
                 )}
             </div>
         </div>
+
     );
 };
 
