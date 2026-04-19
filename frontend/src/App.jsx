@@ -9,13 +9,17 @@ import Signup from './components/Signup';
 import AdminDashboard from './components/AdminDashboard';
 import Profile from './components/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
+import AuthRoute from './components/AuthRoute';
 import Footer from './components/Footer';
 import TicketDashboard from './components/TicketDashboard';
 import TicketApprovalHub from './components/TicketApprovalHub';
+import ResourceManagement from './components/resources/ResourceManagement';
+import MyBookings from './components/resources/MyBookings';
+import { ToastProvider } from './context/ToastContext';
 
 function AppContent() {
   const location = useLocation();
-  const hideFooter = location.pathname === '/AdminDashboard';
+  const hideFooter = location.pathname === '/AdminDashboard' || location.pathname === '/resources';
 
   return (
     <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col">
@@ -34,13 +38,29 @@ function AppContent() {
           {/* User Ticket Dashboard */}
           <Route path="/tickets" element={!isLoggedIn() ? <Navigate to="/login" replace /> : isAdmin() ? <Navigate to="/AdminDashboard" replace /> : <TicketDashboard />} />
 
-
+          {/* Resource Management & Bookings */}
+          <Route 
+            path="/resources" 
+            element={
+              <ProtectedRoute>
+                <ResourceManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/my-bookings" 
+            element={
+              <ProtectedRoute>
+                <MyBookings />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Admin Dashboard */}
           <Route
             path="/AdminDashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={true}>
                 <AdminDashboard />
               </ProtectedRoute>
             }
@@ -58,7 +78,7 @@ function AppContent() {
         </Routes>
       </main>
 
-      {/* Footer (hidden on Admin Dashboard) */}
+      {/* Footer (hidden on Admin Dashboard & Resources) */}
       {!hideFooter && <Footer />}
     </div>
   );
@@ -66,10 +86,12 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ToastProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </ToastProvider>
   );
 }
 
-export default App;
+export default App;
