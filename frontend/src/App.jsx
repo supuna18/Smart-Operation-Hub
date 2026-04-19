@@ -42,7 +42,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
           />
           
           {/* --- INTHA ROUTE-AH IPPO ADD PANNI IRUKKEN --- */}
-          <Route path="/services" element={<FacilityShowcase />} />
+          <Route path="/facilities" element={<FacilityShowcase />} />
 
           <Route 
             path="/login" 

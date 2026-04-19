@@ -65,7 +65,7 @@ const Navbar = () => {
     ? []
     : [
         { name: 'Home', path: '/' },
-        { name: 'Services', path: '/services' }, // Removed /#services to load your new page
+        { name: 'Facilities', path: '/Facilities' }, // Removed /#services to load your new page
         { name: 'About', path: '/about' },
         { name: 'Tickets', path: '/tickets' }
       ];

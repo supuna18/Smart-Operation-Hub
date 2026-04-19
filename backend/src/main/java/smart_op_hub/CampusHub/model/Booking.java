@@ -3,21 +3,21 @@ package smart_op_hub.CampusHub.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Data
-@Document(collection = "bookings")
+@Document(collection = "bookings") // Puthu table name - Member 2 work mattum dhaan inga irukum
 public class Booking {
     @Id
     private String id;
-    private String facilityName;
-    private String userId;      // Yaaru book panna nu theriyanum
+    private String facilityName; // Name of the lab/hall
+    private String userId;      
     private String username;
-    private LocalDate date;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private String date;         
+    private String startTime;
+    private String endTime;
     private String purpose;
     private int attendees;
-    private String status = "PENDING"; // Default status
+    private String status = "PENDING"; // Workflow: PENDING -> APPROVED/REJECTED
+    // Booking.java-la indha oru line mattum sethukonga
+    private String rejectionReason;
 }
