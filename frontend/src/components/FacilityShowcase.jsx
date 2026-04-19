@@ -1,135 +1,250 @@
 import React, { useState } from 'react';
-import BookingForm from './BookingForm';
 import { useNavigate } from 'react-router-dom';
-// Leader-oda auth logic-ah direct-ah import pandrom (Idhu dhaan mukkiyam)
-import { isLoggedIn } from '../utils/auth'; 
+import { Search, MapPin, Users, Clock, ArrowRight, ShieldCheck, Lock, Globe } from 'lucide-react';
+import { isLoggedIn } from '../utils/auth';
+<h1>TESTING</h1>
 
 const FacilityShowcase = () => {
   const navigate = useNavigate();
-  const [viewState, setViewState] = useState('gallery');
   const [selectedFacility, setSelectedFacility] = useState(null);
-  const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState("ALL");
 
-  // Prop-ah nambaama, direct-ah auth check pandrom
-  const authenticated = isLoggedIn();
-
-  const facilities = [
-    { 
+  // SLIIT Malabe Campus Facilities Data (10+ Features)
+  const sliitFacilities = [
+    {
       id: "1",
-      title: "Central Library", 
-      type: "Academic Hub", 
-      cap: "500+ Students", 
-      img: "https://images.unsplash.com/photo-1541339907198-e08756ebafe3?q=80&w=800",
-      location: "East Wing, Level 3",
-      desc: "Our Central Library provides a serene environment for study and research. Features 24/7 access and a vast digital archive.",
-      amenities: ["Silent Zones", "Digital Archive", "Coffee Bar", "Private Cabins"]
+      name: "FOC Computing Lab - Level 4",
+      category: "LABS",
+      capacity: "60 Seats",
+      location: "FOC Building, Malabe",
+      img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800",
+      desc: "SLIIT-oda primary research lab. Inga high-end workstations and GPU clusters iruku for AI projects.",
+      details: "Equipped with latest IDEs, dual-monitor setups, and high-speed dedicated research network."
     },
-    { 
+    {
       id: "2",
-      title: "Olympic Swimming Pool", 
-      type: "Sports Facility", 
-      cap: "Pro Grade", 
-      img: "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?q=80&w=800",
-      location: "Aquatic Center",
-      desc: "A temperature-controlled Olympic-sized pool designed for professional training.",
-      amenities: ["10 Lanes", "Shower Rooms", "Spectator Gallery", "Sauna"]
+      name: "Main Student Canteen",
+      category: "DINING",
+      capacity: "400+ People",
+      location: "Canteen Block, Ground Floor",
+      img: "https://images.unsplash.com/photo-1567529684892-09290a1b2d05?q=80&w=800",
+      desc: "The heartbeat of SLIIT. Fresh meals, snacks, and juices for students and staff.",
+      details: "Features automated ordering kiosks and a spacious outdoor seating plaza."
     },
-    { 
+    {
       id: "3",
-      title: "AI Research Lab", 
-      type: "Research Complex", 
-      cap: "40 Units", 
+      name: "Olympic Size Swimming Pool",
+      category: "SPORTS",
+      capacity: "Professional",
+      location: "Sports Complex",
+      img: "https://images.unsplash.com/photo-1534126416832-a88fdf2911c2?q=80&w=800",
+      desc: "Professional 50-meter temperature-controlled pool for training and leisure.",
+      details: "Dedicated lanes for training, locker room facilities, and on-site life guards."
+    },
+    {
+      id: "4",
+      name: "Curtin Engineering Lab",
+      category: "LABS",
+      capacity: "40 Seats",
+      location: "Engineering Wing, New Building",
       img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800",
-      location: "Tower A",
-      desc: "Equipped with RTX GPUs for AI and Robotics research.",
-      amenities: ["GPU Stations", "VR Setup", "Cloud Sync", "3D Printing"]
+      desc: "Specialized lab for engineering students with heavy-duty testing equipment.",
+      details: "Advanced robotics kits and electronic testing stations for hardware projects."
+    },
+    {
+      id: "5",
+      name: "Main Library Study Zone",
+      category: "ACADEMIC",
+      capacity: "500+ Seats",
+      location: "Admin Building, Level 2",
+      img: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=800",
+      desc: "A silent zone with access to thousands of digital journals and physical archives.",
+      details: "Individual study carrels and group discussion cubicles available for booking."
+    },
+    {
+      id: "6",
+      name: "Campus Gymnasium",
+      category: "SPORTS",
+      capacity: "50 People",
+      location: "Sports Complex, Level 1",
+      img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800",
+      desc: "Modern fitness center with cardio and weight-training equipment.",
+      details: "Personal trainers available. Access is restricted to SLIIT students and staff."
+    },
+    {
+      id: "7",
+      name: "Main Auditorium",
+      category: "EVENTS",
+      capacity: "1200 Seats",
+      location: "Admin Block",
+      img: "https://images.unsplash.com/photo-1505373630562-402923ad99b1?q=80&w=800",
+      desc: "Grand auditorium for convocations, major events, and cultural festivals.",
+      details: "Features professional sound (Dolby Atmos) and lighting systems for events."
+    },
+    {
+      id: "8",
+      name: "FOC Seminar Room - Level 5",
+      category: "ACADEMIC",
+      capacity: "100 Seats",
+      location: "FOC Wing",
+      img: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=800",
+      desc: "Smart classroom with interactive whiteboards and video conferencing features.",
+      details: "Ideal for workshops, guest lectures, and student presentations."
+    },
+    {
+      id: "9",
+      name: "Outdoor Cricket Ground",
+      category: "SPORTS",
+      capacity: "Standard",
+      location: "Main Campus Entrance Area",
+      img: "https://images.unsplash.com/photo-1531415074968-0036ba1b575da?q=80&w=800",
+      desc: "Newly renovated natural turf cricket ground with floodlight facilities.",
+      details: "Available for tournament bookings and casual play during evening hours."
+    },
+    {
+      id: "10",
+      name: "Innovation Hub (Startup Zone)",
+      category: "ACADEMIC",
+      capacity: "20 People",
+      location: "Business School Wing",
+      img: "https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=800",
+      desc: "A collaborative workspace for student startups and brainstorming sessions.",
+      details: "Equipped with high-speed internet, writable walls, and coffee station."
     }
   ];
 
-  const handleCardClick = (f) => {
-    if (authenticated) {
-      setSelectedFacility(f);
-      setViewState('details'); // Ippo click panna kandippa details page-ku kootitu pogum
-      window.scrollTo(0, 0);
+  const filtered = sliitFacilities.filter(f => 
+    (activeFilter === "ALL" || f.category === activeFilter) &&
+    f.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleBookNow = () => {
+    if (isLoggedIn()) {
+      alert("Opening Booking Form..."); 
+      // Inga neenga unga BookingForm component-ah open pannanum
     } else {
       navigate('/login');
     }
   };
 
-  if (viewState === 'gallery') {
-    return (
-      <section className="py-20 px-6 md:px-16 bg-white min-h-screen">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16">
-            <h1 className="text-5xl font-black text-[#262626]">Campus <span className="text-yellow-500">Facilities</span></h1>
-            <p className="text-gray-400 mt-4 font-medium italic">"Experience world-class infrastructure designed for your growth."</p>
+  return (
+    <div className="bg-[#F8F9FA] min-h-screen py-16 px-6 md:px-16">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header - Professional Like Incident Hub */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="bg-yellow-400 w-12 h-1.5 rounded-full" />
+              <span className="text-xs font-black uppercase tracking-widest text-gray-400">SLIIT Malabe Campus</span>
+            </div>
+            <h1 className="text-5xl font-black text-[#262626] leading-tight">
+              Campus <span className="text-yellow-500">Facilities</span> Ecosystem
+            </h1>
+            <p className="text-gray-400 mt-4 font-medium italic">"Explore and reserve world-class assets designed for your growth."</p>
           </div>
+          
+          <div className="bg-[#262626] p-6 rounded-[2.5rem] text-white border border-white/5 shadow-2xl hidden md:block">
+             <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1 text-right">System Operational</p>
+             <div className="flex items-center gap-3 text-2xl font-black">
+               98.4% <ShieldCheck className="text-yellow-400 w-6 h-6"/>
+             </div>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {facilities.map((f, i) => (
-              <div 
-                key={i} 
-                onClick={() => handleCardClick(f)}
-                className={`group relative h-[420px] rounded-[3rem] overflow-hidden shadow-2xl bg-[#262626] transition-all duration-500 ${authenticated ? 'cursor-pointer hover:-translate-y-3' : 'cursor-not-allowed'}`}
+        {/* Search & Tabs */}
+        <div className="flex flex-col md:flex-row gap-6 mb-12">
+          <div className="relative flex-grow max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input 
+              type="text" 
+              placeholder="Search labs, canteens..." 
+              className="w-full pl-12 pr-6 py-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-yellow-500 outline-none font-medium"
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            {["ALL", "LABS", "SPORTS", "DINING", "ACADEMIC", "EVENTS"].map(tag => (
+              <button 
+                key={tag}
+                onClick={() => setActiveFilter(tag)}
+                className={`px-6 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all ${activeFilter === tag ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-200' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
               >
-                {/* User login panna udane image bright aagi 'Private Asset' poyidum */}
-                <img src={f.img} alt={f.title} className={`w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 ${authenticated ? 'opacity-90' : 'opacity-30 grayscale'}`} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
-                
-                <div className="absolute bottom-10 left-10">
-                  <span className="bg-yellow-500 text-black text-[9px] font-black px-3 py-1 rounded uppercase mb-2 inline-block tracking-widest">{f.type}</span>
-                  <h3 className="text-3xl font-black text-white">{f.title}</h3>
-                </div>
-
-                {/* LOCK OVERLAY - Inga dhaan fix irukku */}
-                {!authenticated && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                    <div className="bg-white px-6 py-3 rounded-full font-black text-xs uppercase tracking-widest text-black shadow-xl">Login to Access</div>
-                  </div>
-                )}
-              </div>
+                {tag}
+              </button>
             ))}
           </div>
         </div>
-      </section>
-    );
-  }
 
-  // Details Page View (Ulla ponathuku appuram katanum)
-  if (viewState === 'details' && selectedFacility) {
-    return (
-      <section className="py-24 px-6 md:px-16 bg-white animate-in slide-in-from-right-10 duration-500">
-        <div className="max-w-6xl mx-auto">
-          <button onClick={() => setViewState('gallery')} className="flex items-center gap-3 text-gray-400 font-bold mb-12 hover:text-black transition-all group">
-             <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-black transition-all">←</div>
-             Back to Catalogue
-          </button>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="h-[550px] rounded-[4rem] overflow-hidden shadow-2xl">
-              <img src={selectedFacility.img} className="w-full h-full object-cover" alt="" />
-            </div>
-            <div>
-              <span className="text-yellow-500 font-black text-sm uppercase tracking-widest mb-4 inline-block">{selectedFacility.type}</span>
-              <h1 className="text-6xl font-black text-[#262626] mb-8 leading-tight">{selectedFacility.title}</h1>
-              <p className="text-gray-500 text-lg font-medium leading-relaxed mb-10">{selectedFacility.desc}</p>
-              
-              <button 
-                onClick={() => setShowForm(true)}
-                className="w-full py-6 bg-[#262626] text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-yellow-500 hover:text-black transition-all shadow-2xl"
+        {/* Gallery View */}
+        {!selectedFacility ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {filtered.map((f) => (
+              <div 
+                key={f.id} 
+                onClick={() => setSelectedFacility(f)}
+                className="group bg-white rounded-[3.5rem] p-4 shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 cursor-pointer"
               >
-                Book This Facility
-              </button>
+                <div className="relative h-64 rounded-[2.5rem] overflow-hidden">
+                  <img src={f.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                  <div className="absolute top-6 left-6">
+                    <span className="bg-white/95 backdrop-blur px-4 py-1.5 rounded-full text-[9px] font-black text-gray-800 uppercase tracking-widest shadow-sm">{f.category}</span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-2xl font-black text-[#262626] mb-3">{f.name}</h3>
+                  <div className="flex items-center gap-2 text-xs font-bold text-gray-400 mb-6">
+                    <MapPin className="w-4 h-4 text-yellow-500" /> {f.location}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1"><Users className="w-3.5 h-3.5"/> {f.capacity}</span>
+                    <span className="text-yellow-600 font-black text-xs uppercase flex items-center gap-1">View Details <ArrowRight className="w-4 h-4"/></span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Detailed View Page */
+          <div className="animate-in fade-in slide-in-from-bottom-10 duration-500">
+            <button 
+              onClick={() => setSelectedFacility(null)}
+              className="mb-10 flex items-center gap-2 text-gray-400 font-black text-xs uppercase hover:text-black transition-all"
+            >
+              ← Back to All Assets
+            </button>
+            
+            <div className="bg-white rounded-[4rem] p-10 md:p-16 shadow-2xl border border-gray-50 flex flex-col lg:flex-row gap-20">
+              <div className="lg:w-1/2 h-[550px] rounded-[3.5rem] overflow-hidden shadow-2xl">
+                 <img src={selectedFacility.img} className="w-full h-full object-cover" alt="" />
+              </div>
+              <div className="lg:w-1/2 flex flex-col justify-center">
+                <span className="text-yellow-500 font-black text-sm uppercase tracking-[0.4em] mb-4">{selectedFacility.category}</span>
+                <h2 className="text-6xl font-black text-[#262626] mb-8 leading-tight">{selectedFacility.name}</h2>
+                <div className="flex items-center gap-8 mb-10">
+                   <div className="flex items-center gap-2 text-sm font-bold text-gray-400"><MapPin className="text-yellow-500"/> {selectedFacility.location}</div>
+                   <div className="flex items-center gap-2 text-sm font-bold text-gray-400"><Users className="text-yellow-500"/> {selectedFacility.capacity}</div>
+                </div>
+                <p className="text-gray-500 text-lg font-medium leading-relaxed mb-8">{selectedFacility.desc}</p>
+                <div className="bg-gray-50 p-8 rounded-[2.5rem] mb-12 border border-gray-100">
+                   <p className="text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest flex items-center gap-2"><Clock className="w-4 h-4" /> Operational Policy</p>
+                   <p className="text-gray-600 font-medium leading-relaxed">{selectedFacility.details}</p>
+                </div>
+                
+                <button 
+                  onClick={handleBookNow}
+                  className="w-full py-7 bg-[#262626] text-white rounded-[2.5rem] font-black text-xs uppercase tracking-[0.4em] hover:bg-yellow-500 hover:text-black transition-all shadow-2xl flex items-center justify-center gap-3"
+                >
+                  <Lock className="w-4 h-4" /> Book This Asset Now
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        {showForm && (
-          <BookingForm facility={selectedFacility} onClose={() => setShowForm(false)} />
         )}
-      </section>
-    );
-  }
+      </div>
+    </div>
+  );
 };
 
 export default FacilityShowcase;
