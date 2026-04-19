@@ -6,7 +6,7 @@ import { clearAuth, getUser, isAdmin, isLoggedIn } from '../utils/auth';
 import api from '../utils/api';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);              
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -20,15 +20,6 @@ const Navbar = () => {
   const admin = isAdmin();
 
   const isAdminView = currentPath === '/AdminDashboard';
-
-  // Fetch notifications
-  useEffect(() => {
-    if (loggedIn && user?.id) {
-      fetchNotifications();
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [loggedIn, user?.id]);
 
   const fetchNotifications = async () => {
     try {
@@ -55,19 +46,29 @@ const Navbar = () => {
     }
   };
 
+  useEffect(() => {
+    if (loggedIn && user?.id) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [loggedIn, user?.id]);
+
   const handleLogout = () => {
     clearAuth();
     navigate('/login');
   };
 
-  // --- UPDATED THIS PART FOR MEMBER 2 (YOU) ---
+  // ✅ MERGED navLinks (both versions combined)
   const navLinks = admin
     ? []
     : [
         { name: 'Home', path: '/' },
-        { name: 'Facilities', path: '/Facilities' }, // Removed /#services to load your new page
+        { name: 'Facilities', path: '/Facilities' },
+        { name: 'Resources', path: '/resources' },
+        { name: 'Services', path: '/#services', isHash: true },
         { name: 'About', path: '/about' },
-        { name: 'Tickets', path: '/tickets' }
+        ...(loggedIn ? [{ name: 'Tickets', path: '/tickets' }] : [])
       ];
 
   return (
@@ -85,7 +86,6 @@ const Navbar = () => {
       <div className="hidden md:flex space-x-10 font-medium items-center">
         {!isAdminView &&
           navLinks.map((link) => {
-            // Simplified isActive logic to support your new route
             const isActive = currentPath === link.path;
 
             return (

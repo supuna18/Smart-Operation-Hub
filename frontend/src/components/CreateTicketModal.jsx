@@ -66,7 +66,7 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                         <div className="flex justify-between items-start mb-10">
                             <div>
                                 <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-1">Report an Issue</h2>
-                                <p className="text-gray-500 font-bold text-sm tracking-tight opacity-80">Help us keep the campus in top shape</p>
+                                <p className="text-gray-600 font-bold text-sm tracking-tight">Help us keep the campus in top shape</p>
                             </div>
                             <button 
                                 onClick={onClose} 
@@ -79,17 +79,17 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                         <form onSubmit={handleSubmit} className="space-y-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-3 px-1">Issue Category</label>
+                                    <label className="text-xs font-extrabold uppercase tracking-widest text-gray-800 block mb-3 px-1">Issue Category</label>
                                     <div className="relative group">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-                                            <Type className="text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                            <Type className="text-gray-500 w-5 h-5 group-focus-within:text-yellow-600 transition-colors" />
                                         </div>
                                         <input 
                                             list="issue-types"
                                             required
                                             value={formData.issueTitle}
                                             onChange={(e) => setFormData({...formData, issueTitle: e.target.value})}
-                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.5rem] py-4.5 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700"
+                                            className="w-full bg-gray-100 border border-gray-200 rounded-[1.5rem] py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-900 placeholder:text-gray-500 placeholder:font-semibold"
                                             placeholder="Select or type..."
                                         />
                                         <datalist id="issue-types">
@@ -99,16 +99,16 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-3 px-1">Location</label>
+                                    <label className="text-xs font-extrabold uppercase tracking-widest text-gray-800 block mb-3 px-1">Location</label>
                                     <div className="relative group">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-                                            <MapPin className="text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                            <MapPin className="text-gray-500 w-5 h-5 group-focus-within:text-yellow-600 transition-colors" />
                                         </div>
                                         <input 
                                             required
                                             value={formData.location}
                                             onChange={(e) => setFormData({...formData, location: e.target.value})}
-                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.5rem] py-4.5 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700"
+                                            className="w-full bg-gray-100 border border-gray-200 rounded-[1.5rem] py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-900 placeholder:text-gray-500 placeholder:font-semibold"
                                             placeholder="e.g. Lab 03, Block B"
                                         />
                                     </div>
@@ -116,24 +116,24 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-3 px-1">Detailed Description</label>
+                                <label className="text-xs font-extrabold uppercase tracking-widest text-gray-800 block mb-3 px-1">Detailed Description</label>
                                 <div className="relative group">
                                     <div className="absolute left-4 top-5 pointer-events-none">
-                                        <FileText className="text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                        <FileText className="text-gray-500 w-5 h-5 group-focus-within:text-yellow-600 transition-colors" />
                                     </div>
                                     <textarea 
                                         required
                                         rows="4"
                                         value={formData.description}
                                         onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                        className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.5rem] py-5 pl-12 pr-5 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-700 resize-none min-h-[120px]"
+                                        className="w-full bg-gray-100 border border-gray-200 rounded-[1.5rem] py-5 pl-12 pr-5 outline-none focus:bg-white focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold text-gray-900 placeholder:text-gray-500 placeholder:font-semibold resize-none min-h-[120px]"
                                         placeholder="Describe the problem, e.g., 'The lamp is flickering then went black'..."
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-3">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-3 px-1">Attachment</label>
+                                <label className="text-xs font-extrabold uppercase tracking-widest text-gray-800 block mb-3 px-1">Attachment</label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
                                     {/* Upload Area */}
                                     <div className="relative group/upload h-[120px]">
@@ -152,11 +152,11 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                                             }}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                         />
-                                        <div className="w-full h-full bg-gray-50/80 border-2 border-dashed border-gray-100 rounded-[1.5rem] flex flex-col items-center justify-center gap-3 group-hover/upload:border-yellow-400 group-hover/upload:bg-yellow-50/20 transition-all">
+                                        <div className="w-full h-full bg-gray-100 border-2 border-dashed border-gray-300 rounded-[1.5rem] flex flex-col items-center justify-center gap-3 group-hover/upload:border-yellow-400 group-hover/upload:bg-yellow-50/20 transition-all">
                                             <div className="p-2.5 bg-white rounded-xl shadow-sm group-hover/upload:scale-110 group-hover/upload:rotate-3 transition-all duration-300">
-                                                <ImageIcon className="text-gray-400 group-hover/upload:text-yellow-500 w-6 h-6" />
+                                                <ImageIcon className="text-gray-500 group-hover/upload:text-yellow-600 w-6 h-6" />
                                             </div>
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover/upload:text-yellow-600 transition-colors">Click to Upload</span>
+                                            <span className="text-xs font-bold uppercase tracking-widest text-gray-600 group-hover/upload:text-yellow-600 transition-colors">Click to Upload</span>
                                         </div>
                                     </div>
 
@@ -176,12 +176,12 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated }) => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="w-full h-full bg-gray-50/30 border border-gray-100 rounded-[1.5rem] flex items-center justify-center px-4 hover:border-gray-200 transition-colors group">
+                                            <div className="w-full h-full bg-gray-100 border border-gray-200 rounded-[1.5rem] flex items-center justify-center px-4 hover:border-gray-300 transition-colors group">
                                                 <input 
                                                     type="url"
                                                     value={formData.imageUrl}
                                                     onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                                                    className="w-full bg-transparent outline-none text-center font-bold text-gray-400 text-[11px] group-hover:text-gray-600 transition-colors"
+                                                    className="w-full bg-transparent outline-none text-center font-bold text-gray-700 placeholder:text-gray-500 text-xs transition-colors"
                                                     placeholder="...OR PASTE IMAGE URL"
                                                 />
                                             </div>

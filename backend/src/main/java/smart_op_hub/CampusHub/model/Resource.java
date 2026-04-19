@@ -1,0 +1,24 @@
+package smart_op_hub.CampusHub.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Document(collection = "resources")
+public class Resource {
+    @Id
+    private String id;
+    private String name;
+    private String type; // e.g., "Lecture Hall", "Lab", "Equipment"
+    private Integer capacity;
+    private Integer quantity;
+    private String location;
+    private String status;
+    private String availabilityWindows; // New field for operating hours
+    private String imageUrl; // Field for resource image URL
+}
