@@ -57,4 +57,4 @@ const FeatureCard = ({ icon, title, desc, delay, link }) => {
   );
 };
 
-export default FeatureCard;
+export default FeatureCard;
