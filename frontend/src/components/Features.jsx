@@ -8,7 +8,8 @@ const Features = () => {
       icon: <Database />,
       title: "Catalogue Management",
       desc: "Manage facilities and campus resources with an organized catalog for admins.",
-      delay: 0.1
+      delay: 0.1,
+      path: "/resources"
     },
     {
       icon: <Calendar />,

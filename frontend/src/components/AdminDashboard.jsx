@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getUser, clearAuth } from '../utils/auth';
 import UserManagement from './admin/UserManagement';
+import ResourceManagement from './resources/ResourceManagement';
 import {
   Users, Building2, Wrench, BookOpen, LayoutDashboard,
   ChevronRight, ShieldCheck, Bell, Settings, LogOut,
@@ -198,6 +199,7 @@ const AdminDashboard = () => {
   const [sbCollapsed, setSbCollapsed]     = useState(false);
   const [sbHidden, setSbHidden]           = useState(false);
   const [sbMobileOpen, setSbMobileOpen]   = useState(false);
+  const [addTrigger, setAddTrigger]       = useState(0);
   
   const mainRef     = useRef(null);
   const navigate    = useNavigate();
@@ -416,6 +418,31 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              {activeTab === 'resources' && (
+                <button
+                  onClick={() => setAddTrigger(p => p + 1)}
+                  style={{
+                    padding: '7px 14px',
+                    background: D,
+                    border: 'none',
+                    borderRadius: 9,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    color: G,
+                    fontFamily: "'Poppins',sans-serif",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#1a1a1a'}
+                  onMouseLeave={e => e.currentTarget.style.background = D}
+                >
+                  <BookOpen size={14} strokeWidth={2.5} />
+                  Add Resource
+                </button>
+              )}
               <span style={{ padding: '5px 11px', borderRadius: 99, background: `${G}20`, border: `1px solid ${G}45`, color: D, fontSize: 10.5, fontWeight: 700 }}>
                 ● Live
               </span>
@@ -586,8 +613,22 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {activeTab === 'resources' && (
+              <div>
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 99, background: `${G}20`, border: `1px solid ${G}45`, marginBottom: 8 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: G, display: 'inline-block' }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: D, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Resource Management</span>
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: D }}>Facilities & Assets</h2>
+                  <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#9ca3af', fontWeight: 500 }}>Register and manage campus resources</p>
+                </div>
+                <ResourceManagement isEmbedded={true} onAddTrigger={addTrigger} />
+              </div>
+            )}
+
             {/* ── EMPTY TABS ── */}
-            {['facilities', 'resources'].includes(activeTab) && (() => {
+            {['facilities'].includes(activeTab) && (() => {
               const tab = TABS.find(t => t.id === activeTab);
               const Icon = tab?.icon;
               return (

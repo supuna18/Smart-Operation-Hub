@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@theme {
+  --color-accent: var(--accent);
+  --color-accent-bg: var(--accent-bg);
+  --color-accent-border: var(--accent-border);
+  --color-primary: #FACC15;
+}
+
 :root {
   --text: #4b5563;
   --text-h: #262626;
