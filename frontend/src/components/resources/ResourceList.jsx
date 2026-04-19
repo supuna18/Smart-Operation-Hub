@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ResourceService from '../../services/ResourceService';
-import { FiSearch, FiEdit2, FiTrash2, FiPlus, FiFilter, FiUsers, FiMapPin, FiCalendar, FiBox } from 'react-icons/fi';
+import { FiSearch, FiEdit2, FiTrash2, FiPlus, FiFilter, FiUsers, FiMapPin, FiCalendar, FiBox, FiClock } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import { isAdmin, getUser } from '../../utils/auth';
 import { useToast } from '../../context/ToastContext';
 import { ResourceCardSkeleton } from '../common/Skeleton';
@@ -217,135 +218,139 @@ const ResourceList = ({ onEdit, onAdd }) => {
 
             {/* List */}
             <div className="p-6 md:p-8">
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3, 4, 5, 6].map(i => <ResourceCardSkeleton key={i} />)}
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {resources.map((resource) => (
-                            <div key={resource.id} className="group bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-yellow-400 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col">
-                                {/* Top Color Bar */}
-                                <div className={`h-1.5 w-full ${resource.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
-                                
-                                {/* Image Section */}
-                                <div className="h-44 w-full relative overflow-hidden bg-slate-100 group-hover:after:opacity-20 flex items-center justify-center">
-                                    <img 
-                                        src={resource.imageUrl || getTypeDefaultImage(resource.type)} 
-                                        alt={resource.name} 
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        onError={(e) => {
-                                            if (e.target.src !== getTypeDefaultImage(resource.type)) {
-                                                e.target.src = getTypeDefaultImage(resource.type);
-                                            } else {
-                                                e.target.onerror = null;
-                                                e.target.style.display = 'none';
-                                                e.target.parentNode.innerHTML = '<div class="text-slate-300 flex flex-col items-center gap-2"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="40" width="40" xmlns="http://www.w3.org/2000/svg"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>';
-                                            }
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors pointer-events-none" />
-                                </div>
-
-                                <div className="p-5 flex-1">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold uppercase tracking-wider rounded-md mb-2">
-                                                {resource.type}
-                                            </span>
-                                            <h3 className="text-lg font-bold text-slate-900 leading-tight pr-4">{resource.name}</h3>
+                <AnimatePresence mode="popLayout">
+                    {loading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {[1, 2, 3, 4, 5, 6].map(i => <ResourceCardSkeleton key={i} />)}
+                        </div>
+                    ) : (
+                        <motion.div 
+                            layout
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                        >
+                            {resources.map((resource, idx) => (
+                                <motion.div 
+                                    key={resource.id}
+                                    layout
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: idx * 0.05 }}
+                                    whileHover={{ y: -8 }}
+                                    className="group bg-white border border-slate-100 rounded-3xl overflow-hidden transition-all duration-500 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] flex flex-col relative"
+                                >
+                                    {/* Action Toolstrip (Floating) */}
+                                    {admin && (
+                                        <div className="absolute top-4 right-4 z-30 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                            <button 
+                                                onClick={() => onEdit(resource)}
+                                                className="w-10 h-10 bg-white rounded-xl shadow-lg border border-slate-100 flex items-center justify-center text-slate-600 hover:text-yellow-600 transition-colors"
+                                            >
+                                                <FiEdit2 size={16} />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete(resource.id)}
+                                                className="w-10 h-10 bg-white rounded-xl shadow-lg border border-slate-100 flex items-center justify-center text-slate-600 hover:text-rose-600 transition-colors"
+                                            >
+                                                <FiTrash2 size={16} />
+                                            </button>
                                         </div>
-                                        {admin && (
-                                            <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button 
-                                                    onClick={() => onEdit(resource)}
-                                                    className="p-1.5 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
-                                                    title="Edit Resource"
-                                                >
-                                                    <FiEdit2 size={16} />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDelete(resource.id)}
-                                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                                                    title="Delete Resource"
-                                                >
-                                                    <FiTrash2 size={16} />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="space-y-2 mt-4">
-                                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                                            <FiUsers className="text-slate-400" size={14} />
-                                            <span><strong className="text-slate-900">{resource.capacity}</strong> Seats Capacity</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                                            <FiMapPin className="text-slate-400" size={14} />
-                                            <span className="truncate">{resource.location}</span>
-                                        </div>
-                                        {resource.availabilityWindows && (
-                                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                <FiCalendar className="text-slate-400" size={14} />
-                                                <span className="truncate font-medium text-slate-500 italic">{resource.availabilityWindows}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                                    <span className="text-xs font-medium text-slate-500">Current Status</span>
-                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                                        resource.status === 'ACTIVE' 
-                                            ? 'bg-emerald-100 text-emerald-700' 
-                                            : 'bg-yellow-100 text-yellow-700'
-                                    }`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${resource.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-yellow-500'}`} />
-                                        {resource.status === 'ACTIVE' ? 'Available' : 'Maintenance'}
-                                    </span>
-                                </div>
-                                
-                                <div className="px-5 py-4 flex gap-2 border-t border-slate-50">
-                                    <button 
-                                        onClick={() => setCalendarResource(resource)}
-                                        className="flex-1 flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 py-2 rounded-lg transition-all font-bold text-xs"
-                                    >
-                                        <FiCalendar size={14} /> Schedule
-                                    </button>
-                                    {!admin && !getBookingForResource(resource.id) && (
-                                        <button 
-                                            onClick={() => handleBook(resource)}
-                                            className="flex-1 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg transition-all font-bold text-xs shadow-sm"
-                                            disabled={resource.status !== 'ACTIVE'}
-                                        >
-                                            Book Now
-                                        </button>
                                     )}
-                                </div>
 
-                                {!admin && getBookingForResource(resource.id) && (
-                                    <div className="px-5 pb-4">
-                                        <div className={`w-full flex flex-col items-center justify-center py-2 rounded-lg border bg-opacity-5 font-bold ${
-                                            getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
-                                            getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-50 border-rose-200 text-rose-700' :
-                                            'bg-yellow-50 border-yellow-200 text-yellow-700'
+                                    {/* Status Badge (Corner) */}
+                                    <div className="absolute top-4 left-4 z-30">
+                                        <div className={`px-3 py-1.5 rounded-xl border backdrop-blur-md shadow-sm font-black text-[9px] uppercase tracking-widest flex items-center gap-2 ${
+                                            resource.status === 'ACTIVE' 
+                                                ? 'bg-emerald-50/90 border-emerald-200 text-emerald-700' 
+                                                : 'bg-amber-50/90 border-amber-200 text-amber-700'
                                         }`}>
-                                            <span className="text-[10px] uppercase tracking-widest opacity-60 mb-0.5">Your Booking Status</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`w-2 h-2 rounded-full ${
-                                                    getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-500' :
-                                                    getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-500' :
-                                                    'bg-yellow-500 animate-pulse'
-                                                }`} />
-                                                <span className="text-sm">{getBookingForResource(resource.id).status}</span>
-                                            </div>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${resource.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                                            {resource.status === 'ACTIVE' ? 'Available' : 'Maintenance'}
                                         </div>
                                     </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
+
+                                    {/* Image Section */}
+                                    <div className="h-56 w-full relative overflow-hidden bg-slate-50">
+                                        <img 
+                                            src={resource.imageUrl || getTypeDefaultImage(resource.type)} 
+                                            alt={resource.name} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                    </div>
+
+                                    <div className="p-7 flex-1 flex flex-col">
+                                        <div className="mb-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{resource.type}</span>
+                                            </div>
+                                            <h3 className="text-xl font-bold text-slate-900 leading-tight group-hover:text-[#262626] transition-colors">{resource.name}</h3>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-4 my-4 py-4 border-y border-slate-50">
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Capacity</p>
+                                                <div className="flex items-center gap-2 text-slate-700 font-bold">
+                                                    <FiUsers className="text-yellow-500" size={14} />
+                                                    <span className="text-sm">{resource.capacity} Seats</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Location</p>
+                                                <div className="flex items-center gap-2 text-slate-700 font-bold">
+                                                    <FiMapPin className="text-yellow-500" size={14} />
+                                                    <span className="text-sm truncate">{resource.location}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-auto pt-4 flex gap-3">
+                                            <button 
+                                                onClick={() => setCalendarResource(resource)}
+                                                className="flex-1 flex items-center justify-center gap-2 bg-slate-50 hover:bg-[#262626] hover:text-white text-slate-600 py-3.5 rounded-2xl transition-all duration-300 font-black text-[10px] uppercase tracking-widest"
+                                            >
+                                                <FiCalendar size={14} /> Schedule
+                                            </button>
+                                            {!admin && !getBookingForResource(resource.id) && (
+                                                <button 
+                                                    onClick={() => handleBook(resource)}
+                                                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl transition-all duration-300 font-black text-[10px] uppercase tracking-widest shadow-lg ${
+                                                        resource.status === 'ACTIVE'
+                                                            ? 'bg-[#FACC15] text-slate-900 shadow-yellow-500/10 hover:shadow-yellow-500/20'
+                                                            : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+                                                    }`}
+                                                    disabled={resource.status !== 'ACTIVE'}
+                                                >
+                                                    <FiClock size={14} /> Request Access
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {!admin && getBookingForResource(resource.id) && (
+                                            <div className="mt-4">
+                                                <div className={`w-full flex flex-col items-center justify-center py-3 rounded-2xl border font-bold ${
+                                                    getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+                                                    getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-50 border-rose-100 text-rose-700' :
+                                                    'bg-yellow-50 border-yellow-100 text-yellow-700 shadow-inner'
+                                                }`}>
+                                                    <p className="text-[9px] uppercase tracking-[0.2em] opacity-60 mb-1">Live Status</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`w-2 h-2 rounded-full ${
+                                                            getBookingForResource(resource.id).status === 'APPROVED' ? 'bg-emerald-500' :
+                                                            getBookingForResource(resource.id).status === 'REJECTED' ? 'bg-rose-500' :
+                                                            'bg-yellow-500 animate-pulse'
+                                                        }`} />
+                                                        <span className="text-xs uppercase tracking-widest">{getBookingForResource(resource.id).status}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {calendarResource && (
                     <ResourceCalendarModal 

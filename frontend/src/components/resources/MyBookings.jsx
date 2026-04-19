@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiInfo } from 'react-icons/fi';
 
-const MyBookings = () => {
+const MyBookings = ({ isEmbedded = false }) => {
     const { showToast } = useToast();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -13,10 +13,10 @@ const MyBookings = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (isAdmin()) {
+        if (!isEmbedded && isAdmin()) {
             navigate('/AdminDashboard');
         }
-    }, [navigate]);
+    }, [navigate, isEmbedded]);
 
     useEffect(() => {
         const fetchMyBookings = async () => {
@@ -37,12 +37,14 @@ const MyBookings = () => {
     }, [user]);
 
     return (
-        <div className="min-h-screen bg-slate-50 font-poppins py-12">
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="mb-10">
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">My Bookings</h1>
-                    <p className="text-slate-500 font-medium">Track the status of your campus resource requests.</p>
-                </div>
+        <div className={isEmbedded ? "w-full space-y-8 animate-in fade-in duration-500" : "min-h-screen bg-slate-50 font-poppins py-12"}>
+            <div className={isEmbedded ? "" : "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"}>
+                {!isEmbedded && (
+                    <div className="mb-10">
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">My Bookings</h1>
+                        <p className="text-slate-500 font-medium">Track the status of your campus resource requests.</p>
+                    </div>
+                )}
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
