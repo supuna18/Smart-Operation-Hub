@@ -175,19 +175,22 @@ const TicketCard = ({ ticket, isAdmin, onUpdate, user, onEdit }) => {
                     {ticket.status === 'OPEN' && (isAdmin || ticket.createdBy === user?.username) && (
                         <button 
                             onClick={() => onEdit(ticket)}
-                            className="p-2.5 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 rounded-xl transition-all active:scale-95 text-xs font-bold shadow-sm"
                             title="Edit Ticket"
                         >
-                            <Edit2 size={16} />
+                            <Edit2 size={14} />
+                            <span>Edit</span>
                         </button>
                     )}
                     {(isAdmin || ticket.createdBy === user?.username) && (
                         <button 
                             onClick={handleDelete}
                             disabled={isDeleting}
-                            className="p-2.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-90"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 rounded-xl transition-all active:scale-95 text-xs font-bold shadow-sm disabled:opacity-50"
+                            title="Delete Ticket"
                         >
-                            {isDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                            {isDeleting ? <Loader2 className="animate-spin" size={14} /> : <Trash2 size={14} />}
+                            <span>Delete</span>
                         </button>
                     )}
                 </div>

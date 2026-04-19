@@ -8,6 +8,7 @@ import {
 import axios from 'axios';
 import TicketCard from './TicketCard';
 import CreateTicketModal from './CreateTicketModal';
+import AuditLogModal from './AuditLogModal';
 
 import { getUser, isAdmin as checkIsAdmin } from '../utils/auth';
 
@@ -16,6 +17,7 @@ const TicketDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
     const [ticketToEdit, setTicketToEdit] = useState(null);
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
@@ -96,80 +98,83 @@ const TicketDashboard = () => {
     return (
         <div className="min-h-screen bg-[#F8F9FA] pt-24 pb-12 px-6 lg:px-12 font-sans overflow-x-hidden">
             <div className="max-w-[1600px] mx-auto">
-                {/* Upper Header Section */}
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-12">
-                    <motion.div 
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                    >
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className="px-3 py-1 bg-yellow-400 text-[#262626] rounded-lg text-[10px] font-black uppercase tracking-widest">
-                                Live System
-                            </span>
-                            <span className="flex items-center gap-1.5 text-gray-400 text-xs font-bold">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                Operational
-                            </span>
+                {/* Upper Header Section (Dark Card) */}
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-[#262626] rounded-[1.5rem] p-6 md:p-8 mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-xl relative overflow-hidden"
+                >
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+                    
+                    <div className="flex flex-col gap-2 relative z-10">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-7 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
+                            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                                Incident <span className="text-yellow-400">Hub</span>
+                            </h1>
+                            <div className="hidden md:flex items-center gap-2 ml-4 px-3 py-1 bg-white/10 rounded-lg border border-white/5">
+                                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="text-gray-300 text-[10px] font-bold uppercase tracking-widest">Live System</span>
+                            </div>
                         </div>
-                        <h1 className="text-5xl font-black text-gray-900 tracking-tighter mb-2">
-                            Incident Hub
-                        </h1>
-                        <p className="text-gray-500 font-bold max-w-md leading-relaxed">
+                        <p className="text-gray-400 font-medium max-w-xl text-sm md:text-base ml-5 lg:ml-6">
                             {isAdmin 
-                                ? "Monitor and manage campus infrastructure health and maintenance reports." 
-                                : "Report technical issues and track the status of your reported tickets."}
+                                ? "Monitor and manage campus infrastructure health and maintenance reports from a single, high-performance interface." 
+                                : "Report technical issues and track the status of your reported tickets effortlessly."}
                         </p>
-                    </motion.div>
+                    </div>
 
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center gap-4 w-full lg:w-auto"
-                    >
-                        <div className="relative flex-grow lg:w-80 group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
-                            <input 
-                                type="text"
-                                placeholder="Search by issue or location..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-yellow-400/10 focus:border-yellow-400 shadow-sm transition-all font-bold text-gray-700"
-                            />
-                        </div>
-                        
+                    <div className="relative z-10 w-full lg:w-auto flex items-center lg:justify-end">
                         {!isAdmin && (
                             <button 
                                 onClick={() => setIsModalOpen(true)}
-                                className="bg-[#262626] text-[#FACC15] px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:shadow-2xl hover:shadow-yellow-400/20 active:scale-95 transition-all whitespace-nowrap"
+                                className="w-full lg:w-auto bg-yellow-400 text-gray-900 px-8 py-4 rounded-xl font-black flex items-center justify-center gap-3 hover:shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:bg-yellow-300 active:scale-95 transition-all text-sm uppercase tracking-wider"
                             >
-                                <Plus size={20} />
+                                <Plus size={18} strokeWidth={3} />
                                 New Ticket
                             </button>
                         )}
-                    </motion.div>
-                </div>
+                    </div>
+                </motion.div>
 
                 <div className="flex flex-col lg:flex-row gap-10">
                     {/* Main Feed Section (70%) */}
                     <div className="flex-grow lg:w-[70%]">
-                        {/* Status Filters */}
-                        <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-4 scrollbar-hide">
-                            <div className="p-2.5 bg-white border border-gray-100 rounded-xl text-gray-400 shadow-sm mr-2">
-                                <Filter size={18} />
+                        {/* Action Bar: Search & Filters */}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                            {/* Search Bar */}
+                            <div className="relative w-full md:w-80 group">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
+                                <input 
+                                    type="text"
+                                    placeholder="Search by issue or location..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-yellow-400/20 focus:border-yellow-400 shadow-sm transition-all font-bold text-gray-700 text-sm"
+                                />
                             </div>
-                            {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map((status) => (
-                                <button
-                                    key={status}
-                                    onClick={() => setFilterStatus(status)}
-                                    className={`px-6 py-2.5 rounded-xl text-xs font-black tracking-widest uppercase transition-all whitespace-nowrap ${
-                                        filterStatus === status 
-                                            ? 'bg-yellow-400 text-[#262626] shadow-lg shadow-yellow-400/20 ring-4 ring-yellow-400/10' 
-                                            : 'bg-white text-gray-400 hover:bg-gray-50 border border-gray-100'
-                                    }`}
-                                >
-                                    {status.replace('_', ' ')}
-                                </button>
-                            ))}
+
+                            {/* Status Filters */}
+                            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                                <div className="p-2.5 bg-white border border-gray-100 rounded-xl text-gray-400 shadow-sm md:flex hidden">
+                                    <Filter size={18} />
+                                </div>
+                                {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map((status) => (
+                                    <button
+                                        key={status}
+                                        onClick={() => setFilterStatus(status)}
+                                        className={`px-5 py-2.5 rounded-xl text-xs font-black tracking-widest uppercase transition-all whitespace-nowrap ${
+                                            filterStatus === status 
+                                                ? 'bg-yellow-400 text-[#262626] shadow-lg shadow-yellow-400/20 ring-4 ring-yellow-400/10' 
+                                                : 'bg-white text-gray-400 hover:bg-gray-50 border border-gray-100 border'
+                                        }`}
+                                    >
+                                        {status.replace('_', ' ')}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Tickets List */}
@@ -305,7 +310,10 @@ const TicketDashboard = () => {
                                 ))}
                             </div>
 
-                            <button className="w-full mt-10 py-4 bg-gray-50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-yellow-50 hover:text-yellow-700 transition-all flex items-center justify-center gap-2">
+                            <button 
+                                onClick={() => setIsAuditLogOpen(true)}
+                                className="w-full mt-10 py-4 bg-gray-50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-yellow-50 hover:text-yellow-700 transition-all flex items-center justify-center gap-2"
+                            >
                                 View Full Audit Log <ArrowRight size={14} />
                             </button>
                         </div>
@@ -329,6 +337,13 @@ const TicketDashboard = () => {
                     editTicket={ticketToEdit}
                 />
             )}
+
+            {/* Audit Log Modal */}
+            <AuditLogModal 
+                isOpen={isAuditLogOpen}
+                onClose={() => setIsAuditLogOpen(false)}
+                tickets={tickets}
+            />
         </div>
     );
 };
