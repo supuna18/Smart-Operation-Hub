@@ -60,11 +60,12 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  // --- UPDATED THIS PART FOR MEMBER 2 (YOU) ---
   const navLinks = admin
     ? []
     : [
         { name: 'Home', path: '/' },
-        { name: 'Services', path: '/#services', isHash: true },
+        { name: 'Services', path: '/services' }, // Removed /#services to load your new page
         { name: 'About', path: '/about' },
         { name: 'Tickets', path: '/tickets' }
       ];
@@ -84,9 +85,8 @@ const Navbar = () => {
       <div className="hidden md:flex space-x-10 font-medium items-center">
         {!isAdminView &&
           navLinks.map((link) => {
-            const isActive = link.isHash
-              ? location.hash === '#services'
-              : currentPath === link.path && !location.hash;
+            // Simplified isActive logic to support your new route
+            const isActive = currentPath === link.path;
 
             return (
               <Link
@@ -115,7 +115,7 @@ const Navbar = () => {
             );
           })}
 
-        {/* Admin Dashboard */}
+        {/* Admin Dashboard Link */}
         {admin && (
           <Link
             to="/AdminDashboard"
@@ -161,16 +161,13 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              {/* Notifications */}
+              {/* Notifications Dropdown */}
               <div className="relative">
                 <button
-                  onClick={() =>
-                    setShowNotifications(!showNotifications)
-                  }
+                  onClick={() => setShowNotifications(!showNotifications)}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
                 >
                   <Bell size={22} className="text-[#262626]" />
-
                   {unreadCount > 0 && (
                     <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
                       {unreadCount}
@@ -181,52 +178,33 @@ const Navbar = () => {
                 <AnimatePresence>
                   {showNotifications && (
                     <motion.div
-                      initial={{
-                        opacity: 0,
-                        y: 10,
-                        scale: 0.95
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                        scale: 1
-                      }}
-                      exit={{
-                        opacity: 0,
-                        y: 10,
-                        scale: 0.95
-                      }}
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       className="absolute right-0 mt-3 w-80 bg-white border shadow-2xl rounded-2xl overflow-hidden z-[60]"
                     >
-                      <div className="p-4 border-b flex justify-between">
-                        <h3 className="font-bold">
-                          Notifications
-                        </h3>
-
-                        <span className="text-xs text-gray-400">
+                      <div className="p-4 border-b flex justify-between items-center">
+                        <h3 className="font-bold text-sm">Notifications</h3>
+                        <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded-full uppercase font-black tracking-widest">
                           {unreadCount} unread
                         </span>
                       </div>
 
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.length === 0 ? (
-                          <div className="p-6 text-center text-gray-400">
-                            No notifications
+                          <div className="p-8 text-center text-gray-400 text-sm italic">
+                            No notifications yet
                           </div>
                         ) : (
                           notifications.map((n) => (
                             <div
                               key={n.id}
                               onClick={() => markAsRead(n.id)}
-                              className={`p-4 border-b cursor-pointer ${
-                                !n.read ? 'bg-yellow-50' : ''
+                              className={`p-4 border-b cursor-pointer transition-colors ${
+                                !n.read ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50'
                               }`}
                             >
-                              <p
-                                className={
-                                  !n.read ? 'font-semibold' : ''
-                                }
-                              >
+                              <p className={`text-sm ${!n.read ? 'font-bold text-[#262626]' : 'text-gray-500'}`}>
                                 {n.message}
                               </p>
                             </div>
@@ -238,24 +216,23 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Profile */}
+              {/* User Profile */}
               <Link
                 to="/profile"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 group"
               >
-                <div className="w-8 h-8 bg-[#FACC15] rounded-full flex items-center justify-center text-xs font-bold">
+                <div className="w-9 h-9 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-black text-black border-2 border-transparent group-hover:border-yellow-200 transition-all">
                   {user?.username?.charAt(0).toUpperCase()}
                 </div>
-
-                <span className="hidden lg:block font-semibold">
+                <span className="hidden lg:block font-bold text-sm text-[#262626]">
                   {user?.username}
                 </span>
               </Link>
 
-              {/* Logout */}
+              {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="font-semibold hover:text-red-500"
+                className="text-sm font-bold text-gray-400 hover:text-red-500 transition-colors"
               >
                 Logout
               </button>
@@ -264,9 +241,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Toggle */}
+      {/* Mobile Toggle Button */}
       <div className="md:hidden">
-        <button onClick={() => setIsOpen(!isOpen)}>
+        <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-[#262626]">
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
@@ -278,67 +255,56 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-xl flex flex-col p-6 md:hidden space-y-4"
+            className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-2xl flex flex-col p-6 md:hidden space-y-4"
           >
-            {navLinks.map((link) => {
-              const isActive = link.isHash
-                ? location.hash === '#services'
-                : currentPath === link.path && !location.hash;
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                onClick={() => setIsOpen(false)}
+                className={`font-black uppercase tracking-widest text-xs p-4 rounded-2xl transition-all ${
+                  currentPath === link.path
+                    ? 'bg-yellow-50 text-yellow-600'
+                    : 'text-[#262626] hover:bg-gray-50'
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
 
-              return (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`font-semibold p-4 rounded-2xl transition-all ${
-                    isActive
-                      ? 'bg-yellow-50 text-[#FACC15]'
-                      : 'text-[#262626] hover:bg-gray-50'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              );
-            })}
-
-            <div className="flex flex-col space-y-3 pt-2">
+            <div className="flex flex-col space-y-3 pt-4 border-t border-gray-100">
               {!loggedIn ? (
                 <>
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="text-[#262626] text-center font-semibold p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                    className="text-[#262626] text-center font-bold p-4 border border-gray-100 rounded-2xl hover:bg-gray-50"
                   >
                     Login
                   </Link>
-
                   <Link
                     to="/signup"
                     onClick={() => setIsOpen(false)}
-                    className="bg-[#FACC15] text-[#262626] px-6 py-3 rounded-xl font-bold shadow-md inline-flex justify-center w-full"
+                    className="bg-yellow-400 text-[#262626] text-center p-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-yellow-100"
                   >
                     Get Started
                   </Link>
                 </>
               ) : (
                 <>
-                  {admin && (
-                    <Link
-                      to="/AdminDashboard"
-                      onClick={() => setIsOpen(false)}
-                      className="text-[#262626] text-center font-semibold p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-                    >
-                      Admin Dashboard
-                    </Link>
-                  )}
-
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsOpen(false)}
+                    className="text-center font-bold p-4 bg-gray-50 rounded-2xl"
+                  >
+                    Profile Settings
+                  </Link>
                   <button
                     onClick={() => {
                       setIsOpen(false);
-                      clearAuth();
-                      navigate('/login');
+                      handleLogout();
                     }}
-                    className="text-[#262626] text-center font-semibold p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+                    className="text-red-500 font-bold p-4 rounded-2xl hover:bg-red-50"
                   >
                     Logout
                   </button>
