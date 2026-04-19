@@ -1,16 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
-const FeatureCard = ({ icon, title, desc, delay }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay }}
-      whileHover={{ y: -10 }}
-      className="relative p-10 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200 hover:border-yellow-200 transition-all duration-300 group overflow-hidden cursor-default"
-    >
+const FeatureCard = ({ icon, title, desc, delay, link }) => {
+  const CardContent = (
+    <>
       {/* Subtle corner glow on hover */}
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#FACC15]/0 group-hover:bg-[#FACC15]/10 rounded-full blur-2xl transition-all duration-500 pointer-events-none" />
 
@@ -40,8 +34,27 @@ const FeatureCard = ({ icon, title, desc, delay }) => {
           </svg>
         </span>
       </div>
+    </>
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay }}
+      whileHover={{ y: -10 }}
+      className={`relative p-10 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200 hover:border-yellow-200 transition-all duration-300 group overflow-hidden ${link ? 'cursor-pointer' : 'cursor-default'}`}
+    >
+      {link ? (
+        <Link to={link}>
+          {CardContent}
+        </Link>
+      ) : (
+        CardContent
+      )}
     </motion.div>
   );
 };
 
-export default FeatureCard;
+export default FeatureCard;
