@@ -16,6 +16,7 @@ const ResourceApprovalHub = () => {
     const [error, setError] = useState(null);
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
+    const [rejectionModal, setRejectionModal] = useState({ show: false, booking: null, reason: '' });
 
     useEffect(() => {
         fetchBookings();
@@ -41,9 +42,9 @@ const ResourceApprovalHub = () => {
         }
     };
 
-    const handleUpdateStatus = async (id, status, resourceName) => {
+    const handleUpdateStatus = async (id, status, resourceName, reason = '') => {
         try {
-            await ResourceService.updateBookingStatus(id, status);
+            await ResourceService.updateBookingStatus(id, status, reason);
             showToast(`Booking for ${resourceName} ${status === 'APPROVED' ? 'approved' : 'rejected'} successfully!`, 'success');
             
             if (status === 'APPROVED') {
@@ -55,6 +56,7 @@ const ResourceApprovalHub = () => {
                 });
             }
             
+            setRejectionModal({ show: false, booking: null, reason: '' });
             fetchBookings(); // Refresh the list
         } catch (err) {
             console.error('Error updating status:', err);
@@ -117,28 +119,28 @@ const ResourceApprovalHub = () => {
             </div>
 
             {/* Controls */}
-            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400/20 via-transparent to-transparent" />
+            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between bg-[#262626] p-6 rounded-[2rem] border border-white/5 shadow-2xl overflow-hidden relative group">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto scrollbar-hide relative z-10">
-                    <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 mr-2 shadow-inner">
+                    <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-yellow-500/70 mr-2 shadow-inner">
                         <Filter size={18} />
                     </div>
-                    <div className="flex p-1 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+                    <div className="flex p-1 bg-black/20 rounded-2xl border border-white/10 shadow-inner backdrop-blur-sm">
                         {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((status) => (
                             <button
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
-                                className={`relative px-6 py-2.5 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all whitespace-nowrap ${
+                                className={`relative px-6 py-2.5 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all whitespace-nowrap z-10 ${
                                     filterStatus === status 
-                                        ? 'text-white' 
-                                        : 'text-slate-400 hover:text-slate-600'
+                                        ? 'text-[#262626]' 
+                                        : 'text-slate-400 hover:text-white'
                                 }`}
                             >
                                 {filterStatus === status && (
                                     <motion.div
                                         layoutId="statusPill"
-                                        className="absolute inset-0 bg-[#262626] rounded-xl shadow-lg -z-10"
+                                        className="absolute inset-0 bg-yellow-400 rounded-xl shadow-[0_0_20px_rgba(250,204,21,0.3)] -z-10"
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                     />
                                 )}
@@ -149,13 +151,13 @@ const ResourceApprovalHub = () => {
                 </div>
 
                 <div className="relative w-full lg:w-96 group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-yellow-500 transition-colors" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4 group-focus-within:text-yellow-400 transition-colors" />
                     <input 
                         type="text"
                         placeholder="Search by resource or user..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-yellow-500/10 focus:border-yellow-400 transition-all font-bold text-xs text-slate-700 placeholder-slate-400 shadow-inner"
+                        className="w-full pl-12 pr-6 py-4 bg-black/20 border border-white/10 rounded-2xl outline-none focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400 transition-all font-bold text-xs text-white placeholder-slate-500 shadow-inner backdrop-blur-sm"
                     />
                 </div>
             </div>
@@ -210,7 +212,7 @@ const ResourceApprovalHub = () => {
                                 transition={{ duration: 0.2, delay: idx * 0.05 }}
                                 className="group bg-white border border-slate-100 rounded-[2rem] overflow-hidden transition-all duration-500 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)] flex flex-col relative"
                             >
-                                <div className={`aspect-[16/1] w-full ${
+                                <div className={`h-2 w-full ${
                                     booking.status === 'APPROVED' ? 'bg-emerald-500' :
                                     booking.status === 'REJECTED' ? 'bg-rose-500' : 'bg-yellow-400'
                                 }`} />
@@ -232,14 +234,14 @@ const ResourceApprovalHub = () => {
                                             </div>
                                             <h3 className="text-lg font-black text-slate-900 truncate pr-4">{booking.resourceName}</h3>
                                         </div>
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-yellow-50 group-hover:text-yellow-600 transition-colors">
+                                        <div className="w-11 h-11 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-yellow-400 group-hover:text-[#262626] transition-all duration-300 shadow-sm">
                                             <BookOpen size={20} />
                                         </div>
                                     </div>
 
                                     <div className="space-y-3 py-4 border-y border-slate-50">
                                         <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
-                                            <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                                            <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
                                                 <User size={14} />
                                             </div>
                                             <span>
@@ -248,12 +250,21 @@ const ResourceApprovalHub = () => {
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
-                                            <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                                            <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
                                                 <Calendar size={14} />
                                             </div>
                                             <span>
                                                 Date: <strong className="text-slate-900">{new Date(booking.bookingDate).toLocaleDateString()}</strong>
-                                                <span className="block text-[10px] text-slate-400 font-bold tracking-tight">Time: {new Date(booking.bookingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                <span className="block text-[10px] text-slate-400 font-bold tracking-tight">Time: {new Date(booking.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(booking.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
+                                            <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+                                                <Info size={14} />
+                                            </div>
+                                            <span>
+                                                Purpose: <strong className="text-slate-900">{booking.purpose || 'Not specified'}</strong>
+                                                <span className="block text-[10px] text-slate-400 font-bold tracking-tight">Attendees: {booking.expectedAttendees || 'N/A'}</span>
                                             </span>
                                         </div>
                                     </div>
@@ -263,13 +274,13 @@ const ResourceApprovalHub = () => {
                                     <div className="p-4 bg-slate-50 flex gap-2">
                                         <button 
                                             onClick={() => handleUpdateStatus(booking.id, 'APPROVED', booking.resourceName)}
-                                            className="flex-1 flex items-center justify-center gap-2 bg-[#262626] hover:bg-black text-[#FACC15] py-2.5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shadow-lg shadow-black/10 active:scale-95"
+                                            className="flex-1 flex items-center justify-center gap-2 bg-[#262626] hover:bg-black text-[#FACC15] py-3 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shadow-xl shadow-black/20 active:scale-95 border border-white/5"
                                         >
                                             <CheckCircle size={14} /> Approve
                                         </button>
                                         <button 
-                                            onClick={() => handleUpdateStatus(booking.id, 'REJECTED', booking.resourceName)}
-                                            className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 text-rose-600 py-2.5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest active:scale-95"
+                                            onClick={() => setRejectionModal({ show: true, booking, reason: '' })}
+                                            className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 text-rose-600 py-3 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest active:scale-95"
                                         >
                                             <XCircle size={14} /> Reject
                                         </button>
@@ -286,6 +297,47 @@ const ResourceApprovalHub = () => {
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* Rejection Modal */}
+            <AnimatePresence>
+                {rejectionModal.show && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="bg-white w-full max-w-md rounded-[2rem] p-8 shadow-2xl"
+                        >
+                            <h3 className="text-xl font-black text-slate-900 mb-2">Reject Request</h3>
+                            <p className="text-sm text-slate-500 mb-6 font-medium">Please provide a reason for rejecting the booking for <strong>{rejectionModal.booking?.resourceName}</strong>.</p>
+                            
+                            <textarea 
+                                value={rejectionModal.reason}
+                                onChange={(e) => setRejectionModal(prev => ({ ...prev, reason: e.target.value }))}
+                                placeholder="Write the reason here..."
+                                rows="4"
+                                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-400 transition-all font-bold text-sm text-slate-700 placeholder-slate-400 mb-6"
+                            />
+
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={() => setRejectionModal({ show: false, booking: null, reason: '' })}
+                                    className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={() => handleUpdateStatus(rejectionModal.booking.id, 'REJECTED', rejectionModal.booking.resourceName, rejectionModal.reason)}
+                                    disabled={!rejectionModal.reason.trim()}
+                                    className="flex-[2] py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-rose-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Confirm Rejection
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
