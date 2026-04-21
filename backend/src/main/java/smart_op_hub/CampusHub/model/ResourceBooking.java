@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -19,6 +18,12 @@ public class ResourceBooking {
     private String resourceName;
     private String userId;
     private String username;
-    private String status; // PENDING, APPROVED, REJECTED
-    private LocalDateTime bookingDate;
+    private String startDate;   // <--- Added for Multi-day
+    private String endDate;     // <--- Added for Multi-day
+    private String startTime;   // <--- Added
+    private String endTime;     // <--- Added
+    private String purpose;     // <--- Added
+    private int attendees;      // <--- Added
+    private String status;      // PENDING, APPROVED, REJECTED
+    private String bookingDate;
 }
