@@ -61,7 +61,7 @@ const Profile = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-[1000px] mx-auto px-4 py-12">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -89,7 +89,7 @@ const Profile = () => {
         <div className="p-12 grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Details Section */}
           <div className="space-y-8">
-            <h2 className="text-2xl font-black text-[#262626] flex items-center gap-3">
+            <h2 className="text-2xl font-black text-[#FACC15] flex items-center gap-3">
               <User className="text-[#FACC15]" size={24} />
               Account Details
             </h2>
@@ -117,7 +117,7 @@ const Profile = () => {
 
           {/* Security Section */}
           <div className="space-y-8">
-            <h2 className="text-2xl font-black text-[#262626] flex items-center gap-3">
+            <h2 className="text-2xl font-black text-[#FACC15] flex items-center gap-3">
               <Lock className="text-[#FACC15]" size={24} />
               Update Password
             </h2>
@@ -143,7 +143,7 @@ const Profile = () => {
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="w-full px-6 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium"
+                  className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium text-sm"
                 />
               </div>
 
@@ -154,7 +154,7 @@ const Profile = () => {
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                  className="w-full px-6 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium"
+                  className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium text-sm"
                 />
               </div>
 
@@ -165,7 +165,7 @@ const Profile = () => {
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                  className="w-full px-6 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium"
+                  className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium text-sm"
                 />
               </div>
 
