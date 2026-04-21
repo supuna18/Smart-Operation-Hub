@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { X, Calendar, Clock, Users, MessageSquare, Check, AlertCircle } from 'lucide-react';
+import { X, Calendar, Clock, Check, AlertCircle, Users, MessageSquare } from 'lucide-react';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 
 const BookingForm = ({ facility, onClose }) => {
   const user = getUser();
-  const today = new Date().toISOString().split('T')[0]; // Past dates-ah block panna
+  const today = new Date().toISOString().split('T')[0];
 
   const [formData, setFormData] = useState({
-    date: today,
+    startDate: today,
+    endDate: today,
     startTime: '',
     endTime: '',
     purpose: '',
@@ -23,85 +24,108 @@ const BookingForm = ({ facility, onClose }) => {
     setError("");
 
     const payload = {
-      ...formData,
-      facilityName: facility.name || facility.title,
-      userId: user?.id,
+            startDate: formData.startDate,
+      endDate: formData.endDate,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      purpose: formData.purpose,
+      attendees: formData.attendees,
+      resourceId: facility.id,      // <--- 'id' ah anupunga
+      resourceName: facility.name, // <--- 'name' ah anupunga
+      userId: user?.id || user?.email,
       username: user?.username,
       status: "PENDING"
+
     };
 
     try {
-      await api.post('/api/bookings', payload);
-      alert("Success! Your booking request is sent.");
+      // Sariyaana API path: Member 1 controller-la irukka path
+      await api.post('/resources/bookings', payload); 
+      alert("Success! Booking saved in resource_bookings table.");
       onClose();
+      window.location.reload(); 
     } catch (err) {
-      // Backend-la irundhu conflict error vandha inga kaatum
-      setError(err.response?.data || "Time slot conflict! Try another time.");
+      setError(err.response?.data?.message || "Error saving booking.");
     } finally {
       setLoading(false);
     }
-  };
+};
 
   return (
-    <div className="fixed inset-0 bg-[#262626]/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-lg rounded-[2rem] overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+    <div className="fixed inset-0 bg-[#262626]/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in duration-300">
         
-        {/* Header - Matching Member 1 Style */}
-        <div className="bg-[#262626] p-6 text-white flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#FACC15] rounded-xl flex items-center justify-center text-black">
-              <Calendar size={20} strokeWidth={3} />
+        {/* Header - Matching Theme */}
+        <div className="bg-[#262626] p-7 text-white flex justify-between items-center relative overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle, #FACC15 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-12 h-12 bg-[#FACC15] rounded-2xl flex items-center justify-center text-black shadow-lg shadow-yellow-500/20">
+              <Calendar size={22} strokeWidth={3} />
             </div>
-            <h2 className="text-xl font-bold tracking-tight">Reserve {facility.category}</h2>
+            <div>
+              <h2 className="text-xl font-black tracking-tight leading-tight">Reserve Resource</h2>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{facility.name}</p>
+            </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors"><X size={24} /></button>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors relative z-10"><X size={24} /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-5">
           {error && (
-            <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center gap-3 text-red-600 text-xs font-bold">
+            <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3 text-red-600 text-xs font-bold">
               <AlertCircle size={18} /> {error}
             </div>
           )}
 
-          {/* Resource Name (ReadOnly) */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase text-yellow-600 ml-1">Asset Selected</label>
-            <input readOnly value={facility.name} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-[#262626]" />
-          </div>
-
-          {/* Date Picker (Min = Today) */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase text-yellow-600 ml-1">Reservation Date</label>
-            <div className="relative">
-               <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-               <input required type="date" min={today} onChange={(e) => setFormData({...formData, date: e.target.value})} className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#FACC15] outline-none font-medium" />
-            </div>
-          </div>
-
-          {/* Time Slots */}
+          {/* Date Range Selection */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold uppercase text-yellow-600 ml-1">Start Date</label>
+              <input required type="date" min={today} value={formData.startDate} onChange={(e) => setFormData({...formData, startDate: e.target.value})} 
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#FACC15] outline-none font-medium transition-all" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold uppercase text-yellow-600 ml-1">End Date</label>
+              <input required type="date" min={formData.startDate} value={formData.endDate} onChange={(e) => setFormData({...formData, endDate: e.target.value})} 
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#FACC15] outline-none font-medium transition-all" />
+            </div>
+          </div>
+
+          {/* Time Selection */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
               <label className="text-[11px] font-bold uppercase text-yellow-600 ml-1">Start Time</label>
-              <input required type="time" onChange={(e) => setFormData({...formData, startTime: e.target.value})} className="w-full px-5 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#FACC15] outline-none font-medium" />
+              <div className="relative">
+                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <input required type="time" onChange={(e) => setFormData({...formData, startTime: e.target.value})} 
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-medium" />
+              </div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="text-[11px] font-bold uppercase text-yellow-600 ml-1">End Time</label>
-              <input required type="time" onChange={(e) => setFormData({...formData, endTime: e.target.value})} className="w-full px-5 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#FACC15] outline-none font-medium" />
+              <div className="relative">
+                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <input required type="time" onChange={(e) => setFormData({...formData, endTime: e.target.value})} 
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-medium" />
+              </div>
             </div>
           </div>
 
-          {/* Purpose */}
-          <div className="space-y-1">
+          {/* Purpose & Attendees */}
+          <div className="space-y-1.5">
             <label className="text-[11px] font-bold uppercase text-yellow-600 ml-1">Purpose of use</label>
-            <textarea required rows="2" placeholder="Explain the reason for booking..." onChange={(e) => setFormData({...formData, purpose: e.target.value})} className="w-full px-5 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-[#FACC15] outline-none font-medium resize-none" />
+            <div className="relative">
+              <MessageSquare className="absolute left-4 top-4 text-slate-400 w-4 h-4" />
+              <textarea required rows="2" placeholder="Describe your activity..." onChange={(e) => setFormData({...formData, purpose: e.target.value})} 
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#FACC15] outline-none font-medium resize-none transition-all" />
+            </div>
           </div>
 
-          {/* Buttons */}
+          {/* Action Buttons */}
           <div className="flex gap-4 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 py-4 border border-gray-200 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all">Cancel</button>
-            <button disabled={loading} type="submit" className="flex-[2] py-4 bg-[#FACC15] text-[#262626] rounded-2xl font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-yellow-200 transition-all">
-              {loading ? "Checking Slots..." : <><Check size={20} strokeWidth={3} /> Save Booking</>}
+            <button type="button" onClick={onClose} className="flex-1 py-4 border border-slate-200 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 transition-all">Cancel</button>
+            <button disabled={loading} type="submit" className="flex-[2] py-4 bg-[#FACC15] text-[#262626] rounded-2xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-yellow-200 transition-all active:scale-95 disabled:opacity-50">
+              {loading ? "Checking Slots..." : <><Check size={20} strokeWidth={3} /> Reserve Now</>}
             </button>
           </div>
         </form>
