@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Bell } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { clearAuth, getUser, isAdmin, isLoggedIn } from '../utils/auth';
+import { clearAuth, getUser, isAdmin, isLoggedIn, getToken } from '../utils/auth';
 import api from '../utils/api';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
@@ -26,7 +26,7 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await api.get(`/notifications/${user.id}`);
+      const response = await api.get(`/notifications/${user.email}`);
       setNotifications(response.data);
       const unread = response.data.filter(n => !n.read).length;
       setUnreadCount(unread);
@@ -49,7 +49,7 @@ const Navbar = () => {
 
   // Fetch and Setup WebSocket for Real-time Notifications
   useEffect(() => {
-    if (loggedIn && user?.id) {
+    if (loggedIn && user?.email) {
       fetchNotifications();
 
       // Setup WebSocket
@@ -62,9 +62,12 @@ const Navbar = () => {
         reconnectDelay: 5000,
         heartbeatIncoming: 4000,
         heartbeatOutgoing: 4000,
+        connectHeaders: {
+          'Authorization': `Bearer ${getToken()}`
+        },
         onConnect: () => {
           console.log('Connected to WebSocket');
-          stompClient.subscribe(`/user/${user.id}/queue/notifications`, (message) => {
+          stompClient.subscribe('/user/queue/notifications', (message) => {
             const newNotif = JSON.parse(message.body);
             setNotifications(prev => [newNotif, ...prev]);
             setUnreadCount(prev => prev + 1);
@@ -87,7 +90,7 @@ const Navbar = () => {
         }
       };
     }
-  }, [loggedIn, user?.id]);
+  }, [loggedIn, user?.email]);
 
   const handleLogout = () => {
     clearAuth();

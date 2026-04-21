@@ -3,7 +3,11 @@ package smart_op_hub.CampusHub.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import smart_op_hub.CampusHub.model.Notification;
+import smart_op_hub.CampusHub.model.User;
+import smart_op_hub.CampusHub.model.Admin;
 import smart_op_hub.CampusHub.repository.NotificationRepository;
+import smart_op_hub.CampusHub.repository.UserRepository;
+import smart_op_hub.CampusHub.repository.AdminRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
@@ -17,13 +21,19 @@ public class NotificationService {
     private NotificationRepository notificationRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     /**
-     * Fetch all notifications for a specific user.
+     * Fetch all notifications for a specific user (using email).
      */
-    public List<Notification> getNotificationsByUserId(String userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    public List<Notification> getNotificationsByUserId(String email) {
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(email);
     }
 
     /**
@@ -46,11 +56,37 @@ public class NotificationService {
         notification.setType(type);
         notification.setRead(false);
         notification.setCreatedAt(LocalDateTime.now());
+        // Find user email to use as the primary identifier (userId in Notification model)
+        String userEmail = userId; // Fallback
+        
+        Optional<User> userById = userRepository.findById(userId);
+        if (userById.isPresent()) {
+            userEmail = userById.get().getEmail();
+        } else {
+            Optional<User> userByUsername = userRepository.findByUsername(userId);
+            if (userByUsername.isPresent()) {
+                userEmail = userByUsername.get().getEmail();
+            } else {
+                Optional<Admin> admin = adminRepository.findById(userId);
+                if (admin.isPresent()) {
+                    userEmail = admin.get().getEmail();
+                } else {
+                     // Check if it's already an email
+                     if (userId.contains("@")) {
+                         userEmail = userId;
+                     }
+                }
+            }
+        }
+
+        notification.setUserId(userEmail); 
+        notification.setRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
         Notification savedNotification = notificationRepository.save(notification);
 
-        // Send real-time notification to the user
+        // Send real-time notification to the user's private queue (using email)
         messagingTemplate.convertAndSendToUser(
-            userId, 
+            userEmail, 
             "/queue/notifications", 
             savedNotification
         );
