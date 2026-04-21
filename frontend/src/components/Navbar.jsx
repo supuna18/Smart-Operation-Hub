@@ -4,12 +4,15 @@ import { Menu, X, Bell } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearAuth, getUser, isAdmin, isLoggedIn } from '../utils/auth';
 import api from '../utils/api';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [toast, setToast] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -44,12 +47,45 @@ const Navbar = () => {
     }
   };
 
-  // Fetch notifications
+  // Fetch and Setup WebSocket for Real-time Notifications
   useEffect(() => {
     if (loggedIn && user?.id) {
       fetchNotifications();
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
+
+      // Setup WebSocket
+      const socket = new SockJS('http://localhost:8082/ws');
+      const stompClient = new Client({
+        webSocketFactory: () => socket,
+        debug: (str) => {
+          console.log(str);
+        },
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        onConnect: () => {
+          console.log('Connected to WebSocket');
+          stompClient.subscribe(`/user/${user.id}/queue/notifications`, (message) => {
+            const newNotif = JSON.parse(message.body);
+            setNotifications(prev => [newNotif, ...prev]);
+            setUnreadCount(prev => prev + 1);
+            setToast(newNotif.message);
+            
+            // Auto hide toast
+            setTimeout(() => setToast(null), 6000);
+          });
+        },
+        onStompError: (frame) => {
+          console.error('STOMP error', frame);
+        }
+      });
+
+      stompClient.activate();
+
+      return () => {
+        if (stompClient.active) {
+          stompClient.deactivate();
+        }
+      };
     }
   }, [loggedIn, user?.id]);
 
@@ -240,6 +276,32 @@ const Navbar = () => {
             {loggedIn && (
               <button onClick={handleLogout}>Logout</button>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Real-time Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, x: 50, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 50, scale: 0.9 }}
+            className="fixed bottom-6 right-6 z-[100] bg-white border-l-4 border-[#FACC15] shadow-2xl p-5 rounded-xl flex items-center gap-4 min-w-[300px] max-w-md"
+          >
+            <div className="bg-yellow-50 p-2 rounded-full">
+              <Bell className="text-[#FACC15]" size={20} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-gray-900 leading-tight">New Notification</p>
+              <p className="text-sm text-gray-600 mt-1">{toast}</p>
+            </div>
+            <button 
+              onClick={() => setToast(null)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={18} />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

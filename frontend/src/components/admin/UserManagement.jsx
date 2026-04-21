@@ -51,7 +51,8 @@ const UserManagement = () => {
 
   const filtered = users.filter(u => {
     const matchesSearch = u.username?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = roleFilter === 'All' || u.role === roleFilter;
+    const userRoleKey = u.role ? u.role.replace('ROLE_', '').toUpperCase() : 'STUDENT';
+    const matchesRole = roleFilter === 'All' || userRoleKey === roleFilter;
     return matchesSearch && matchesRole;
   });
 
@@ -59,28 +60,6 @@ const UserManagement = () => {
 
   return (
     <div className="font-['Poppins'] min-h-screen bg-[#FDFDFD]">
-      {/* Top Navigation Bar mimicking the screenshot top area */}
-      <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white">
-        <div>
-          <h1 className="text-xl font-black text-[#262626]">Users</h1>
-          <p className="text-xs text-gray-400 font-semibold mt-0.5">{currentDate}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => setModalOpen(true)} className="hidden sm:flex items-center gap-2 bg-[#262626] text-[#FACC15] px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-black transition-all">
-            <UserCheck size={14} strokeWidth={2.5} /> Add User
-          </button>
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Live</span>
-          </div>
-          <button className="p-2.5 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 transition-colors shadow-sm">
-            <Bell size={16} />
-          </button>
-          <button className="p-2.5 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 transition-colors shadow-sm">
-            <Settings size={16} />
-          </button>
-        </div>
-      </div>
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
 
@@ -168,8 +147,9 @@ const UserManagement = () => {
               </div>
             ) : (
               filtered.map(user => {
-                const isAdmin = user.role === 'ADMIN';
-                const cfg = ROLE_CFG[user.role] || ROLE_CFG.STUDENT;
+                const roleKey = user.role ? user.role.replace('ROLE_', '').toUpperCase() : 'STUDENT';
+                const isAdmin = roleKey === 'ADMIN';
+                const cfg = ROLE_CFG[roleKey] || ROLE_CFG.STUDENT;
 
                 return (
                   <div key={user.id} className="bg-white rounded-[20px] border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group relative flex flex-col duration-300 hover:-translate-y-1">
@@ -189,7 +169,7 @@ const UserManagement = () => {
                        <div className="mt-auto w-full border-t border-gray-100 pt-5 flex items-center justify-between">
                           <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">ROLE</label>
                           <select 
-                             value={user.role}
+                             value={roleKey}
                              onChange={e => updateRole(user.id, e.target.value)}
                              className="text-xs font-bold px-3 py-1.5 rounded-lg outline-none cursor-pointer border shadow-sm"
                              style={{ color: cfg.color, backgroundColor: cfg.bg, borderColor: cfg.border }}

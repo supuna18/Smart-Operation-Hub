@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import smart_op_hub.CampusHub.model.Notification;
 import smart_op_hub.CampusHub.repository.NotificationRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +15,9 @@ public class NotificationService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     /**
      * Fetch all notifications for a specific user.
@@ -42,7 +46,16 @@ public class NotificationService {
         notification.setType(type);
         notification.setRead(false);
         notification.setCreatedAt(LocalDateTime.now());
-        return notificationRepository.save(notification);
+        Notification savedNotification = notificationRepository.save(notification);
+
+        // Send real-time notification to the user
+        messagingTemplate.convertAndSendToUser(
+            userId, 
+            "/queue/notifications", 
+            savedNotification
+        );
+
+        return savedNotification;
     }
 
     /**
