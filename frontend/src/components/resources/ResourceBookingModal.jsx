@@ -39,7 +39,7 @@ const ResourceBookingModal = ({ resource, user, onClose, onSuccess }) => {
                 resourceId: resource.id,
                 resourceName: resource.name,
                 userId: user.id || user.email,
-                username: user.username,
+                username: user.username || user.email.split('@')[0],
                 startTime: start.toISOString(),
                 endTime: end.toISOString(),
                 bookingDate: start.toISOString(),

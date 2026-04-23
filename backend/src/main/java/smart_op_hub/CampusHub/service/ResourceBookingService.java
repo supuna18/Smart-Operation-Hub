@@ -38,7 +38,9 @@ public class ResourceBookingService {
     }
 
     public List<ResourceBooking> getAllBookings() {
-        return repository.findAll();
+        List<ResourceBooking> all = repository.findAll();
+        System.out.println("ResourceBookingService: Found " + all.size() + " total bookings in database.");
+        return all;
     }
 
     public List<ResourceBooking> getBookingsByResourceId(String resourceId) {

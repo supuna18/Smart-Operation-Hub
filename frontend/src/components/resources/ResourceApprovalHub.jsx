@@ -26,8 +26,17 @@ const ResourceApprovalHub = () => {
         setLoading(true);
         try {
             const response = await ResourceService.getAllBookings();
-            // Sort by booking date (newest first)
-            const sortedBookings = response.data.sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate));
+            console.log('ResourceApprovalHub: Fetched bookings:', response.data);
+            
+            // Ensure response.data is an array
+            const data = Array.isArray(response.data) ? response.data : [];
+            
+            // Sort by booking date (newest first) - with null safety
+            const sortedBookings = [...data].sort((a, b) => {
+                const dateA = a.bookingDate ? new Date(a.bookingDate) : new Date(0);
+                const dateB = b.bookingDate ? new Date(b.bookingDate) : new Date(0);
+                return dateB - dateA;
+            });
             setBookings(sortedBookings);
             setError(null);
         } catch (err) {
@@ -68,8 +77,8 @@ const ResourceApprovalHub = () => {
         return bookings.filter(b => {
              const matchesStatus = filterStatus === 'ALL' || b.status === filterStatus;
              const matchesSearch = 
-                b.resourceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                b.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (b.resourceName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (b.username || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (b.userId && b.userId.toLowerCase().includes(searchQuery.toLowerCase()));
              return matchesStatus && matchesSearch;
         });
