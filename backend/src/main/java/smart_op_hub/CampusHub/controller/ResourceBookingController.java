@@ -42,4 +42,11 @@ public class ResourceBookingController {
     public ResponseEntity<ResourceBooking> updateBookingStatus(@PathVariable String id, @RequestParam String status, @RequestParam(required = false) String reason) {
         return ResponseEntity.ok(service.updateBookingStatus(id, status, reason));
     }
+
+    // --- MODULE B: DELETE BOOKING ENDPOINT ADDED ---
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBooking(@PathVariable String id) {
+        service.deleteBooking(id);
+        return ResponseEntity.noContent().build();
+    }
 }

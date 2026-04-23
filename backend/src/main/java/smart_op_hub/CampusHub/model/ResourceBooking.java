@@ -13,17 +13,28 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Document(collection = "resource_bookings")
 public class ResourceBooking {
+
     @Id
     private String id;
+
     private String resourceId;
     private String resourceName;
     private String userId;
     private String username;
-    private String status; // PENDING, APPROVED, REJECTED, CANCELLED
-    private LocalDateTime bookingDate;
+
+    // Multi-day support
+    private String startDate;
+    private String endDate;
+
+    // Booking details
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String purpose;
     private Integer expectedAttendees;
+
+    // Status info
+    private String status; // PENDING, APPROVED, REJECTED, CANCELLED
+    private LocalDateTime bookingDate;
     private String rejectionReason;
 }
+
