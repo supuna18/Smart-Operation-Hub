@@ -39,6 +39,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/tickets/**").permitAll()
                         .requestMatchers("/test/**").permitAll()
+                        
+                        // --- MODULE B: PERMISSIONS FOR RESOURCES (GET, POST, PUT, DELETE) ---
+                        // Indha rendu lines dhaan unga cards and delete button-ah fix pannum
+                        .requestMatchers("/api/resources/**").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
+                        // ------------------------------------------------------------
 
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
@@ -61,11 +67,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
+        // Docker environment matching origins
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:5174"
         ));
 
+        // Ensured DELETE is in the allowed methods list
         configuration.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));

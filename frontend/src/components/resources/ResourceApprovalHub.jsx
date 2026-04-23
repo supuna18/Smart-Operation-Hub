@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Filter, Search, Loader2, AlertCircle, 
     BookOpen, CheckCircle, XCircle, Clock,
-    User, MapPin, Calendar, Info
+    User, Calendar, Info, MessageSquare, FileText
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import ResourceService from '../../services/ResourceService';
 import { useToast } from '../../context/ToastContext';
 import confetti from 'canvas-confetti';
@@ -25,7 +27,7 @@ const ResourceApprovalHub = () => {
         setLoading(true);
         try {
             const response = await ResourceService.getAllBookings();
-            // Sort by booking date (newest first)
+            // Sort by the created date (newest first)
             const sortedBookings = response.data.sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate));
             setBookings(sortedBookings);
             setError(null);
@@ -34,6 +36,122 @@ const ResourceApprovalHub = () => {
             setError('Failed to load booking requests.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    // --- MODULE B: ADMIN MASTER REPORT DOWNLOAD LOGIC (CATEGORIZED PDF) ---
+    const handleExportReport = () => {
+        if (bookings.length === 0) {
+            showToast("No data available to export.", "error");
+            return;
+        }
+
+        try {
+            const doc = new jsPDF();
+            const reportDate = new Date().toLocaleString();
+            
+            // 1. Header
+            doc.setFillColor(38, 38, 38);
+            doc.rect(0, 0, 210, 45, 'F');
+            doc.setFontSize(28);
+            doc.setTextColor(250, 204, 21);
+            doc.setFont("helvetica", "bold");
+            doc.text("SmartSync", 20, 25);
+            doc.setFontSize(10);
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "normal");
+            doc.text("CATEGORIZED MASTER BOOKING REPORT", 20, 35);
+            doc.text(`Generated: ${reportDate}`, 190, 35, { align: 'right' });
+            
+            // 2. Summary Stats Section
+            doc.setFontSize(12);
+            doc.setTextColor(38, 38, 38);
+            doc.setFont("helvetica", "bold");
+            doc.text("REPORT SUMMARY", 20, 58);
+            
+            autoTable(doc, {
+                startY: 62,
+                head: [['TOTAL', 'PENDING', 'APPROVED', 'REJECTED']],
+                body: [[stats.total, stats.pending, stats.approved, stats.rejected]],
+                theme: 'grid',
+                styles: { halign: 'center', fontSize: 14, fontStyle: 'bold', cellPadding: 5 },
+                headStyles: { fillColor: [240, 240, 240], textColor: [38, 38, 38], fontSize: 8 }
+            });
+
+            // 3. Helper to render table by category
+            const renderCategoryTable = (title, data, color) => {
+                if (data.length === 0) return;
+
+                doc.setFontSize(14);
+                doc.setTextColor(color[0], color[1], color[2]);
+                doc.setFont("helvetica", "bold");
+                doc.text(title, 20, doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 85);
+
+                const tableRows = data.map((b, index) => [
+                    index + 1,
+                    b.resourceName,
+                    `${b.username} (${b.userId})`,
+                    `${b.startDate} to ${b.endDate}`,
+                    `${b.startTime} - ${b.endTime}`,
+                    b.purpose
+                ]);
+
+                autoTable(doc, {
+                    startY: doc.lastAutoTable.finalY + 20,
+                    head: [['#', 'RESOURCE', 'USER (ID)', 'PERIOD', 'TIME', 'PURPOSE']],
+                    body: tableRows,
+                    headStyles: { fillColor: color, textColor: [255, 255, 255], fontSize: 9 },
+                    styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
+                    columnStyles: { 0: { cellWidth: 10 }, 5: { cellWidth: 'auto' } }
+                });
+            };
+
+            // Grouping
+            const approvedBookings = bookings.filter(b => b.status === 'APPROVED');
+            const pendingBookings = bookings.filter(b => b.status === 'PENDING');
+            const rejectedBookings = bookings.filter(b => b.status === 'REJECTED');
+
+            // Render Sections
+            renderCategoryTable("APPROVED BOOKINGS", approvedBookings, [16, 185, 129]); // Emerald
+            renderCategoryTable("PENDING REQUESTS", pendingBookings, [234, 179, 8]); // Yellow
+            renderCategoryTable("REJECTED BOOKINGS", rejectedBookings, [244, 63, 94]); // Rose
+
+            // 4. Enhanced Footer and Signature
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Signature area on the last page
+                if (i === pageCount) {
+                    const finalY = doc.lastAutoTable.finalY + 30;
+                    if (finalY < 260) {
+                        doc.setDrawColor(200, 200, 200);
+                        doc.line(130, finalY, 190, finalY);
+                        doc.setFontSize(9);
+                        doc.setTextColor(100, 100, 100);
+                        doc.text("Signature of Administrator", 160, finalY + 5, { align: 'center' });
+                    }
+                }
+
+                // Footer line
+                doc.setDrawColor(240, 240, 240);
+                doc.line(20, 285, 190, 285);
+                
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text(
+                    `Page ${i} of ${pageCount} | Generated by SmartSync Management System | ${reportDate}`, 
+                    doc.internal.pageSize.width / 2, 
+                    290, 
+                    { align: 'center' }
+                );
+            }
+
+            doc.save(`Categorized_Master_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+            showToast("Categorized report exported successfully!", "success");
+        } catch (err) {
+            console.error('Error generating PDF:', err);
+            showToast("Failed to generate report.", "error");
         }
     };
 
@@ -51,7 +169,7 @@ const ResourceApprovalHub = () => {
                 });
             }
             
-            fetchBookings(); // Refresh the list
+            fetchBookings(); // Refresh the feed
         } catch (err) {
             console.error('Error updating status:', err);
             showToast('Failed to update booking status.', 'error');
@@ -63,8 +181,7 @@ const ResourceApprovalHub = () => {
              const matchesStatus = filterStatus === 'ALL' || b.status === filterStatus;
              const matchesSearch = 
                 b.resourceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                b.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (b.userId && b.userId.toLowerCase().includes(searchQuery.toLowerCase()));
+                b.username.toLowerCase().includes(searchQuery.toLowerCase());
              return matchesStatus && matchesSearch;
         });
     }, [bookings, filterStatus, searchQuery]);
@@ -80,6 +197,23 @@ const ResourceApprovalHub = () => {
 
     return (
         <div className="w-full space-y-8 animate-in fade-in duration-500">
+            
+            {/* Header with Export Button Integration */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">Booking <span className="text-yellow-500">Approvals</span></h2>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">Manage student reservation queue</p>
+                </div>
+                
+                {/* MODULE B: THE MASTER EXPORT BUTTON */}
+                <button 
+                    onClick={handleExportReport}
+                    className="flex items-center gap-2 bg-[#262626] text-[#FACC15] px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl active:scale-95"
+                >
+                    <FileText size={16} strokeWidth={3} /> Export Master Report
+                </button>
+            </div>
+
             {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
@@ -108,7 +242,7 @@ const ResourceApprovalHub = () => {
 
             {/* Controls */}
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto scrollbar-hide">
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto">
                     <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-slate-400 mr-1">
                         <Filter size={16} />
                     </div>
@@ -116,7 +250,7 @@ const ResourceApprovalHub = () => {
                         <button
                             key={status}
                             onClick={() => setFilterStatus(status)}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all whitespace-nowrap ${
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all ${
                                 filterStatus === status 
                                     ? 'bg-[#262626] text-white shadow-lg shadow-black/20' 
                                     : 'bg-slate-50 text-slate-400 hover:bg-slate-100 border border-slate-100'
@@ -134,7 +268,7 @@ const ResourceApprovalHub = () => {
                         placeholder="Search by resource or user..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 shadow-inner-sm transition-all font-bold text-xs text-slate-700 placeholder-slate-400"
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all font-bold text-xs text-slate-700"
                     />
                 </div>
             </div>
@@ -147,20 +281,11 @@ const ResourceApprovalHub = () => {
                             <Loader2 className="w-10 h-10 text-yellow-500 animate-spin mb-4" />
                             <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Updating Feed...</p>
                         </div>
-                    ) : error ? (
-                        <div className="col-span-full py-20 flex flex-col items-center justify-center bg-rose-50 rounded-[2rem] border border-rose-100 text-center px-6">
-                            <AlertCircle className="w-12 h-12 text-rose-500 mb-4" />
-                            <h3 className="text-xl font-bold text-rose-900 mb-2">Sync Error</h3>
-                            <p className="text-rose-700 text-sm font-medium mb-6">{error}</p>
-                            <button onClick={fetchBookings} className="bg-rose-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-rose-700 transition-all">Retry Sync</button>
-                        </div>
                     ) : filteredBookings.length === 0 ? (
                         <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white rounded-[2rem] border-2 border-dashed border-slate-100 text-center">
-                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                                <Info className="w-8 h-8 text-slate-200" />
-                            </div>
+                            <Info className="w-8 h-8 text-slate-200 mb-4" />
                             <h3 className="text-lg font-bold text-slate-900 mb-1">Queue Clear</h3>
-                            <p className="text-slate-400 text-sm">No booking requests match your current criteria.</p>
+                            <p className="text-slate-400 text-sm">No booking requests found.</p>
                         </div>
                     ) : (
                         filteredBookings.map((booking, idx) => (
@@ -182,9 +307,6 @@ const ResourceApprovalHub = () => {
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider rounded-md">
-                                                    RESOURCE
-                                                </span>
                                                 <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
                                                     booking.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700' :
                                                     booking.status === 'REJECTED' ? 'bg-rose-50 text-rose-700' :
@@ -195,7 +317,7 @@ const ResourceApprovalHub = () => {
                                             </div>
                                             <h3 className="text-lg font-black text-slate-900 truncate pr-4">{booking.resourceName}</h3>
                                         </div>
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-yellow-50 group-hover:text-yellow-600 transition-colors">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
                                             <BookOpen size={20} />
                                         </div>
                                     </div>
@@ -205,28 +327,33 @@ const ResourceApprovalHub = () => {
                                             <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                                                 <User size={14} />
                                             </div>
-                                            <span>
-                                                Requested by <strong className="text-slate-900">{booking.username}</strong>
-                                                <span className="block text-[10px] text-slate-400 font-bold tracking-tight">{booking.userId}</span>
-                                            </span>
+                                            <span>Requested by <strong className="text-slate-900">{booking.username}</strong></span>
                                         </div>
+
                                         <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
                                             <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                                                 <Calendar size={14} />
                                             </div>
                                             <span>
-                                                Date: <strong className="text-slate-900">{new Date(booking.bookingDate).toLocaleDateString()}</strong>
-                                                <span className="block text-[10px] text-slate-400 font-bold tracking-tight">Time: {new Date(booking.bookingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                Period: <strong className="text-slate-900">{booking.startDate} - {booking.endDate}</strong>
+                                                <span className="block text-[10px] text-slate-400 font-bold tracking-tight">Time: {booking.startTime} to {booking.endTime}</span>
                                             </span>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 text-xs font-medium text-slate-600">
+                                            <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 flex-shrink-0">
+                                                <MessageSquare size={14} />
+                                            </div>
+                                            <p className="italic text-slate-500">"{booking.purpose}"</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {booking.status === 'PENDING' ? (
-                                    <div className="p-4 bg-slate-50 flex gap-2">
+                                    <div className="p-4 bg-slate-50 flex gap-2 border-t border-slate-100">
                                         <button 
                                             onClick={() => handleUpdateStatus(booking.id, 'APPROVED', booking.resourceName)}
-                                            className="flex-1 flex items-center justify-center gap-2 bg-[#262626] hover:bg-black text-[#FACC15] py-2.5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shadow-lg shadow-black/10 active:scale-95"
+                                            className="flex-1 flex items-center justify-center gap-2 bg-[#262626] hover:bg-black text-[#FACC15] py-2.5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95"
                                         >
                                             <CheckCircle size={14} /> Approve
                                         </button>
@@ -238,7 +365,7 @@ const ResourceApprovalHub = () => {
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="p-4 bg-slate-50 flex items-center justify-center">
+                                    <div className="p-4 bg-slate-50 flex items-center justify-center border-t border-slate-100">
                                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                                             Processed on {new Date().toLocaleDateString()}
                                         </span>

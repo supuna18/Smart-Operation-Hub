@@ -27,9 +27,11 @@ import { ToastProvider } from './context/ToastContext';
 function AppContent({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation();
 
+  // UPDATED: Added '/my-bookings' to hide footer for a cleaner dashboard look
   const hideFooter =
     location.pathname === '/AdminDashboard' ||
-    location.pathname === '/resources';
+    location.pathname === '/resources' ||
+    location.pathname === '/my-bookings';
 
   return (
     <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col text-poppins">
@@ -89,6 +91,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
             }
           />
 
+          {/* MODULE B: User Booking History Dashboard */}
           <Route
             path="/my-bookings"
             element={

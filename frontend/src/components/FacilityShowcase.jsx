@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Users, Clock, ArrowRight, ShieldCheck, Lock, CheckCircle, Globe } from 'lucide-react';
 import { isLoggedIn } from '../utils/auth';
-import BookingForm from './BookingForm'; 
+import BookingForm from "./resources/BookingForm";
 
 const FacilityShowcase = () => {
   const navigate = useNavigate();
