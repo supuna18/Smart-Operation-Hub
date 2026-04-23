@@ -20,7 +20,7 @@ import { ToastProvider } from './context/ToastContext';
 
 function AppContent() {
   const location = useLocation();
-  const hideFooter = location.pathname === '/AdminDashboard' || location.pathname === '/resources';
+  const hideFooter = location.pathname === '/AdminDashboard';
 
   return (
     <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col">

@@ -14,6 +14,20 @@ public class ResourceBookingService {
     private final ResourceBookingRepository repository;
 
     public ResourceBooking createBooking(ResourceBooking booking) {
+        // Conflict Prevention: Check for overlapping bookings
+        List<ResourceBooking> conflictingBookings = repository.findByResourceIdAndStatusIn(
+            booking.getResourceId(), List.of("PENDING", "APPROVED")
+        );
+
+        boolean hasOverlap = conflictingBookings.stream().anyMatch(existing -> 
+            booking.getStartTime().isBefore(existing.getEndTime()) && 
+            booking.getEndTime().isAfter(existing.getStartTime())
+        );
+
+        if (hasOverlap) {
+            throw new RuntimeException("Scheduling Conflict: The resource is already booked for the selected time range.");
+        }
+
         booking.setStatus("PENDING");
         booking.setBookingDate(LocalDateTime.now());
         return repository.save(booking);
@@ -24,16 +38,21 @@ public class ResourceBookingService {
     }
 
     public List<ResourceBooking> getAllBookings() {
-        return repository.findAll();
+        List<ResourceBooking> all = repository.findAll();
+        System.out.println("ResourceBookingService: Found " + all.size() + " total bookings in database.");
+        return all;
     }
 
     public List<ResourceBooking> getBookingsByResourceId(String resourceId) {
         return repository.findByResourceId(resourceId);
     }
 
-    public ResourceBooking updateBookingStatus(String id, String status) {
+    public ResourceBooking updateBookingStatus(String id, String status, String reason) {
         return repository.findById(id).map(booking -> {
             booking.setStatus(status);
+            if (reason != null && !reason.isEmpty()) {
+                booking.setRejectionReason(reason);
+            }
             return repository.save(booking);
         }).orElseThrow(() -> new RuntimeException("Booking not found"));
     }

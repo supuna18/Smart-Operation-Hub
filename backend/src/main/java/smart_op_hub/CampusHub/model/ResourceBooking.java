@@ -19,6 +19,11 @@ public class ResourceBooking {
     private String resourceName;
     private String userId;
     private String username;
-    private String status; // PENDING, APPROVED, REJECTED
+    private String status; // PENDING, APPROVED, REJECTED, CANCELLED
     private LocalDateTime bookingDate;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String purpose;
+    private Integer expectedAttendees;
+    private String rejectionReason;
 }
