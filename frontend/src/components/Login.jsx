@@ -92,7 +92,7 @@ const Login = () => {
           <div className="w-16 h-16 bg-[#FACC15] rounded-2xl mx-auto flex items-center justify-center mb-4">
             <Lock className="w-8 h-8 text-[#262626]" />
           </div>
-          <h2 className="text-3xl font-bold">Welcome Back</h2>
+          <h2 className="text-3xl font-bold text-[#FACC15]">Welcome Back</h2>
           <p className="text-gray-500 mt-2">Please enter your details</p>
         </div>
 
