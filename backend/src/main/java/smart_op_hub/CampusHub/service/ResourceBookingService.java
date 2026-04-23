@@ -61,7 +61,7 @@ public class ResourceBookingService {
         newBooking.setStatus("PENDING");
 
         // Booking date set pannrom
-        newBooking.setBookingDate(LocalDateTime.now().toString());
+        newBooking.setBookingDate(LocalDateTime.now());
 
         return repository.save(newBooking);
     }
