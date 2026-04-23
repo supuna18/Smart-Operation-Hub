@@ -11,4 +11,5 @@ public interface ResourceBookingRepository extends MongoRepository<ResourceBooki
     List<ResourceBooking> findByUserId(String userId);
     List<ResourceBooking> findByStatus(String status);
     List<ResourceBooking> findByResourceId(String resourceId);
+    List<ResourceBooking> findByResourceIdAndStatusIn(String resourceId, List<String> statuses);
 }

@@ -1,184 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import AddUserModal from './AddUserModal';
-import { Search, UserPlus, Trash2, ChevronDown, AlertCircle, RefreshCw } from 'lucide-react';
-
-/* ── Brand tokens ── */
-const G = '#FACC15';
-const D = '#262626';
-const W = '#FFFFFF';
+import { Search, Plus, Trash2, AlertCircle, RefreshCw, Filter, UserCheck, Settings, Bell, Users } from 'lucide-react';
 
 const ROLE_CFG = {
-  ADMIN:      { color: D,        bg: `${G}28`,  border: `${G}70`  },
-  STUDENT:    { color: '#166534', bg: '#f0fdf4', border: '#86efac' },
-  LECTURER:   { color: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
-  TECHNICIAN: { color: '#1e40af', bg: '#eff6ff', border: '#93c5fd' },
+  ADMIN:      { label: 'Admin', color: '#262626', bg: '#fde047', border: '#facc15' },
+  STUDENT:    { label: 'Student', color: '#166534', bg: '#dcfce7', border: '#86efac' },
+  LECTURER:   { label: 'Lecturer', color: '#9a3412', bg: '#ffedd5', border: '#fdba74' },
+  TECHNICIAN: { label: 'Technician', color: '#1e3a8a', bg: '#dbeafe', border: '#93c5fd' },
 };
 
-/* ── Responsive CSS ── */
-const CSS = `
-  .um-wrap { font-family: 'Poppins', sans-serif; }
-
-  /* Toolbar */
-  .um-toolbar {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  @media (min-width: 580px) {
-    .um-toolbar { flex-direction: row; align-items: center; }
-  }
-
-  /* Search */
-  .um-search-wrap { position: relative; flex: 1; }
-  .um-search {
-    width: 100%; padding: 11px 14px 11px 40px;
-    border: 1.5px solid #e5e7eb; border-radius: 11px;
-    font-size: 13px; font-family: 'Poppins', sans-serif;
-    font-weight: 500; color: ${D}; background: ${W};
-    outline: none; transition: border-color .2s, box-shadow .2s;
-    box-sizing: border-box;
-  }
-  .um-search:focus { border-color: ${G}; box-shadow: 0 0 0 3px ${G}25; }
-
-  /* Add button */
-  .um-add-btn {
-    display: flex; align-items: center; justify-content: center; gap: 7px;
-    padding: 11px 18px; background: ${D}; border: none; border-radius: 11px;
-    cursor: pointer; color: ${G};
-    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 13px;
-    box-shadow: 0 4px 12px rgba(38,38,38,.25);
-    transition: transform .18s, box-shadow .18s, background .18s;
-    outline: none; white-space: nowrap; width: 100%;
-  }
-  .um-add-btn:hover { background: #1a1a1a; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(38,38,38,.35); }
-  @media (min-width: 580px) { .um-add-btn { width: auto; } }
-
-  /* Count pill */
-  .um-count {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 13px; border-radius: 99px;
-    background: ${G}1A; border: 1px solid ${G}45;
-    font-size: 11.5px; font-weight: 700; color: ${D};
-    white-space: nowrap; flex-shrink: 0;
-  }
-
-  /* TABLE — hidden on mobile, shown on md+ */
-  .um-table-card { display: none; }
-  @media (min-width: 768px) { .um-table-card { display: block; } }
-
-  /* CARD LIST — shown on mobile, hidden on md+ */
-  .um-card-list { display: flex; flex-direction: column; gap: 10px; }
-  @media (min-width: 768px) { .um-card-list { display: none; } }
-
-  /* User card (mobile) */
-  .um-user-card {
-    background: ${W}; border-radius: 14px; padding: 14px 16px;
-    border: 1px solid rgba(38,38,38,.07);
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
-    transition: box-shadow .18s, transform .18s;
-  }
-  .um-user-card:hover { box-shadow: 0 5px 18px rgba(0,0,0,.09); transform: translateY(-2px); }
-
-  /* Table */
-  .um-table { width: 100%; border-collapse: collapse; font-family: 'Poppins', sans-serif; }
-  .um-th {
-    padding: 13px 20px; font-size: 10px; font-weight: 800;
-    color: #9ca3af; text-transform: uppercase; letter-spacing: .1em;
-    background: #fafaf8; border-bottom: 2px solid ${G}22;
-  }
-  .um-th:last-child { text-align: right; }
-  .um-tr { transition: background .15s; border-bottom: 1px solid #f3f4f6; }
-  .um-tr:last-child { border-bottom: none; }
-  .um-tr:hover { background: ${G}08; }
-  .um-td { padding: 15px 20px; }
-
-  /* Role select */
-  .role-select {
-    appearance: none; padding: 5px 28px 5px 11px;
-    border-radius: 99px; border: 1.5px solid;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 700; font-size: 11px; letter-spacing: .05em;
-    text-transform: uppercase; cursor: pointer; outline: none;
-  }
-
-  /* Delete btn */
-  .del-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 6px 12px; background: transparent;
-    border: 1.5px solid #fee2e2; border-radius: 9px;
-    cursor: pointer; color: #ef4444;
-    font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11.5px;
-    transition: all .18s; outline: none;
-  }
-  .del-btn:hover { background: #fef2f2; border-color: #fca5a5; }
-  .del-btn:disabled { opacity: .55; cursor: not-allowed; }
-
-  /* Table footer */
-  .um-footer {
-    padding: 11px 20px; background: #fafaf8;
-    border-top: 1px solid ${G}22;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 6px;
-  }
-
-  /* Loading spinner */
-  @keyframes um-spin { to { transform: rotate(360deg); } }
-  .um-spinner {
-    width: 38px; height: 38px; border-radius: 50%;
-    border: 3px solid ${G}35; border-top-color: ${G};
-    animation: um-spin .75s linear infinite; margin: 0 auto 14px;
-  }
-
-  /* Empty state */
-  .um-empty-state {
-    display: flex; flex-direction: column; align-items: center;
-    padding: 50px 20px; text-align: center;
-  }
-`;
-
-/* ── Role select wrapper (with chevron overlay) ── */
-const RoleSelect = ({ value, onChange }) => {
-  const cfg = ROLE_CFG[value] || { color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb' };
-  return (
-    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="role-select"
-        style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}
-      >
-        <option value="ADMIN">Admin</option>
-        <option value="STUDENT">Student</option>
-        <option value="LECTURER">Lecturer</option>
-        <option value="TECHNICIAN">Technician</option>
-      </select>
-      <ChevronDown size={10} color={cfg.color} style={{ position: 'absolute', right: 9, pointerEvents: 'none', flexShrink: 0 }} />
-    </div>
-  );
-};
-
-/* ── Avatar ── */
-const Avatar = ({ username, role }) => {
-  const isAdmin = role === 'ADMIN';
-  return (
-    <div style={{
-      width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-      background: isAdmin ? G : `${G}22`,
-      border: `2px solid ${isAdmin ? G : `${G}45`}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontWeight: 800, fontSize: 13, color: D,
-    }}>
-      {username?.charAt(0).toUpperCase()}
-    </div>
-  );
-};
-
-/* ══════════════════════════════════════════ */
 const UserManagement = () => {
   const [users, setUsers]           = useState([]);
   const [search, setSearch]         = useState('');
+  const [roleFilter, setRoleFilter] = useState('All');
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState('');
   const [modalOpen, setModalOpen]   = useState(false);
@@ -214,182 +49,152 @@ const UserManagement = () => {
     finally { setDeletingId(null); }
   };
 
-  const filtered = users.filter(u =>
-    u.username?.toLowerCase().includes(search.toLowerCase()) ||
-    u.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = users.filter(u => {
+    const matchesSearch = u.username?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase());
+    const userRoleKey = u.role ? u.role.replace('ROLE_', '').toUpperCase() : 'STUDENT';
+    const matchesRole = roleFilter === 'All' || userRoleKey === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
-  /* ── Loading ── */
-  if (loading) return (
-    <div style={{ background: W, borderRadius: 16, padding: '60px 24px', textAlign: 'center', border: '1px solid rgba(38,38,38,.07)' }}>
-      <div className="um-spinner" />
-      <p style={{ margin: 0, fontWeight: 700, color: '#9ca3af', fontSize: 12.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-        Loading records…
-      </p>
-      <style>{CSS}</style>
-    </div>
-  );
-
-  /* ── Error ── */
-  if (error) return (
-    <>
-      <style>{CSS}</style>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '18px 22px', background: '#fef2f2', borderRadius: 14, border: '1px solid #fecaca' }}>
-        <AlertCircle size={19} color="#ef4444" style={{ flexShrink: 0, marginTop: 1 }} />
-        <div style={{ flex: 1 }}>
-          <p style={{ margin: 0, fontWeight: 700, color: '#dc2626', fontSize: 13.5 }}>{error}</p>
-          <button onClick={load} style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 13px', background: W, border: '1px solid #fca5a5', borderRadius: 8, cursor: 'pointer', color: '#ef4444', fontFamily: "'Poppins',sans-serif", fontWeight: 600, fontSize: 12, outline: 'none' }}>
-            <RefreshCw size={12} /> Retry
-          </button>
-        </div>
-      </div>
-    </>
-  );
+  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
-    <>
-      <style>{CSS}</style>
-      <div className="um-wrap">
+    <div className="font-['Poppins'] min-h-screen bg-[#FDFDFD]">
 
-        {/* ── Toolbar ── */}
-        <div className="um-toolbar">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
+
+        {/* Dark Banner Card */}
+        <div className="bg-[#262626] rounded-2xl sm:rounded-[20px] p-6 sm:p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden mb-8 shadow-xl">
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1.5 h-8 bg-[#FACC15] rounded-full"></div>
+              <h2 className="text-2xl sm:text-[28px] font-black text-white tracking-wide">Users & <span className="text-[#FACC15]">Directory</span></h2>
+            </div>
+            <p className="text-gray-400 text-[13px] sm:text-sm font-medium max-w-lg mt-3">
+              Manage and optimize campus users from a single, high-performance interface.
+            </p>
+          </div>
+          <button 
+            onClick={() => setModalOpen(true)}
+            className="relative z-10 w-full md:w-auto shrink-0 bg-[#FACC15] hover:bg-[#eab308] text-[#262626] px-6 py-3.5 sm:py-4 rounded-xl font-black text-[13px] sm:text-sm transition-all focus:ring-4 focus:ring-[#FACC15]/30 flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02]"
+          >
+            <Plus size={18} strokeWidth={3} /> New User
+          </button>
+        </div>
+
+        {/* Filters Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
           {/* Search */}
-          <div className="um-search-wrap">
-            <Search size={15} color="#9ca3af" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            <input
-              type="text"
-              className="um-search"
-              placeholder="Search by name or email…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+          <div className="relative group border border-gray-200 rounded-xl bg-white shadow-sm transition-all focus-within:border-[#FACC15] focus-within:ring-4 focus-within:ring-[#FACC15]/10 lg:col-span-2">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#FACC15]" />
+            <input 
+              type="text" 
+              placeholder="Search users by name or email..." 
+              className="w-full pl-11 pr-4 py-3.5 bg-transparent text-sm outline-none font-medium text-gray-700 placeholder:text-gray-400" 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
             />
           </div>
+          
+          {/* Categories/Role Filter */}
+          <div className="relative border border-gray-200 rounded-xl bg-white shadow-sm transition-all focus-within:border-[#FACC15] focus-within:ring-4 focus-within:ring-[#FACC15]/10">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+               <Filter size={15} />
+            </div>
+            <select 
+               className="w-full pl-11 pr-4 py-3.5 bg-transparent text-sm outline-none font-bold text-gray-700 appearance-none cursor-pointer"
+               value={roleFilter}
+               onChange={e => setRoleFilter(e.target.value)}
+            >
+               <option value="All">All Roles</option>
+               <option value="ADMIN">Admin</option>
+               <option value="STUDENT">Student</option>
+            </select>
+          </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <span className="um-count">
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: G, display: 'inline-block' }} />
-              {filtered.length} user{filtered.length !== 1 ? 's' : ''}
-            </span>
-            <button className="um-add-btn" onClick={() => setModalOpen(true)}>
-              <UserPlus size={15} />
-              Add User
-            </button>
+          <div className="relative border border-gray-200 rounded-xl bg-white shadow-sm opacity-60 pointer-events-none hidden md:block">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+               <Users size={15} />
+            </div>
+            <div className="w-full pl-11 pr-4 py-3.5 bg-transparent text-sm outline-none font-bold text-gray-700 flex items-center h-full">All Statuses</div>
           </div>
         </div>
 
-        {/* ══════════ MOBILE: Card list ══════════ */}
-        <div className="um-card-list">
-          {filtered.length === 0 ? (
-            <div className="um-empty-state" style={{ background: W, borderRadius: 16, border: '1px solid rgba(38,38,38,.07)' }}>
-              <p style={{ margin: 0, fontWeight: 700, color: '#9ca3af', fontSize: 13.5 }}>No users found.</p>
-              <p style={{ margin: '4px 0 0', fontSize: 12, color: '#d1d5db', fontWeight: 500 }}>Try a different keyword.</p>
-            </div>
-          ) : (
-            filtered.map(user => {
-              const cfg = ROLE_CFG[user.role] || { color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb' };
-              return (
-                <div key={user.id} className="um-user-card">
-                  {/* Top row: avatar + name + delete */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                      <Avatar username={user.username} role={user.role} />
-                      <div>
-                        <p style={{ margin: 0, fontWeight: 700, fontSize: 13.5, color: D }}>{user.username}</p>
-                        <p style={{ margin: '2px 0 0', fontSize: 11.5, color: '#9ca3af', fontWeight: 500 }}>{user.email}</p>
-                      </div>
+        {/* Error / Loading States */}
+        {loading && (
+          <div className="py-20 flex flex-col items-center">
+             <RefreshCw className="animate-spin text-[#FACC15] mb-4" size={32} />
+             <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Loading Directory...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-5 bg-red-50 text-red-600 rounded-2xl border border-red-200 flex items-start gap-4 font-medium text-sm shadow-sm">
+             <AlertCircle size={24} className="shrink-0 mt-0.5" />
+             <div>
+                <p className="font-bold text-base mb-1">{error}</p>
+                <button onClick={load} className="underline font-bold text-red-500 hover:text-red-700">Try Again</button>
+             </div>
+          </div>
+        )}
+
+        {/* Users Grid */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filtered.length === 0 ? (
+              <div className="col-span-full text-center py-24 bg-gray-50 rounded-[20px] border border-dashed border-gray-200">
+                 <p className="text-gray-500 font-bold text-[15px]">No users found matching your criteria.</p>
+              </div>
+            ) : (
+              filtered.map(user => {
+                const roleKey = user.role ? user.role.replace('ROLE_', '').toUpperCase() : 'STUDENT';
+                const isAdmin = roleKey === 'ADMIN';
+                const cfg = ROLE_CFG[roleKey] || ROLE_CFG.STUDENT;
+
+                return (
+                  <div key={user.id} className="bg-white rounded-[20px] border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group relative flex flex-col duration-300 hover:-translate-y-1">
+                    {/* Top Color strip */}
+                    <div className="h-[6px] w-full" style={{ backgroundColor: isAdmin ? '#FACC15' : '#10b981' }}></div>
+                    
+                    <div className="p-6 flex-1 flex flex-col items-center text-center">
+                       {/* Avatar */}
+                       <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center font-black text-2xl mb-4 border-4 shadow-sm" style={{ backgroundColor: isAdmin ? '#FACC15' : '#f3f4f6', borderColor: isAdmin ? '#fef08a' : '#e5e7eb', color: isAdmin ? '#262626' : '#6b7280' }}>
+                          {user.username?.charAt(0).toUpperCase()}
+                       </div>
+                       
+                       <h3 className="font-black text-gray-800 text-lg leading-tight w-full truncate mb-1" title={user.username}>{user.username}</h3>
+                       <p className="text-gray-400 text-[13px] font-semibold w-full truncate mb-6">{user.email}</p>
+
+                       {/* Role selector inside card */}
+                       <div className="mt-auto w-full border-t border-gray-100 pt-5 flex items-center justify-between">
+                          <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">ROLE</label>
+                          <select 
+                             value={roleKey}
+                             onChange={e => updateRole(user.id, e.target.value)}
+                             className="text-xs font-bold px-3 py-1.5 rounded-lg outline-none cursor-pointer border shadow-sm"
+                             style={{ color: cfg.color, backgroundColor: cfg.bg, borderColor: cfg.border }}
+                          >
+                             <option value="ADMIN">Admin</option>
+                             <option value="STUDENT">Student</option>
+                          </select>
+                       </div>
                     </div>
-                    <button
-                      className="del-btn"
-                      onClick={() => deleteUser(user.id)}
-                      disabled={deletingId === user.id}
+
+                    {/* Delete item */}
+                    <button 
+                       onClick={() => deleteUser(user.id)}
+                       disabled={deletingId === user.id}
+                       className="absolute top-4 right-4 p-2 bg-red-50 text-red-500 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-all hover:bg-red-100 hover:scale-110 disabled:opacity-50"
+                       title="Remove User"
                     >
-                      <Trash2 size={12} />
-                      {deletingId === user.id ? '…' : 'Remove'}
+                       <Trash2 size={15} />
                     </button>
                   </div>
-
-                  {/* Bottom row: role */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Role</span>
-                    <RoleSelect value={user.role} onChange={role => updateRole(user.id, role)} />
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* ══════════ DESKTOP: Table ══════════ */}
-        <div className="um-table-card" style={{ background: W, borderRadius: 18, border: '1px solid rgba(38,38,38,.07)', boxShadow: '0 2px 12px rgba(0,0,0,.04)', overflowX: 'auto' }}>
-          <table className="um-table">
-            <thead>
-              <tr>
-                {['User', 'Email', 'Role', 'Actions'].map((h, i) => (
-                  <th key={h} className="um-th" style={{ textAlign: i === 3 ? 'right' : 'left' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={4}>
-                    <div className="um-empty-state">
-                      <p style={{ margin: 0, fontWeight: 700, color: '#9ca3af', fontSize: 13.5 }}>No users match your search.</p>
-                      <p style={{ margin: '4px 0 0', fontSize: 12, color: '#d1d5db', fontWeight: 500 }}>Try a different keyword.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filtered.map(user => (
-                  <tr key={user.id} className="um-tr">
-                    {/* Avatar + Name */}
-                    <td className="um-td">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                        <Avatar username={user.username} role={user.role} />
-                        <span style={{ fontWeight: 700, fontSize: 13.5, color: D }}>{user.username}</span>
-                      </div>
-                    </td>
-
-                    {/* Email */}
-                    <td className="um-td" style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>
-                      {user.email}
-                    </td>
-
-                    {/* Role */}
-                    <td className="um-td">
-                      <RoleSelect value={user.role} onChange={role => updateRole(user.id, role)} />
-                    </td>
-
-                    {/* Delete */}
-                    <td className="um-td" style={{ textAlign: 'right' }}>
-                      <button
-                        className="del-btn"
-                        onClick={() => deleteUser(user.id)}
-                        disabled={deletingId === user.id}
-                      >
-                        <Trash2 size={12} />
-                        {deletingId === user.id ? 'Removing…' : 'Remove'}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-
-          {/* Table footer */}
-          {filtered.length > 0 && (
-            <div className="um-footer">
-              <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>
-                Showing <strong style={{ color: D }}>{filtered.length}</strong> of <strong style={{ color: D }}>{users.length}</strong> users
-              </span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: `${D}55`, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                SmartSync Registry
-              </span>
-            </div>
-          )}
-        </div>
-
+                );
+              })
+            )}
+          </div>
+        )}
       </div>
 
       <AddUserModal
@@ -397,7 +202,7 @@ const UserManagement = () => {
         onClose={() => setModalOpen(false)}
         onUserAdded={u => setUsers(prev => [...prev, u])}
       />
-    </>
+    </div>
   );
 };
 

@@ -61,7 +61,7 @@ const Profile = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-[900px] mx-auto px-4 py-8">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -89,27 +89,27 @@ const Profile = () => {
         <div className="p-12 grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Details Section */}
           <div className="space-y-8">
-            <h2 className="text-2xl font-black text-[#262626] flex items-center gap-3">
-              <User className="text-[#FACC15]" size={24} />
+            <h2 className="text-xl font-black text-[#FACC15] flex items-center gap-3 mb-6">
+              <User className="text-[#FACC15]" size={22} />
               Account Details
             </h2>
             
             <div className="space-y-6">
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Full Name</label>
-                <p className="font-bold text-[#262626] text-lg">{profile?.username}</p>
+              <div className="bg-gray-50/50 p-5 rounded-2xl border border-gray-100/80">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Full Name</label>
+                <p className="font-bold text-[#262626] text-base">{profile?.username}</p>
               </div>
 
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Email Address</label>
-                <p className="font-bold text-[#262626] text-lg">{profile?.email}</p>
+              <div className="bg-gray-50/50 p-5 rounded-2xl border border-gray-100/80">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Email Address</label>
+                <p className="font-bold text-[#262626] text-base">{profile?.email}</p>
               </div>
 
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">System Authority</label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Shield size={16} className="text-[#FACC15]" />
-                  <p className="font-bold text-[#262626]">{profile?.role}</p>
+              <div className="bg-gray-50/50 p-5 rounded-2xl border border-gray-100/80">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">System Authority</label>
+                <div className="flex items-center gap-2">
+                  <Shield size={14} className="text-[#FACC15]" />
+                  <p className="font-bold text-[#262626] text-base">{profile?.role}</p>
                 </div>
               </div>
             </div>
@@ -117,8 +117,8 @@ const Profile = () => {
 
           {/* Security Section */}
           <div className="space-y-8">
-            <h2 className="text-2xl font-black text-[#262626] flex items-center gap-3">
-              <Lock className="text-[#FACC15]" size={24} />
+            <h2 className="text-xl font-black text-[#FACC15] flex items-center gap-3 mb-6">
+              <Lock className="text-[#FACC15]" size={22} />
               Update Password
             </h2>
 
@@ -143,7 +143,7 @@ const Profile = () => {
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="w-full px-6 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium"
+                  className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium text-sm shadow-sm"
                 />
               </div>
 
@@ -154,7 +154,7 @@ const Profile = () => {
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                  className="w-full px-6 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium"
+                  className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium text-sm shadow-sm"
                 />
               </div>
 
@@ -165,7 +165,7 @@ const Profile = () => {
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                  className="w-full px-6 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium"
+                  className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#FACC15] outline-none transition-all font-medium text-sm shadow-sm"
                 />
               </div>
 

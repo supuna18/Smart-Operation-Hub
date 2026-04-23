@@ -38,6 +38,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/tickets/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/test/**").permitAll()
                         
                         // --- MODULE B: PERMISSIONS FOR RESOURCES (GET, POST, PUT, DELETE) ---

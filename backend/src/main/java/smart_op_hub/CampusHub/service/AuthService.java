@@ -12,7 +12,9 @@ import smart_op_hub.CampusHub.repository.AdminRepository;
 import smart_op_hub.CampusHub.repository.UserRepository;
 import smart_op_hub.CampusHub.security.JwtUtil;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class AuthService {
@@ -28,6 +30,9 @@ public class AuthService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private EmailService emailService;
 
     public AuthRequest.AuthResponse signup(AuthRequest.SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent() ||
@@ -126,6 +131,89 @@ public class AuthService {
 
         } else {
             throw new RuntimeException("Invalid ID token.");
+        }
+    }
+
+    public void initiateForgotPassword(String email) {
+        System.out.println("Forgot password initiated for email: " + email);
+        String otp = String.format("%06d", new Random().nextInt(1000000));
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            System.out.println("User found in database.");
+            User user = userOpt.get();
+            user.setResetOtp(otp);
+            user.setResetOtpExpiry(expiry);
+            userRepository.save(user);
+        } else {
+            Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+            if (adminOpt.isPresent()) {
+                System.out.println("Admin found in database.");
+                Admin admin = adminOpt.get();
+                admin.setResetOtp(otp);
+                admin.setResetOtpExpiry(expiry);
+                adminRepository.save(admin);
+            } else {
+                System.out.println("Email NOT found in database: " + email);
+                throw new RuntimeException("Email not found");
+            }
+        }
+
+        try {
+            System.out.println("Attempting to send OTP email to: " + email);
+            emailService.sendOtpEmail(email, otp);
+            System.out.println("OTP email sent successfully.");
+        } catch (Exception e) {
+            System.err.println("FAILED to send email: " + e.getMessage());
+            throw new RuntimeException("Error sending email: " + e.getMessage());
+        }
+    }
+
+    public boolean verifyOtp(String email, String otp) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return otp.equals(user.getResetOtp()) &&
+                    user.getResetOtpExpiry() != null &&
+                    user.getResetOtpExpiry().isAfter(LocalDateTime.now());
+        }
+
+        Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            return otp.equals(admin.getResetOtp()) &&
+                    admin.getResetOtpExpiry() != null &&
+                    admin.getResetOtpExpiry().isAfter(LocalDateTime.now());
+        }
+
+        return false;
+    }
+
+    public void resetPassword(String email, String otp, String newPassword) {
+        if (!verifyOtp(email, otp)) {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+
+        String encodedPassword = passwordEncoder.encode(newPassword);
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setPassword(encodedPassword);
+            user.setResetOtp(null);
+            user.setResetOtpExpiry(null);
+            userRepository.save(user);
+            return;
+        }
+
+        Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            admin.setPassword(encodedPassword);
+            admin.setResetOtp(null);
+            admin.setResetOtpExpiry(null);
+            adminRepository.save(admin);
         }
     }
 }

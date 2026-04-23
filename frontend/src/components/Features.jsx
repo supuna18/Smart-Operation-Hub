@@ -59,25 +59,25 @@ const Features = () => {
               Our Ecosystem
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-black text-[#262626] leading-tight">
+            <h2 className="text-4xl md:text-5xl font-black text-[#EAB308] leading-tight" style={{ color: '#EAB308' }}>
               Comprehensive solutions{' '}
               <span className="relative inline-block">
-                <span className="text-yellow-500">for campus</span>
+                <span>for campus</span>
                 <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 260 10" fill="none">
-                  <path d="M2 8C50 2 130 1 258 8" stroke="#FACC15" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
+                  <path d="M2 8C50 2 130 1 258 8" stroke="#EAB308" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
                 </svg>
               </span>{' '}
               challenges.
             </h2>
           </div>
-
+ 
           <div className="flex flex-col items-start md:items-end gap-4 shrink-0">
             <p className="text-gray-400 font-medium max-w-xs text-sm leading-relaxed text-left md:text-right">
               Four specialized modules working together to streamline your operations.
             </p>
             {/* Module count badge */}
             <div className="inline-flex items-center gap-3 px-5 py-3 bg-[#262626] rounded-2xl">
-              <span className="text-2xl font-black text-[#FACC15]">4</span>
+              <span className="text-2xl font-black text-[#EAB308]">4</span>
               <span className="text-white text-xs font-bold uppercase tracking-widest leading-tight">
                 Core<br />Modules
               </span>

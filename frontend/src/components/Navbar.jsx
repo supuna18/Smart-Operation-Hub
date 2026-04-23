@@ -2,14 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Bell } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { clearAuth, getUser, isAdmin, isLoggedIn } from '../utils/auth';
+import {
+  clearAuth,
+  getUser,
+  isAdmin,
+  isLoggedIn,
+  getToken
+} from '../utils/auth';
+
 import api from '../utils/api';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);              
+  const [isOpen, setIsOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [toast, setToast] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,52 +33,106 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await api.get(`/notifications/${user.id}`);
+      const response = await api.get(`/notifications/${user.email}`);
       setNotifications(response.data);
-      const unread = response.data.filter(n => !n.read).length;
+
+      const unread = response.data.filter((n) => !n.read).length;
       setUnreadCount(unread);
     } catch (err) {
-      console.error("Error fetching notifications:", err);
+      console.error('Error fetching notifications:', err);
     }
   };
 
   const markAsRead = async (id) => {
     try {
       await api.patch(`/notifications/${id}/read`);
+
       setNotifications(
-        notifications.map(n =>
+        notifications.map((n) =>
           n.id === id ? { ...n, read: true } : n
         )
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
-      console.error("Error marking notification as read:", err);
+      console.error('Error marking notification as read:', err);
     }
   };
 
+  // Fetch and setup WebSocket for real-time notifications
   useEffect(() => {
-    if (loggedIn && user?.id) {
+    if (loggedIn && user?.email) {
       fetchNotifications();
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
+
+      const socket = new SockJS('http://localhost:8082/ws');
+
+      const stompClient = new Client({
+        webSocketFactory: () => socket,
+
+        debug: (str) => {
+          console.log(str);
+        },
+
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+
+        connectHeaders: {
+          Authorization: `Bearer ${getToken()}`
+        },
+
+        onConnect: () => {
+          console.log('Connected to WebSocket');
+
+          stompClient.subscribe(
+            '/user/queue/notifications',
+            (message) => {
+              const newNotif = JSON.parse(message.body);
+
+              setNotifications((prev) => [newNotif, ...prev]);
+              setUnreadCount((prev) => prev + 1);
+              setToast(newNotif.message);
+
+              // Auto hide toast
+              setTimeout(() => {
+                setToast(null);
+              }, 6000);
+            }
+          );
+        },
+
+        onStompError: (frame) => {
+          console.error('STOMP error', frame);
+        }
+      });
+
+      stompClient.activate();
+
+      return () => {
+        if (stompClient.active) {
+          stompClient.deactivate();
+        }
+      };
     }
-  }, [loggedIn, user?.id]);
+  }, [loggedIn, user?.email]);
 
   const handleLogout = () => {
     clearAuth();
     navigate('/login');
   };
 
-  // ✅ MERGED navLinks (both versions combined)
+  // Merged nav links
   const navLinks = admin
     ? []
     : [
         { name: 'Home', path: '/' },
-        { name: 'Facilities', path: '/Facilities' },
+        { name: 'Facilities', path: '/facilities' },
         { name: 'Resources', path: '/resources' },
         { name: 'Services', path: '/#services', isHash: true },
         { name: 'About', path: '/about' },
-        ...(loggedIn ? [{ name: 'Tickets', path: '/tickets' }] : [])
+        ...(loggedIn
+          ? [{ name: 'Tickets', path: '/tickets' }]
+          : [])
       ];
 
   return (
@@ -161,13 +225,16 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              {/* Notifications Dropdown */}
+              {/* Notifications */}
               <div className="relative">
                 <button
-                  onClick={() => setShowNotifications(!showNotifications)}
+                  onClick={() =>
+                    setShowNotifications(!showNotifications)
+                  }
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
                 >
                   <Bell size={22} className="text-[#262626]" />
+
                   {unreadCount > 0 && (
                     <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
                       {unreadCount}
@@ -178,13 +245,28 @@ const Navbar = () => {
                 <AnimatePresence>
                   {showNotifications && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      initial={{
+                        opacity: 0,
+                        y: 10,
+                        scale: 0.95
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        scale: 1
+                      }}
+                      exit={{
+                        opacity: 0,
+                        y: 10,
+                        scale: 0.95
+                      }}
                       className="absolute right-0 mt-3 w-80 bg-white border shadow-2xl rounded-2xl overflow-hidden z-[60]"
                     >
                       <div className="p-4 border-b flex justify-between items-center">
-                        <h3 className="font-bold text-sm">Notifications</h3>
+                        <h3 className="font-bold text-sm">
+                          Notifications
+                        </h3>
+
                         <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded-full uppercase font-black tracking-widest">
                           {unreadCount} unread
                         </span>
@@ -201,10 +283,18 @@ const Navbar = () => {
                               key={n.id}
                               onClick={() => markAsRead(n.id)}
                               className={`p-4 border-b cursor-pointer transition-colors ${
-                                !n.read ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50'
+                                !n.read
+                                  ? 'bg-yellow-50 hover:bg-yellow-100'
+                                  : 'hover:bg-gray-50'
                               }`}
                             >
-                              <p className={`text-sm ${!n.read ? 'font-bold text-[#262626]' : 'text-gray-500'}`}>
+                              <p
+                                className={`text-sm ${
+                                  !n.read
+                                    ? 'font-bold text-[#262626]'
+                                    : 'text-gray-500'
+                                }`}
+                              >
                                 {n.message}
                               </p>
                             </div>
@@ -216,7 +306,7 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
-              {/* User Profile */}
+              {/* Profile */}
               <Link
                 to="/profile"
                 className="flex items-center gap-2 group"
@@ -224,12 +314,13 @@ const Navbar = () => {
                 <div className="w-9 h-9 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-black text-black border-2 border-transparent group-hover:border-yellow-200 transition-all">
                   {user?.username?.charAt(0).toUpperCase()}
                 </div>
+
                 <span className="hidden lg:block font-bold text-sm text-[#262626]">
                   {user?.username}
                 </span>
               </Link>
 
-              {/* Logout Button */}
+              {/* Logout */}
               <button
                 onClick={handleLogout}
                 className="text-sm font-bold text-gray-400 hover:text-red-500 transition-colors"
@@ -241,9 +332,12 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Toggle Button */}
+      {/* Mobile Toggle */}
       <div className="md:hidden">
-        <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-[#262626]">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-2 text-[#262626]"
+        >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
@@ -282,6 +376,7 @@ const Navbar = () => {
                   >
                     Login
                   </Link>
+
                   <Link
                     to="/signup"
                     onClick={() => setIsOpen(false)}
@@ -299,6 +394,7 @@ const Navbar = () => {
                   >
                     Profile Settings
                   </Link>
+
                   <button
                     onClick={() => {
                       setIsOpen(false);
@@ -311,6 +407,54 @@ const Navbar = () => {
                 </>
               )}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              x: 50,
+              scale: 0.9
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              scale: 1
+            }}
+            exit={{
+              opacity: 0,
+              x: 50,
+              scale: 0.9
+            }}
+            className="fixed bottom-6 right-6 z-[100] bg-white border-l-4 border-[#FACC15] shadow-2xl p-5 rounded-xl flex items-center gap-4 min-w-[300px] max-w-md"
+          >
+            <div className="bg-yellow-50 p-2 rounded-full">
+              <Bell
+                className="text-[#FACC15]"
+                size={20}
+              />
+            </div>
+
+            <div className="flex-1">
+              <p className="text-sm font-bold text-gray-900 leading-tight">
+                New Notification
+              </p>
+
+              <p className="text-sm text-gray-600 mt-1">
+                {toast}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setToast(null)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={18} />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

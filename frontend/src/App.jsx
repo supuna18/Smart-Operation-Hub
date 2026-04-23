@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+  Navigate
+} from 'react-router-dom';
 
 // Auth utilities
 import { isAdmin, isLoggedIn as checkAuth } from './utils/auth';
@@ -20,6 +26,7 @@ import TicketApprovalHub from './components/TicketApprovalHub';
 import ResourceManagement from './components/resources/ResourceManagement';
 import MyBookings from './components/resources/MyBookings';
 import FacilityShowcase from './components/FacilityShowcase';
+import ForgotPassword from './components/ForgotPassword';
 
 // Context
 import { ToastProvider } from './context/ToastContext';
@@ -27,7 +34,7 @@ import { ToastProvider } from './context/ToastContext';
 function AppContent({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation();
 
-  // UPDATED: Added '/my-bookings' to hide footer for a cleaner dashboard look
+  // Hide footer for dashboard-style pages
   const hideFooter =
     location.pathname === '/AdminDashboard' ||
     location.pathname === '/resources' ||
@@ -35,12 +42,13 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
 
   return (
     <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col text-poppins">
-      
+
       {/* Navbar */}
       <Navbar isLoggedIn={isLoggedIn} />
 
       <main className="flex-grow">
         <Routes>
+
           {/* Public Routes */}
           <Route
             path="/"
@@ -60,14 +68,25 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
             }
           />
 
-          <Route path="/facilities" element={<FacilityShowcase />} />
+          <Route
+            path="/facilities"
+            element={<FacilityShowcase />}
+          />
 
           <Route
             path="/login"
             element={<Login setIsLoggedIn={setIsLoggedIn} />}
           />
 
-          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/signup"
+            element={<Signup />}
+          />
+
+          <Route
+            path="/forgot-password"
+            element={<ForgotPassword />}
+          />
 
           {/* User Ticket Dashboard */}
           <Route
@@ -91,7 +110,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
             }
           />
 
-          {/* MODULE B: User Booking History Dashboard */}
+          {/* User Booking History */}
           <Route
             path="/my-bookings"
             element={
@@ -130,6 +149,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
               </ProtectedRoute>
             }
           />
+
         </Routes>
       </main>
 

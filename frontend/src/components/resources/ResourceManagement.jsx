@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { isAdmin } from '../../utils/auth';
 import { useNavigate } from 'react-router-dom';
 import ResourceList from './ResourceList';
 import ResourceForm from './ResourceForm';
 import ResourceApprovalHub from './ResourceApprovalHub';
+import MyBookings from './MyBookings';
 import heroImage from '../../assets/reso1.jpeg';
 import libraryVideo from '../../assets/library.mp4';
 
@@ -21,7 +23,7 @@ const ResourceManagement = ({ isEmbedded = false, onAddTrigger = 0 }) => {
     // Removed the automatic redirect to allow admins to manage resources directly
     // and to support embedding in the AdminDashboard.
 
-    const [viewMode, setViewMode] = useState('assets'); // 'assets' or 'bookings'
+    const [viewMode, setViewMode] = useState('assets'); // 'assets', 'bookings' (admin), or 'my-bookings' (user)
     const [refreshKey, setRefreshKey] = useState(0);
 
     const handleEdit = (resource) => {
@@ -88,41 +90,94 @@ const ResourceManagement = ({ isEmbedded = false, onAddTrigger = 0 }) => {
             {/* Main Content */}
             <div className={`max-w-7xl mx-auto ${!isEmbedded ? 'px-4 sm:px-6 lg:px-8 -mt-12 relative z-20 pb-20' : ''}`}>
                 
-                {/* Mode Selector - Premium Toggle */}
-                <div className="flex justify-center mb-8">
-                    <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/20 flex gap-2">
-                        <button 
-                            onClick={() => setViewMode('assets')}
-                            className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
-                                viewMode === 'assets' 
-                                    ? 'bg-[#262626] text-[#FACC15] shadow-lg shadow-black/20' 
-                                    : 'text-slate-400 hover:text-slate-600'
-                            }`}
-                        >
-                            Asset Registry
-                        </button>
-                        <button 
-                            onClick={() => setViewMode('bookings')}
-                            className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
-                                viewMode === 'bookings' 
-                                    ? 'bg-[#262626] text-[#FACC15] shadow-lg shadow-black/20' 
-                                    : 'text-slate-400 hover:text-slate-600'
-                            }`}
-                        >
-                            Booking Requests
-                        </button>
+                {/* Admin Hero Section (Visible only when embedded/admin dashboard) */}
+                {isEmbedded && (
+                    <div className="bg-[#262626] rounded-[2rem] p-8 md:p-10 mb-10 relative overflow-hidden shadow-2xl border border-white/5 group">
+                        {/* Decorative background elements */}
+                        <div className="absolute top-0 right-0 w-full md:w-2/3 h-full opacity-40 md:opacity-60 pointer-events-none group-hover:scale-105 transition-transform duration-700">
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#262626] via-[#262626]/80 to-transparent z-10" />
+                            <video
+                                src={libraryVideo}
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        
+                        <div className="relative z-20 max-w-xl">
+                            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-yellow-400/10 border border-yellow-400/20 text-yellow-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+                                <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse shadow-[0_0_10px_#facc15]" />
+                                Live Inventory Console
+                            </span>
+                            <h2 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
+                                Smart <span className="text-yellow-400">Resource</span> <br/>Management Hub
+                            </h2>
+                            <p className="text-slate-400 text-base font-medium leading-relaxed max-w-md">
+                                Empowering administrators to synchronize library assets, track facility bookings, and optimize campus utility in real-time.
+                            </p>
+                        </div>
+
+                        {/* Corner decoration */}
+                        <div className="absolute bottom-0 right-0 p-8 opacity-10 flex gap-2">
+                             <div className="w-12 h-1 bg-yellow-400 rounded-full" />
+                             <div className="w-4 h-1 bg-yellow-400 rounded-full opacity-50" />
+                        </div>
+                    </div>
+                )}
+                
+                {/* Mode Selector - Premium Floating Pill Toggle */}
+                <div className="flex justify-center mb-12">
+                    <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-[1.5rem] shadow-xl border border-white/20 flex relative overflow-hidden">
+                        {[
+                            { id: 'assets', label: 'Asset Registry' },
+                            { id: isAdmin() ? 'bookings' : 'my-bookings', label: isAdmin() ? 'Booking Requests' : 'My Bookings' }
+                        ].map((tab) => {
+                            const isActive = viewMode === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setViewMode(tab.id)}
+                                    className={`relative z-10 px-10 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-500 ${
+                                        isActive ? 'text-[#FACC15]' : 'text-slate-400 hover:text-slate-600'
+                                    }`}
+                                >
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activeTabPill"
+                                            className="absolute inset-0 bg-[#262626] rounded-2xl shadow-lg -z-10"
+                                            transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
+                                        />
+                                    )}
+                                    {tab.label}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
-                {viewMode === 'assets' ? (
-                    <ResourceList
-                        key={refreshKey}
-                        onEdit={handleEdit}
-                        onAdd={handleAdd}
-                    />
-                ) : (
-                    <ResourceApprovalHub />
-                )}
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={viewMode}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.4 }}
+                    >
+                        {viewMode === 'assets' ? (
+                            <ResourceList
+                                key={refreshKey}
+                                onEdit={handleEdit}
+                                onAdd={handleAdd}
+                            />
+                        ) : viewMode === 'bookings' ? (
+                            <ResourceApprovalHub />
+                        ) : (
+                            <MyBookings isEmbedded={true} />
+                        )}
+                    </motion.div>
+                </AnimatePresence>
 
                 {isFormOpen && (
                     <ResourceForm

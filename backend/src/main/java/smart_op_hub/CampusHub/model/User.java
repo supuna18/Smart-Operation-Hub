@@ -3,6 +3,7 @@ package smart_op_hub.CampusHub.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 @Document(collection = "users")
@@ -15,4 +16,6 @@ public class User {
     private String role; // Admin, Student, Lecturer
     private String authProvider; // local, google
     private String profileImageUrl;
+    private String resetOtp;
+    private LocalDateTime resetOtpExpiry;
 }
