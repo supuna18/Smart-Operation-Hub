@@ -40,6 +40,30 @@ public class AuthRequest {
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ForgotPasswordRequest {
+        private String email;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VerifyOtpRequest {
+        private String email;
+        private String otp;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ResetPasswordRequest {
+        private String email;
+        private String otp;
+        private String newPassword;
+    }
+
+    @Data
     public static class AuthResponse {
         private String token;
         private User user;

@@ -41,6 +41,42 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody AuthRequest.ForgotPasswordRequest request) {
+        try {
+            authService.initiateForgotPassword(request.getEmail());
+            return ResponseEntity.ok("OTP sent to your email.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error sending email. Please check SMTP configuration: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody AuthRequest.VerifyOtpRequest request) {
+        try {
+            boolean isValid = authService.verifyOtp(request.getEmail(), request.getOtp());
+            if (isValid) {
+                return ResponseEntity.ok("OTP verified successfully.");
+            } else {
+                return ResponseEntity.badRequest().body("Invalid or expired OTP.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody AuthRequest.ResetPasswordRequest request) {
+        try {
+            authService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+            return ResponseEntity.ok("Password reset successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/me")
     public ResponseEntity<?> currentUser(org.springframework.security.core.Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
