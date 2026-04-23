@@ -17,8 +17,7 @@ public class ResourceBookingService {
     public ResourceBooking createBooking(ResourceBooking newBooking) {
 
         // Resource ID வைத்து existing bookings fetch pannrom
-        List<ResourceBooking> existingBookings =
-                repository.findByResourceId(newBooking.getResourceId());
+        List<ResourceBooking> existingBookings = repository.findByResourceId(newBooking.getResourceId());
 
         if (existingBookings != null) {
             for (ResourceBooking existing : existingBookings) {
@@ -36,21 +35,18 @@ public class ResourceBookingService {
                     }
 
                     // Date range overlap check
-                    boolean dateOverlap =
-                            (newBooking.getStartDate().compareTo(existing.getEndDate()) <= 0) &&
+                    boolean dateOverlap = (newBooking.getStartDate().compareTo(existing.getEndDate()) <= 0) &&
                             (newBooking.getEndDate().compareTo(existing.getStartDate()) >= 0);
 
                     if (dateOverlap) {
 
                         // Time slot overlap check
-                        boolean timeOverlap =
-                                (newBooking.getStartTime().compareTo(existing.getEndTime()) < 0) &&
+                        boolean timeOverlap = (newBooking.getStartTime().compareTo(existing.getEndTime()) < 0) &&
                                 (newBooking.getEndTime().compareTo(existing.getStartTime()) > 0);
 
                         if (timeOverlap) {
                             throw new RuntimeException(
-                                    "Time slot conflict! This period is already reserved."
-                            );
+                                    "Time slot conflict! This period is already reserved.");
                         }
                     }
                 }
@@ -61,7 +57,7 @@ public class ResourceBookingService {
         newBooking.setStatus("PENDING");
 
         // Booking date set pannrom
-        newBooking.setBookingDate(LocalDateTime.now().toString());
+        newBooking.setBookingDate(LocalDateTime.now());
 
         return repository.save(newBooking);
     }
@@ -75,8 +71,7 @@ public class ResourceBookingService {
         System.out.println(
                 "ResourceBookingService: Found " +
                         all.size() +
-                        " total bookings in database."
-        );
+                        " total bookings in database.");
         return all;
     }
 
