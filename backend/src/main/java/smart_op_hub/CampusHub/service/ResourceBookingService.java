@@ -11,59 +11,27 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ResourceBookingService {
-
     private final ResourceBookingRepository repository;
 
-    public ResourceBooking createBooking(ResourceBooking newBooking) {
+    public ResourceBooking createBooking(ResourceBooking booking) {
+        // Conflict Prevention: Check for overlapping bookings
+        List<ResourceBooking> conflictingBookings = repository.findByResourceIdAndStatusIn(
+            booking.getResourceId(), List.of("PENDING", "APPROVED")
+        );
 
-        // Resource ID வைத்து existing bookings fetch pannrom
-        List<ResourceBooking> existingBookings =
-                repository.findByResourceId(newBooking.getResourceId());
+        boolean hasOverlap = conflictingBookings.stream().anyMatch(existing -> 
+            booking.getStartTime().isBefore(existing.getEndTime()) && 
+            booking.getEndTime().isAfter(existing.getStartTime())
+        );
 
-        if (existingBookings != null) {
-            for (ResourceBooking existing : existingBookings) {
-
-                // REJECTED bookings ignore pannuvom
-                if (existing.getStatus() != null &&
-                        !existing.getStatus().equals("REJECTED")) {
-
-                    // Safety check for old data (null values avoid panna)
-                    if (existing.getStartDate() == null ||
-                            existing.getEndDate() == null ||
-                            existing.getStartTime() == null ||
-                            existing.getEndTime() == null) {
-                        continue;
-                    }
-
-                    // Date range overlap check
-                    boolean dateOverlap =
-                            (newBooking.getStartDate().compareTo(existing.getEndDate()) <= 0) &&
-                            (newBooking.getEndDate().compareTo(existing.getStartDate()) >= 0);
-
-                    if (dateOverlap) {
-
-                        // Time slot overlap check
-                        boolean timeOverlap =
-                                (newBooking.getStartTime().compareTo(existing.getEndTime()) < 0) &&
-                                (newBooking.getEndTime().compareTo(existing.getStartTime()) > 0);
-
-                        if (timeOverlap) {
-                            throw new RuntimeException(
-                                    "Time slot conflict! This period is already reserved."
-                            );
-                        }
-                    }
-                }
-            }
+        if (hasOverlap) {
+            throw new RuntimeException("Scheduling Conflict: The resource is already booked for the selected time range.");
         }
 
-        // Save as PENDING if no conflict
-        newBooking.setStatus("PENDING");
-
-        // Booking date set pannrom
-        newBooking.setBookingDate(LocalDateTime.now());
-
-        return repository.save(newBooking);
+        // Corrected block: using the correct variable 'booking'
+        booking.setStatus("PENDING");
+        booking.setBookingDate(LocalDateTime.now());
+        return repository.save(booking);
     }
 
     public List<ResourceBooking> getMyBookings(String userId) {
@@ -72,11 +40,7 @@ public class ResourceBookingService {
 
     public List<ResourceBooking> getAllBookings() {
         List<ResourceBooking> all = repository.findAll();
-        System.out.println(
-                "ResourceBookingService: Found " +
-                        all.size() +
-                        " total bookings in database."
-        );
+        System.out.println("ResourceBookingService: Found " + all.size() + " total bookings in database.");
         return all;
     }
 
@@ -85,20 +49,12 @@ public class ResourceBookingService {
     }
 
     public ResourceBooking updateBookingStatus(String id, String status, String reason) {
-        return repository.findById(id).map(booking -> {
-            booking.setStatus(status);
-
+        return repository.findById(id).map(b -> {
+            b.setStatus(status);
             if (reason != null && !reason.isEmpty()) {
-                booking.setRejectionReason(reason);
+                b.setRejectionReason(reason);
             }
-
-            return repository.save(booking);
-
+            return repository.save(b);
         }).orElseThrow(() -> new RuntimeException("Booking not found"));
-    }
-
-    // MODULE B: DELETE METHOD
-    public void deleteBooking(String id) {
-        repository.deleteById(id);
     }
 }
