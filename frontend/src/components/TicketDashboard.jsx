@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Plus, Filter, Search, Loader2, AlertCircle, 
-    Ticket,Activity, ShieldCheck, Zap, TrendingUp,
+import {
+    Plus, Filter, Search, Loader2, AlertCircle,
+    Ticket, Activity, ShieldCheck, Zap, TrendingUp,
     MoreHorizontal, ArrowRight, Bell
 } from 'lucide-react';
 import axios from 'axios';
@@ -21,11 +21,11 @@ const TicketDashboard = () => {
     const [ticketToEdit, setTicketToEdit] = useState(null);
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
-    
+
     const user = getUser();
     const userRole = user?.role;
     const userName = user?.username;
-    
+
     // Defensive admin check
     const rawAuth = localStorage.getItem('authUser');
     let isAdmin = false;
@@ -34,7 +34,7 @@ const TicketDashboard = () => {
             const parsed = JSON.parse(rawAuth);
             isAdmin = (parsed.role || parsed.Role || '').toLowerCase().trim() === 'admin';
         }
-    } catch (e) {}
+    } catch (e) { }
 
     useEffect(() => {
         fetchTickets();
@@ -44,7 +44,7 @@ const TicketDashboard = () => {
         setLoading(true);
         try {
             let url = 'http://localhost:8082/api/tickets';
-            
+
             if (!isAdmin && userName) {
                 // Normal users ALWAYS fetch only their own tickets
                 url = `http://localhost:8082/api/tickets/user/${userName}`;
@@ -52,7 +52,7 @@ const TicketDashboard = () => {
                 // Admins can use the backend status filter
                 url = `http://localhost:8082/api/tickets/status/${filterStatus}`;
             }
-            
+
             const response = await axios.get(url);
             let resultData = response.data;
 
@@ -74,7 +74,7 @@ const TicketDashboard = () => {
     };
 
     const filteredTickets = useMemo(() => {
-        return tickets.filter(t => 
+        return tickets.filter(t =>
             t.issueTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
             t.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
             t.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -86,7 +86,7 @@ const TicketDashboard = () => {
         const resolved = tickets.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
         const inProgress = tickets.filter(t => t.status === 'IN_PROGRESS').length;
         const open = tickets.filter(t => t.status === 'OPEN').length;
-        
+
         return {
             health: total === 0 ? 100 : Math.round((resolved / total) * 100),
             open,
@@ -99,7 +99,7 @@ const TicketDashboard = () => {
         <div className="min-h-screen bg-[#F8F9FA] pt-24 pb-12 px-6 lg:px-12 font-sans overflow-x-hidden">
             <div className="max-w-[1600px] mx-auto">
                 {/* Upper Header Section (Dark Card) */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-[#262626] rounded-[1.5rem] p-6 md:p-8 mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-xl relative overflow-hidden"
@@ -107,7 +107,7 @@ const TicketDashboard = () => {
                     {/* Decorative Elements */}
                     <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-                    
+
                     <div className="flex flex-col gap-2 relative z-10">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-7 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
@@ -120,15 +120,15 @@ const TicketDashboard = () => {
                             </div>
                         </div>
                         <p className="text-gray-400 font-medium max-w-xl text-sm md:text-base ml-5 lg:ml-6">
-                            {isAdmin 
-                                ? "Monitor and manage campus infrastructure health and maintenance reports from a single, high-performance interface." 
+                            {isAdmin
+                                ? "Monitor and manage campus infrastructure health and maintenance reports from a single, high-performance interface."
                                 : "Report technical issues and track the status of your reported tickets effortlessly."}
                         </p>
                     </div>
 
                     <div className="relative z-10 w-full lg:w-auto flex items-center lg:justify-end">
                         {!isAdmin && (
-                            <button 
+                            <button
                                 onClick={() => setIsModalOpen(true)}
                                 className="w-full lg:w-auto bg-yellow-400 text-gray-900 px-8 py-4 rounded-xl font-black flex items-center justify-center gap-3 hover:shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:bg-yellow-300 active:scale-95 transition-all text-sm uppercase tracking-wider"
                             >
@@ -147,7 +147,7 @@ const TicketDashboard = () => {
                             {/* Search Bar */}
                             <div className="relative w-full md:w-80 group">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-yellow-500 transition-colors" />
-                                <input 
+                                <input
                                     type="text"
                                     placeholder="Search by issue or location..."
                                     value={searchQuery}
@@ -165,11 +165,10 @@ const TicketDashboard = () => {
                                     <button
                                         key={status}
                                         onClick={() => setFilterStatus(status)}
-                                        className={`px-5 py-2.5 rounded-xl text-xs font-black tracking-widest uppercase transition-all whitespace-nowrap ${
-                                            filterStatus === status 
-                                                ? 'bg-yellow-400 text-[#262626] shadow-lg shadow-yellow-400/20 ring-4 ring-yellow-400/10' 
+                                        className={`px-5 py-2.5 rounded-xl text-xs font-black tracking-widest uppercase transition-all whitespace-nowrap ${filterStatus === status
+                                                ? 'bg-yellow-400 text-[#262626] shadow-lg shadow-yellow-400/20 ring-4 ring-yellow-400/10'
                                                 : 'bg-white text-gray-400 hover:bg-gray-50 border border-gray-100 border'
-                                        }`}
+                                            }`}
                                     >
                                         {status.replace('_', ' ')}
                                     </button>
@@ -189,7 +188,7 @@ const TicketDashboard = () => {
                                     <AlertCircle className="w-16 h-16 text-red-500 mb-6" />
                                     <h3 className="text-2xl font-black text-red-900 mb-2 tracking-tighter">Sync Failed</h3>
                                     <p className="text-red-700 font-bold mb-8 max-w-sm">{error}</p>
-                                    <button 
+                                    <button
                                         onClick={fetchTickets}
                                         className="bg-red-600 text-white px-10 py-4 rounded-2xl font-black hover:bg-red-700 transition-all shadow-xl shadow-red-500/20"
                                     >
@@ -197,7 +196,7 @@ const TicketDashboard = () => {
                                     </button>
                                 </div>
                             ) : filteredTickets.length === 0 ? (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     className="bg-white border-2 border-dashed border-gray-100 p-24 rounded-[3.5rem] flex flex-col items-center text-center group"
@@ -207,12 +206,12 @@ const TicketDashboard = () => {
                                     </div>
                                     <h3 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter">Quiet on the Hub</h3>
                                     <p className="text-gray-400 font-bold max-w-xs mb-10 leading-relaxed text-sm">
-                                        {searchQuery 
+                                        {searchQuery
                                             ? `No results found for "${searchQuery}". Try a different term.`
                                             : "Everything seems operational. No incidents to display at this moment."}
                                     </p>
                                     {!isAdmin && !searchQuery && (
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 setTicketToEdit(null);
                                                 setIsModalOpen(true);
@@ -226,9 +225,9 @@ const TicketDashboard = () => {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-12">
                                     {filteredTickets.map((ticket) => (
-                                        <TicketCard 
-                                            key={ticket.id} 
-                                            ticket={ticket} 
+                                        <TicketCard
+                                            key={ticket.id}
+                                            ticket={ticket}
                                             isAdmin={isAdmin}
                                             onUpdate={fetchTickets}
                                             user={user}
@@ -246,7 +245,7 @@ const TicketDashboard = () => {
                     {/* Side Sidebar (30%) */}
                     <div className="lg:w-[30%] space-y-8">
                         {/* Global Health Card */}
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             className="bg-[#262626] rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group"
@@ -254,7 +253,7 @@ const TicketDashboard = () => {
                             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
                                 <Zap size={180} />
                             </div>
-                            
+
                             <div className="flex justify-between items-center mb-8 relative">
                                 <h3 className="text-xl font-black uppercase tracking-widest text-gray-400">Global Health</h3>
                                 <div className="flex items-center gap-1.5">
@@ -290,10 +289,9 @@ const TicketDashboard = () => {
                             <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-50 before:rounded-full">
                                 {tickets.slice(0, 4).map((t, idx) => (
                                     <div key={t.id || idx} className="flex gap-4 relative">
-                                        <div className={`w-6 h-6 rounded-full border-4 border-white shadow-sm flex-shrink-0 z-10 ${
-                                            t.status === 'RESOLVED' ? 'bg-emerald-400' : 
-                                            t.status === 'IN_PROGRESS' ? 'bg-amber-400' : 'bg-blue-400'
-                                        }`} />
+                                        <div className={`w-6 h-6 rounded-full border-4 border-white shadow-sm flex-shrink-0 z-10 ${t.status === 'RESOLVED' ? 'bg-emerald-400' :
+                                                t.status === 'IN_PROGRESS' ? 'bg-amber-400' : 'bg-blue-400'
+                                            }`} />
                                         <div className="min-w-0">
                                             <p className="text-[13px] font-bold text-gray-900 leading-snug">
                                                 {t.assignedTo ? (
@@ -310,7 +308,7 @@ const TicketDashboard = () => {
                                 ))}
                             </div>
 
-                            <button 
+                            <button
                                 onClick={() => setIsAuditLogOpen(true)}
                                 className="w-full mt-10 py-4 bg-gray-50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-yellow-50 hover:text-yellow-700 transition-all flex items-center justify-center gap-2"
                             >
@@ -323,12 +321,12 @@ const TicketDashboard = () => {
 
             {/* Create / Edit Ticket Modal */}
             {isModalOpen && (
-                <CreateTicketModal 
-                    isOpen={isModalOpen} 
+                <CreateTicketModal
+                    isOpen={isModalOpen}
                     onClose={() => {
                         setIsModalOpen(false);
                         setTicketToEdit(null);
-                    }} 
+                    }}
                     onCreated={() => {
                         fetchTickets();
                         setIsModalOpen(false);
@@ -339,7 +337,7 @@ const TicketDashboard = () => {
             )}
 
             {/* Audit Log Modal */}
-            <AuditLogModal 
+            <AuditLogModal
                 isOpen={isAuditLogOpen}
                 onClose={() => setIsAuditLogOpen(false)}
                 tickets={tickets}
@@ -355,7 +353,7 @@ const HealthBar = ({ label, value, color }) => (
             <span className="text-[11px] font-black text-gray-300">{value}%</span>
         </div>
         <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-[1px]">
-            <motion.div 
+            <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${value}%` }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
