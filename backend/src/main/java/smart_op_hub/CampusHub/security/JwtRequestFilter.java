@@ -10,14 +10,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import smart_op_hub.CampusHub.model.Admin;
-import smart_op_hub.CampusHub.model.User;
-import smart_op_hub.CampusHub.repository.AdminRepository;
-import smart_op_hub.CampusHub.repository.UserRepository;
+
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -25,11 +22,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private AdminRepository adminRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -49,26 +42,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String role = null;
+            String role = jwtUtil.extractRole(jwt); // Extract role directly from token
+            System.out.println("Extracted username from token: " + username);
+            System.out.println("Extracted role from token: " + role);
 
-            // Try admin first
-            Optional<Admin> optionalAdmin = adminRepository.findByEmail(username);
-            if (optionalAdmin.isPresent() && jwtUtil.validateToken(jwt)) {
-                role = optionalAdmin.get().getRole();
-                if (role == null) role = "ADMIN";
-            } else {
-                // Then try general users
-                Optional<User> optionalUser = userRepository.findByEmail(username);
-                if (optionalUser.isPresent() && jwtUtil.validateToken(jwt)) {
-                    role = optionalUser.get().getRole();
-                }
-            }
-
-            if (role != null) {
+            if (role != null && jwtUtil.validateToken(jwt)) {
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.toUpperCase());
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         username, null, List.of(authority));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Authentication set in security context for role: ROLE_" + role.toUpperCase());
+            } else {
+                System.out.println("Token validation failed or role is missing.");
             }
         }
 

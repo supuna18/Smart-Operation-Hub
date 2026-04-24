@@ -38,8 +38,10 @@ const getAllBookings = () => {
     return api.get(`${API_URL}/bookings/all`);
 };
 
-const updateBookingStatus = (id, status) => {
-    return api.put(`${API_URL}/bookings/${id}/status?status=${status}`);
+const updateBookingStatus = (id, status, reason = '') => {
+    let url = `${API_URL}/bookings/${id}/status?status=${status}`;
+    if (reason) url += `&reason=${encodeURIComponent(reason)}`;
+    return api.put(url);
 };
 
 const getBookingsByResourceId = (resourceId) => {

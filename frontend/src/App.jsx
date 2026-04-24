@@ -15,11 +15,12 @@ import TicketDashboard from './components/TicketDashboard';
 import TicketApprovalHub from './components/TicketApprovalHub';
 import ResourceManagement from './components/resources/ResourceManagement';
 import MyBookings from './components/resources/MyBookings';
+import ForgotPassword from './components/ForgotPassword';
 import { ToastProvider } from './context/ToastContext';
 
 function AppContent() {
   const location = useLocation();
-  const hideFooter = location.pathname === '/AdminDashboard' || location.pathname === '/resources';
+  const hideFooter = location.pathname === '/AdminDashboard';
 
   return (
     <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col">
@@ -34,6 +35,7 @@ function AppContent() {
           <Route path="/about" element={isAdmin() ? <Navigate to="/AdminDashboard" replace /> : <About />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* User Ticket Dashboard */}
           <Route path="/tickets" element={!isLoggedIn() ? <Navigate to="/login" replace /> : isAdmin() ? <Navigate to="/AdminDashboard" replace /> : <TicketDashboard />} />

@@ -21,7 +21,7 @@ public class ResourceBookingController {
         return ResponseEntity.ok(service.createBooking(booking));
     }
 
-    @GetMapping("/my/{userId}")
+    @GetMapping("/my/{userId:.+}")
     public ResponseEntity<List<ResourceBooking>> getMyBookings(@PathVariable String userId) {
         return ResponseEntity.ok(service.getMyBookings(userId));
     }
@@ -31,15 +31,13 @@ public class ResourceBookingController {
         return ResponseEntity.ok(service.getBookingsByResourceId(resourceId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<List<ResourceBooking>> getAllBookings() {
         return ResponseEntity.ok(service.getAllBookings());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/status")
-    public ResponseEntity<ResourceBooking> updateBookingStatus(@PathVariable String id, @RequestParam String status) {
-        return ResponseEntity.ok(service.updateBookingStatus(id, status));
+    public ResponseEntity<ResourceBooking> updateBookingStatus(@PathVariable String id, @RequestParam String status, @RequestParam(required = false) String reason) {
+        return ResponseEntity.ok(service.updateBookingStatus(id, status, reason));
     }
 }
