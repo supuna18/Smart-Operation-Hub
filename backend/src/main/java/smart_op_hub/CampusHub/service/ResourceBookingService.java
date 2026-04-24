@@ -19,18 +19,21 @@ public class ResourceBookingService {
             booking.getResourceId(), List.of("PENDING", "APPROVED")
         );
 
+        // Logic check using compareTo because dates are now Strings in our model
         boolean hasOverlap = conflictingBookings.stream().anyMatch(existing -> 
-            booking.getStartTime().isBefore(existing.getEndTime()) && 
-            booking.getEndTime().isAfter(existing.getStartTime())
+            booking.getStartTime().compareTo(existing.getEndTime()) < 0 && 
+            booking.getEndTime().compareTo(existing.getStartTime()) > 0
         );
 
         if (hasOverlap) {
             throw new RuntimeException("Scheduling Conflict: The resource is already booked for the selected time range.");
         }
 
-        // Corrected block: using the correct variable 'booking'
+        // --- CONFLICT RESOLVED BLOCK ---
         booking.setStatus("PENDING");
-        booking.setBookingDate(LocalDateTime.now());
+        // Using toString() for the bookingDate String field
+        booking.setBookingDate(LocalDateTime.now().toString());
+        
         return repository.save(booking);
     }
 
@@ -56,5 +59,10 @@ public class ResourceBookingService {
             }
             return repository.save(b);
         }).orElseThrow(() -> new RuntimeException("Booking not found"));
+    }
+
+    // Module B Delete Method
+    public void deleteBooking(String id) {
+        repository.deleteById(id);
     }
 }
