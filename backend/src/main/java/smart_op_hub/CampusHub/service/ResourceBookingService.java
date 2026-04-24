@@ -15,25 +15,26 @@ public class ResourceBookingService {
 
     public ResourceBooking createBooking(ResourceBooking booking) {
         // Conflict Prevention: Check for overlapping bookings
+        // මෙහිදී දැනටමත් PENDING හෝ APPROVED තත්වයේ තියෙන bookings පමණක් පරීක්ෂා කරයි
         List<ResourceBooking> conflictingBookings = repository.findByResourceIdAndStatusIn(
-            booking.getResourceId(), List.of("PENDING", "APPROVED")
-        );
+                booking.getResourceId(), List.of("PENDING", "APPROVED"));
 
-        // Logic check using compareTo because dates are now Strings in our model
-        boolean hasOverlap = conflictingBookings.stream().anyMatch(existing -> 
-            booking.getStartTime().compareTo(existing.getEndTime()) < 0 && 
-            booking.getEndTime().compareTo(existing.getStartTime()) > 0
-        );
+        // Logic check using compareTo because dates/times are Strings in the model
+        // අලුත් booking එකේ වෙලාව පරණ ඒව සමඟ overlap වෙනවාදැයි පරීක්ෂා කිරීම
+        boolean hasOverlap = conflictingBookings.stream()
+                .anyMatch(existing -> booking.getStartTime().compareTo(existing.getEndTime()) < 0 &&
+                        booking.getEndTime().compareTo(existing.getStartTime()) > 0);
 
         if (hasOverlap) {
-            throw new RuntimeException("Scheduling Conflict: The resource is already booked for the selected time range.");
+            throw new RuntimeException(
+                    "Scheduling Conflict: The resource is already booked for the selected time range.");
         }
 
-        // --- CONFLICT RESOLVED BLOCK ---
+        // --- Booking එක සුරැකීම ---
         booking.setStatus("PENDING");
-        // Using toString() for the bookingDate String field
+        // වර්තමාන දිනය සහ වෙලාව String එකක් ලෙස සෙට් කිරීම
         booking.setBookingDate(LocalDateTime.now().toString());
-        
+
         return repository.save(booking);
     }
 

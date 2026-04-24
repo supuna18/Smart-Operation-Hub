@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import smart_op_hub.CampusHub.model.Facility;
 import smart_op_hub.CampusHub.model.Resource;
 import smart_op_hub.CampusHub.model.SafetyReport;
-import smart_op_hub.CampusHub.model.User;
+
 import smart_op_hub.CampusHub.repository.FacilityRepository;
 import smart_op_hub.CampusHub.repository.ResourceRepository;
 import smart_op_hub.CampusHub.repository.SafetyReportRepository;
