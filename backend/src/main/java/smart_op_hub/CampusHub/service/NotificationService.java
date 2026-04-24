@@ -56,9 +56,10 @@ public class NotificationService {
         notification.setType(type);
         notification.setRead(false);
         notification.setCreatedAt(LocalDateTime.now());
-        // Find user email to use as the primary identifier (userId in Notification model)
+        // Find user email to use as the primary identifier (userId in Notification
+        // model)
         String userEmail = userId; // Fallback
-        
+
         Optional<User> userById = userRepository.findById(userId);
         if (userById.isPresent()) {
             userEmail = userById.get().getEmail();
@@ -71,25 +72,24 @@ public class NotificationService {
                 if (admin.isPresent()) {
                     userEmail = admin.get().getEmail();
                 } else {
-                     // Check if it's already an email
-                     if (userId.contains("@")) {
-                         userEmail = userId;
-                     }
+                    // Check if it's already an email
+                    if (userId.contains("@")) {
+                        userEmail = userId;
+                    }
                 }
             }
         }
 
-        notification.setUserId(userEmail); 
+        notification.setUserId(userEmail);
         notification.setRead(false);
         notification.setCreatedAt(LocalDateTime.now());
         Notification savedNotification = notificationRepository.save(notification);
 
         // Send real-time notification to the user's private queue (using email)
         messagingTemplate.convertAndSendToUser(
-            userEmail, 
-            "/queue/notifications", 
-            savedNotification
-        );
+                userEmail,
+                "/queue/notifications",
+                savedNotification);
 
         return savedNotification;
     }
@@ -99,5 +99,18 @@ public class NotificationService {
      */
     public long countUnread(String userId) {
         return notificationRepository.countByUserIdAndReadFalse(userId);
+    }
+
+    /**
+     * Mark all notifications as read for a user.
+     */
+    public void markAllAsRead(String userId) {
+        List<Notification> unread = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .filter(n -> !n.isRead())
+                .toList();
+
+        unread.forEach(n -> n.setRead(true));
+        notificationRepository.saveAll(unread);
     }
 }

@@ -47,6 +47,44 @@ const Navbar = () => {
     }
   };
 
+  const markAllAsRead = async () => {
+    try {
+      await api.patch(`/notifications/mark-all-read/${user.email}`);
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error("Error marking all as read:", err);
+    }
+  };
+
+  const timeAgo = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return "just now";
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'RESOURCE_APPROVED':
+        return <div className="p-2 bg-green-100 text-green-600 rounded-full"><Bell size={16} /></div>;
+      case 'RESOURCE_REJECTED':
+        return <div className="p-2 bg-red-100 text-red-600 rounded-full"><Bell size={16} /></div>;
+      case 'TICKET_RESOLVED':
+        return <div className="p-2 bg-blue-100 text-blue-600 rounded-full"><Bell size={16} /></div>;
+      default:
+        return <div className="p-2 bg-yellow-100 text-[#FACC15] rounded-full"><Bell size={16} /></div>;
+    }
+  };
+
   // Fetch and Setup WebSocket for Real-time Notifications
   useEffect(() => {
     if (loggedIn && user?.email) {
@@ -106,7 +144,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="flex items-center justify-between px-6 md:px-16 py-5 sticky top-0 bg-white/70 backdrop-blur-xl z-50 border-b border-gray-200/30 font-poppins transition-all">
+    <nav className="flex items-center justify-between px-6 md:px-16 py-5 sticky top-0 bg-white/80 backdrop-blur-xl z-50 border-b border-gray-200/50 font-poppins transition-all">
 
       {/* Logo */}
       <Link to="/" className="text-2xl font-bold tracking-tight text-[#262626]">
@@ -186,11 +224,11 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors relative group"
                 >
-                  <Bell size={22} className="text-[#262626]" />
+                  <Bell size={22} className={`transition-colors ${unreadCount > 0 ? 'text-[#FACC15]' : 'text-[#262626]'}`} />
                   {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
+                    <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm">
                       {unreadCount}
                     </span>
                   )}
@@ -199,38 +237,66 @@ const Navbar = () => {
                 <AnimatePresence>
                   {showNotifications && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-80 bg-white border shadow-2xl rounded-2xl overflow-hidden z-[60]"
+                      exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                      className="absolute right-0 mt-4 w-[350px] bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl rounded-2xl overflow-hidden z-[60]"
                     >
-                      <div className="p-4 border-b flex justify-between">
-                        <h3 className="font-bold">Notifications</h3>
-                        <span className="text-xs text-gray-400">
-                          {unreadCount} unread
-                        </span>
+                      <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                        <div>
+                          <h3 className="font-bold text-gray-900">Notifications</h3>
+                          <p className="text-[11px] text-gray-500 font-medium">{unreadCount} new alerts</p>
+                        </div>
+                        {unreadCount > 0 && (
+                          <button 
+                            onClick={markAllAsRead}
+                            className="text-[11px] font-bold text-[#FACC15] hover:text-[#eab308] transition-colors"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
                       </div>
 
-                      <div className="max-h-96 overflow-y-auto">
+                      <div className="max-h-[400px] overflow-y-auto">
                         {notifications.length === 0 ? (
-                          <div className="p-6 text-center text-gray-400">
-                            No notifications
+                          <div className="p-10 text-center flex flex-col items-center">
+                            <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                              <Bell size={20} className="text-gray-300" />
+                            </div>
+                            <p className="text-sm text-gray-400 font-medium">No notifications yet</p>
                           </div>
                         ) : (
                           notifications.map((n) => (
                             <div
                               key={n.id}
                               onClick={() => markAsRead(n.id)}
-                              className={`p-4 border-b cursor-pointer ${
-                                !n.read ? 'bg-yellow-50' : ''
+                              className={`p-4 border-b border-gray-50 cursor-pointer transition-colors flex gap-4 hover:bg-gray-50/80 ${
+                                !n.read ? 'bg-yellow-50/30' : ''
                               }`}
                             >
-                              <p className={!n.read ? 'font-semibold' : ''}>
-                                {n.message}
-                              </p>
+                              <div className="mt-0.5">
+                                {getNotificationIcon(n.type)}
+                              </div>
+                              <div className="flex-1">
+                                <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                                  {n.message}
+                                </p>
+                                <p className="text-[10px] text-gray-400 mt-1.5 font-medium flex items-center gap-1">
+                                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                  {timeAgo(n.createdAt)}
+                                </p>
+                              </div>
+                              {!n.read && (
+                                <div className="w-2 h-2 bg-[#FACC15] rounded-full mt-2 shadow-sm"></div>
+                              )}
                             </div>
                           ))
                         )}
+                      </div>
+                      <div className="p-3 border-t border-gray-100 bg-gray-50/30 text-center">
+                        <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-wider">
+                          View All Activity
+                        </button>
                       </div>
                     </motion.div>
                   )}
@@ -238,19 +304,20 @@ const Navbar = () => {
               </div>
 
               {/* Profile */}
-              <Link to="/profile" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-[#FACC15] rounded-full flex items-center justify-center text-xs font-bold">
+              <Link to="/profile" className="flex items-center gap-3 group">
+                <div className="w-9 h-9 bg-gradient-to-tr from-[#FACC15] to-[#fde047] rounded-full flex items-center justify-center text-xs font-bold text-[#262626] shadow-sm group-hover:shadow-md transition-all">
                   {user?.username?.charAt(0).toUpperCase()}
                 </div>
-                <span className="hidden lg:block font-semibold">
-                  {user?.username}
-                </span>
+                <div className="hidden lg:block">
+                  <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">Welcome back,</p>
+                  <p className="font-bold text-sm text-[#262626] leading-none">{user?.username}</p>
+                </div>
               </Link>
 
               {/* Logout */}
               <button
                 onClick={handleLogout}
-                className="font-semibold hover:text-red-500"
+                className="font-bold text-sm text-gray-400 hover:text-red-500 transition-colors ml-2"
               >
                 Logout
               </button>
@@ -260,8 +327,23 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Toggle */}
-      <div className="md:hidden">
-        <button onClick={() => setIsOpen(!isOpen)}>
+      <div className="md:hidden flex items-center gap-4">
+        {loggedIn && (
+           <div className="relative">
+           <button
+             onClick={() => setShowNotifications(!showNotifications)}
+             className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+           >
+             <Bell size={22} className="text-[#262626]" />
+             {unreadCount > 0 && (
+               <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
+                 {unreadCount}
+               </span>
+             )}
+           </button>
+         </div>
+        )}
+        <button onClick={() => setIsOpen(!isOpen)} className="p-1">
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
@@ -269,15 +351,34 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div className="absolute top-full left-0 w-full bg-white p-6 flex flex-col space-y-4 md:hidden">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-full left-0 w-full bg-white border-b shadow-xl p-6 flex flex-col space-y-5 md:hidden z-40"
+          >
             {navLinks.map((link) => (
-              <Link key={link.name} to={link.path}>
+              <Link key={link.name} to={link.path} className="text-lg font-semibold text-gray-800" onClick={() => setIsOpen(false)}>
                 {link.name}
               </Link>
             ))}
 
-            {loggedIn && (
-              <button onClick={handleLogout}>Logout</button>
+            {admin && (
+              <Link to="/AdminDashboard" className="text-lg font-bold text-[#FACC15]" onClick={() => setIsOpen(false)}>
+                Admin Dashboard
+              </Link>
+            )}
+
+            {loggedIn ? (
+              <div className="pt-4 border-t flex flex-col gap-4">
+                <Link to="/profile" className="font-bold text-gray-800" onClick={() => setIsOpen(false)}>My Profile</Link>
+                <button onClick={handleLogout} className="text-left font-bold text-red-500">Logout</button>
+              </div>
+            ) : (
+              <div className="pt-4 border-t flex flex-col gap-4">
+                <Link to="/login" className="font-bold text-gray-800" onClick={() => setIsOpen(false)}>Login</Link>
+                <Link to="/signup" className="bg-[#FACC15] text-[#262626] py-3 rounded-xl font-bold text-center" onClick={() => setIsOpen(false)}>Get Started</Link>
+              </div>
             )}
           </motion.div>
         )}
@@ -290,21 +391,23 @@ const Navbar = () => {
             initial={{ opacity: 0, x: 50, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 50, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-[100] bg-white border-l-4 border-[#FACC15] shadow-2xl p-5 rounded-xl flex items-center gap-4 min-w-[300px] max-w-md"
+            className="fixed bottom-6 right-6 z-[100] bg-white/95 backdrop-blur-md border border-gray-100 shadow-2xl p-5 rounded-2xl flex items-center gap-4 min-w-[320px] max-w-md"
           >
-            <div className="bg-yellow-50 p-2 rounded-full">
+            <div className="bg-yellow-50 p-2.5 rounded-full shadow-inner">
               <Bell className="text-[#FACC15]" size={20} />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-gray-900 leading-tight">New Notification</p>
-              <p className="text-sm text-gray-600 mt-1">{toast}</p>
+              <div className="flex justify-between items-start">
+                <p className="text-xs font-bold text-[#FACC15] uppercase tracking-wider">New Update</p>
+                <button 
+                  onClick={() => setToast(null)}
+                  className="text-gray-300 hover:text-gray-500 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 mt-0.5 leading-snug">{toast}</p>
             </div>
-            <button 
-              onClick={() => setToast(null)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X size={18} />
-            </button>
           </motion.div>
         )}
       </AnimatePresence>

@@ -12,6 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ResourceBookingService {
     private final ResourceBookingRepository repository;
+    private final NotificationService notificationService;
 
     public ResourceBooking createBooking(ResourceBooking booking) {
         // Conflict Prevention: Check for overlapping bookings
@@ -54,11 +55,34 @@ public class ResourceBookingService {
 
     public ResourceBooking updateBookingStatus(String id, String status, String reason) {
         return repository.findById(id).map(b -> {
+            String oldStatus = b.getStatus();
             b.setStatus(status);
             if (reason != null && !reason.isEmpty()) {
                 b.setRejectionReason(reason);
             }
-            return repository.save(b);
+            ResourceBooking saved = repository.save(b);
+
+            // Send notification if status changed to APPROVED or REJECTED
+            if (!oldStatus.equals(status)) {
+                if ("APPROVED".equals(status)) {
+                    notificationService.createNotification(
+                        b.getUserId(),
+                        "Your booking for '" + b.getResourceName() + "' has been APPROVED!",
+                        "RESOURCE_APPROVED"
+                    );
+                } else if ("REJECTED".equals(status)) {
+                    String message = "Your booking for '" + b.getResourceName() + "' was REJECTED.";
+                    if (reason != null && !reason.isEmpty()) {
+                        message += " Reason: " + reason;
+                    }
+                    notificationService.createNotification(
+                        b.getUserId(),
+                        message,
+                        "RESOURCE_REJECTED"
+                    );
+                }
+            }
+            return saved;
         }).orElseThrow(() -> new RuntimeException("Booking not found"));
     }
 

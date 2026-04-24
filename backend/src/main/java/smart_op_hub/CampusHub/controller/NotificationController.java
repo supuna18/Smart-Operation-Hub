@@ -44,4 +44,13 @@ public class NotificationController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    /**
+     * PATCH /api/notifications/mark-all-read/{userId}
+     * Mark all notifications as read for a user.
+     */
+    @PatchMapping("/mark-all-read/{userId}")
+    public ResponseEntity<Void> markAllAsRead(@PathVariable String userId) {
+        notificationService.markAllAsRead(userId);
+        return ResponseEntity.ok().build();
+    }
 }
