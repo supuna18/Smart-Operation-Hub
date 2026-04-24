@@ -27,14 +27,14 @@ public class ResourceBooking {
     private String endDate;
 
     // Booking details
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private String startTime;
+    private String endTime;
     private String purpose;
-    private Integer expectedAttendees;
+    private Integer attendees;
 
     // Status info
     private String status; // PENDING, APPROVED, REJECTED, CANCELLED
-    private LocalDateTime bookingDate;
+    private String bookingDate;
     private String rejectionReason;
 }
 
