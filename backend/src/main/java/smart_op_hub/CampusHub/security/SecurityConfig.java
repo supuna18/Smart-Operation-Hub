@@ -35,17 +35,16 @@ public class SecurityConfig {
                         // Allow preflight requests (CORS fix)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        // --- MODULE B: PERMISSIONS FOR RESOURCES (MUST BE BEFORE anyRequest().authenticated()) ---
+                        .requestMatchers("/api/resources/**").permitAll()
+                        .requestMatchers("/api/resources/bookings/**").permitAll()
+                        
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/tickets/**").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/test/**").permitAll()
-                        
-                        // --- MODULE B: PERMISSIONS FOR RESOURCES (GET, POST, PUT, DELETE) ---
-                        // Indha rendu lines dhaan unga cards and delete button-ah fix pannum
-                        .requestMatchers("/api/resources/**").permitAll()
-                        .requestMatchers("/api/notifications/**").permitAll()
-                        // ------------------------------------------------------------
 
                         // All other endpoints require authentication
                         .anyRequest().authenticated()

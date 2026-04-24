@@ -12,7 +12,7 @@ const ResourceBookingModal = ({ resource, user, onClose, onSuccess }) => {
         startTime: '',
         endTime: '',
         purpose: '',
-        expectedAttendees: 1
+        attendees: 1
     });
 
     const handleChange = (e) => {
@@ -40,11 +40,11 @@ const ResourceBookingModal = ({ resource, user, onClose, onSuccess }) => {
                 resourceName: resource.name,
                 userId: user.id || user.email,
                 username: user.username || user.email.split('@')[0],
-                startTime: start.toISOString(),
-                endTime: end.toISOString(),
-                bookingDate: start.toISOString(),
+                startTime: formData.startTime,
+                endTime: formData.endTime,
+                bookingDate: formData.bookingDate,
                 purpose: formData.purpose,
-                expectedAttendees: parseInt(formData.expectedAttendees)
+                attendees: parseInt(formData.attendees)
             };
 
             await ResourceService.createBooking(bookingData);
@@ -136,10 +136,10 @@ const ResourceBookingModal = ({ resource, user, onClose, onSuccess }) => {
                             <input 
                                 required
                                 type="number" 
-                                name="expectedAttendees"
+                                name="attendees"
                                 min="1"
                                 max={resource.capacity || 1000}
-                                value={formData.expectedAttendees}
+                                value={formData.attendees}
                                 onChange={handleChange}
                                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-yellow-500/10 focus:border-yellow-400 transition-all font-bold text-sm text-slate-700 shadow-inner"
                             />
