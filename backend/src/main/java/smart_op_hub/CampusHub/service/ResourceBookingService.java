@@ -12,21 +12,40 @@ import java.util.List;
 public class ResourceBookingService {
     private final ResourceBookingRepository repository;
 
-    // --- 1. CREATE BOOKING WITH STRICT CONFLICT CHECK ---
+    // --- 1. CREATE BOOKING (Unga exact logic patti) ---
     public ResourceBooking createBooking(ResourceBooking booking) {
-        // Validation: New booking-ku conflict check pannuvom
-        validateTimeSlot(booking, null); 
+        
+        // Conflict Prevention: PENDING or APPROVED bookings-ah fetch pannuvom
+        List<ResourceBooking> conflictingBookings = repository.findByResourceIdAndStatusIn(
+                booking.getResourceId(), List.of("PENDING", "APPROVED"));
 
+        // Logic check: Date serthu check panna dhaan different days-la same time book panna mudiyum
+        boolean hasOverlap = conflictingBookings.stream()
+                .anyMatch(existing -> {
+                    // Date overlap check
+                    boolean dateOverlap = (booking.getStartDate().compareTo(existing.getEndDate()) <= 0) &&
+                                         (booking.getEndDate().compareTo(existing.getStartDate()) >= 0);
+                    
+                    // Time overlap check (Unga exact formula)
+                    return dateOverlap && 
+                           booking.getStartTime().compareTo(existing.getEndTime()) < 0 &&
+                           booking.getEndTime().compareTo(existing.getStartTime()) > 0;
+                });
+
+        if (hasOverlap) {
+            throw new RuntimeException(
+                    "Scheduling Conflict: The resource is already booked for the selected time range.");
+        }
+
+        // --- Booking save pannuvom ---
         booking.setStatus("PENDING");
         booking.setBookingDate(LocalDateTime.now().toString());
+
         return repository.save(booking);
     }
 
-    // --- 2. UPDATE BOOKING WITH CONFLICT CHECK (EXCLUDING SELF) ---
+    // --- 2. UPDATE BOOKING DETAILS ---
     public ResourceBooking updateBookingDetails(String id, ResourceBooking updated) {
-        // Update pannum bodhu, conflict check pannanum (aana adhe ID-ah filter pannanum)
-        validateTimeSlot(updated, id);
-
         return repository.findById(id).map(existing -> {
             existing.setStartDate(updated.getStartDate());
             existing.setEndDate(updated.getEndDate());
@@ -36,36 +55,6 @@ public class ResourceBookingService {
             existing.setAttendees(updated.getAttendees());
             return repository.save(existing);
         }).orElseThrow(() -> new RuntimeException("Booking not found"));
-    }
-
-    // --- CORE LOGIC: CONFLICT CHECKER METHOD ---
-    private void validateTimeSlot(ResourceBooking newBooking, String currentBookingId) {
-        // Fetch only active bookings for this resource
-        List<ResourceBooking> existingBookings = repository.findByResourceIdAndStatusIn(
-            newBooking.getResourceId(), List.of("PENDING", "APPROVED")
-        );
-
-        boolean hasOverlap = existingBookings.stream()
-            // Editing-na current record-ah ignore pannanum, illana 'Self-Conflict' varum
-            .filter(ex -> currentBookingId == null || !ex.getId().equals(currentBookingId))
-            .anyMatch(ex -> {
-                // 1. DATE OVERLAP CHECK: (StartA <= EndB) AND (EndA >= StartB)
-                boolean dateOverlap = (newBooking.getStartDate().compareTo(ex.getEndDate()) <= 0) &&
-                                     (newBooking.getEndDate().compareTo(ex.getStartDate()) >= 0);
-
-                if (dateOverlap) {
-                    // 2. TIME OVERLAP CHECK: (StartA < EndB) AND (EndA > StartB)
-                    // Indha logic dhaan exact-ah partial overlap-ah (e.g. 4-6 vs 1-5) kandupidiikum
-                    return newBooking.getStartTime().compareTo(ex.getEndTime()) < 0 && 
-                           newBooking.getEndTime().compareTo(ex.getStartTime()) > 0;
-                }
-                return false;
-            });
-
-        if (hasOverlap) {
-            // Indha message dhaan Frontend-la Toast alert-ah varum
-            throw new RuntimeException("TIME_SLOT_CONFLICT");
-        }
     }
 
     // --- 3. HELPER METHODS ---
