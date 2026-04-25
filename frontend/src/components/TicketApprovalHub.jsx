@@ -116,7 +116,7 @@ const TicketApprovalHub = ({ isEmbedded = false }) => {
                 <div className="flex flex-col lg:flex-row gap-10">
                     {/* Management List Section (70%) */}
                     <div className="flex-grow lg:w-[70%]">
-                        {/* Status Filters */}
+                        {/* Status admin Filters (120-137)*/}
                         <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-4 scrollbar-hide">
                             <div className="p-2.5 bg-white border border-gray-100 rounded-xl text-gray-400 shadow-sm mr-2">
                                 <Filter size={18} />
@@ -189,7 +189,7 @@ const TicketApprovalHub = ({ isEmbedded = false }) => {
 
                     {/* Admin Insights Sidebar (30%) */}
                     <div className="lg:w-[30%] space-y-8">
-                        {/* Admin Stats Card */}
+                        {/* Admin Stats Card - Queue Metrics(193-234) */}
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}

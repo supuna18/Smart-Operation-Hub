@@ -45,6 +45,7 @@ const TicketDashboard = () => {
         try {
             let url = 'http://localhost:8082/api/tickets';
 
+            //filter logic in ticket (user filter)(Lines 48-62 inside)
             if (!isAdmin && userName) {
                 // Normal users ALWAYS fetch only their own tickets
                 url = `http://localhost:8082/api/tickets/user/${userName}`;
@@ -73,6 +74,7 @@ const TicketDashboard = () => {
         }
     };
 
+    //global health box (77-98)
     const filteredTickets = useMemo(() => {
         return tickets.filter(t =>
             t.issueTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -279,7 +281,7 @@ const TicketDashboard = () => {
                             </div>
                         </motion.div>
 
-                        {/* Recent Activity Feed */}
+                        {/* Recent Activity Feed (284-322)*/}
                         <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
                             <div className="flex justify-between items-center mb-8">
                                 <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Activity Feed</h3>

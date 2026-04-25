@@ -96,7 +96,7 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated, editTicket = null }) =>
                                         Issue Category
                                     </label>
                                     <input 
-                                        list="issue-types"
+                                        list="issue-types" //issue category validation
                                         required
                                         value={formData.issueTitle}
                                         onChange={(e) => setFormData({...formData, issueTitle: e.target.value})}
@@ -114,7 +114,7 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated, editTicket = null }) =>
                                         Location
                                     </label>
                                     <input 
-                                        required
+                                        required // location validation
                                         value={formData.location}
                                         onChange={(e) => setFormData({...formData, location: e.target.value})}
                                         className="w-full bg-white border border-gray-200 rounded-xl py-2.5 px-3.5 outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all text-[13px] font-medium text-gray-900 placeholder:text-gray-400"
@@ -130,7 +130,7 @@ const CreateTicketModal = ({ isOpen, onClose, onCreated, editTicket = null }) =>
                                     Detailed Description
                                 </label>
                                 <textarea 
-                                    required
+                                    required //description validation
                                     rows="3"
                                     value={formData.description}
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}

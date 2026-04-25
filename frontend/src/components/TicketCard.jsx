@@ -84,6 +84,7 @@ const TicketCard = ({ ticket, isAdmin, onUpdate, user, onEdit }) => {
     };
 
     return (
+        //ticket cards UI
         <motion.div 
             layout
             initial={{ opacity: 0, y: 20 }}
@@ -171,6 +172,7 @@ const TicketCard = ({ ticket, isAdmin, onUpdate, user, onEdit }) => {
                     )}
                 </div>
 
+                {/* tickets card data loop */}
                 <div className="flex items-center gap-2">
                     {ticket.status === 'OPEN' && (isAdmin || ticket.createdBy === user?.username) && (
                         <button 
