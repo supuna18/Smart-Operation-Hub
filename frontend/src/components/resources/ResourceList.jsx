@@ -1,3 +1,4 @@
+{/* Resource list and search and filter */}
 import React, { useState, useEffect } from 'react';
 import ResourceService from '../../services/ResourceService';
 import {
@@ -10,8 +11,11 @@ import {
     FiMapPin,
     FiCalendar,
     FiBox,
-    FiClock
+    FiClock,
+    FiDownload
 } from 'react-icons/fi';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isAdmin, getUser } from '../../utils/auth';
 import { useToast } from '../../context/ToastContext';
@@ -110,6 +114,7 @@ const ResourceList = ({ onEdit, onAdd }) => {
         return userBookings.find((b) => b.resourceId === resourceId);
     };
 
+    {/* type default images for resources */}
     const getTypeDefaultImage = (type) => {
         const defaults = {
             'Lecture Hall': lectureHallImg,
@@ -136,6 +141,63 @@ const ResourceList = ({ onEdit, onAdd }) => {
                 showToast('Failed to delete resource.', 'error');
             }
         }
+    };
+
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+        
+        // Add Header
+        doc.setFontSize(20);
+        doc.setTextColor(40, 40, 40);
+        doc.text('SmartSync Campus Resource Registry', 14, 22);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+        doc.text(`Total Assets: ${resources.length}`, 14, 35);
+        
+        // Horizontal Line
+        doc.setDrawColor(250, 204, 21); // Yellow-400
+        doc.setLineWidth(1);
+        doc.line(14, 40, 196, 40);
+
+        const tableData = resources.map((r, index) => [
+            index + 1,
+            r.name,
+            r.type,
+            r.capacity,
+            r.location,
+            r.status,
+            r.availabilityWindows || 'Not Specified'
+        ]);
+
+        autoTable(doc, {
+            startY: 45,
+            head: [['#', 'Resource Name', 'Category', 'Capacity', 'Location', 'Status', 'Availability']],
+            body: tableData,
+            headStyles: { 
+                fillColor: [38, 38, 38], // Dark Gray (#262626)
+                textColor: [250, 204, 21], // Gold (#FACC15)
+                fontSize: 10,
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: { 
+                fillColor: [250, 250, 250] 
+            },
+            margin: { top: 45 },
+            styles: {
+                fontSize: 9,
+                cellPadding: 3
+            },
+            columnStyles: {
+                0: { cellWidth: 10 },
+                3: { halign: 'center' },
+                5: { fontStyle: 'bold' }
+            }
+        });
+
+        doc.save(`SmartSync_Resource_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        showToast('Resource report generated successfully!', 'success');
     };
 
     return (
@@ -175,13 +237,23 @@ const ResourceList = ({ onEdit, onAdd }) => {
                     )}
 
                     {admin && (
-                        <button
-                            onClick={onAdd}
-                            className="flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-yellow-400 text-slate-900 px-7 py-3 rounded-xl transition-all font-bold active:scale-95 shadow-lg"
-                        >
-                            <FiPlus size={18} className="stroke-[3px]" />
-                            New Resource
-                        </button>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleDownloadPDF}
+                                className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-3 rounded-xl transition-all font-bold active:scale-95 shadow-lg backdrop-blur-md"
+                                title="Download Resource Report"
+                            >
+                                <FiDownload size={18} />
+                                <span className="hidden sm:inline">Download Report</span>
+                            </button>
+                            <button
+                                onClick={onAdd}
+                                className="flex items-center justify-center gap-2 bg-[#FACC15] hover:bg-yellow-400 text-slate-900 px-7 py-3 rounded-xl transition-all font-bold active:scale-95 shadow-lg"
+                            >
+                                <FiPlus size={18} className="stroke-[3px]" />
+                                New Resource
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
@@ -310,16 +382,35 @@ const ResourceList = ({ onEdit, onAdd }) => {
                                 <div className="px-5 py-4 flex gap-2 border-t border-slate-50">
                                     <button
                                         onClick={() => setCalendarResource(resource)}
-                                        className="flex-1 flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 py-2 rounded-lg font-bold text-xs"
+                                        className="flex-1 flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 py-2 rounded-lg font-bold text-xs transition-colors"
                                     >
                                         <FiCalendar size={14} />
                                         Schedule
                                     </button>
 
+                                    {admin && (
+                                        <>
+                                            <button
+                                                onClick={() => onEdit(resource)}
+                                                className="flex-1 flex items-center justify-center gap-2 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-600 py-2 rounded-lg font-bold text-xs transition-colors border border-yellow-400/20"
+                                            >
+                                                <FiEdit2 size={14} />
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(resource.id)}
+                                                className="flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-500 p-2.5 rounded-lg transition-colors border border-rose-200/50"
+                                                title="Delete Resource"
+                                            >
+                                                <FiTrash2 size={14} />
+                                            </button>
+                                        </>
+                                    )}
+
                                     {!admin && (
                                         <button
                                             onClick={() => handleBook(resource)}
-                                            className="flex-1 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg font-bold text-xs shadow-sm"
+                                            className="flex-1 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg font-bold text-xs shadow-sm transition-all active:scale-95"
                                             disabled={resource.status !== 'ACTIVE'}
                                         >
                                             <FiClock size={14} />

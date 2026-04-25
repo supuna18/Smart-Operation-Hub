@@ -127,7 +127,7 @@ const ResourceManagement = ({ isEmbedded = false, onAddTrigger = 0 }) => {
                     </div>
                 )}
                 
-                {/* Mode Selector - Premium Floating Pill Toggle */}
+                {/* Mode Selector - Premium Floating Pill Toggle - Admin and users */}
                 <div className="flex justify-center mb-12">
                     <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-[1.5rem] shadow-xl border border-white/20 flex relative overflow-hidden">
                         {[

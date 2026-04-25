@@ -36,9 +36,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
 
   // Hide footer for dashboard-style pages
   const hideFooter =
-    location.pathname === '/AdminDashboard' ||
-    location.pathname === '/resources' ||
-    location.pathname === '/my-bookings';
+    location.pathname === '/AdminDashboard';
 
   return (
     <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col text-poppins">

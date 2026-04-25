@@ -446,15 +446,8 @@ const AdminDashboard = () => {
               <span style={{ padding: '5px 11px', borderRadius: 99, background: `${G}20`, border: `1px solid ${G}45`, color: D, fontSize: 10.5, fontWeight: 700 }}>
                 ● Live
               </span>
-              {[Bell, Settings].map((Icon, i) => (
-                <button key={i}
-                  style={{ padding: 7, background: W, border: '1px solid #e5e7eb', borderRadius: 9, cursor: 'pointer', display: 'flex', outline: 'none' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
-                  onMouseLeave={e => e.currentTarget.style.background = W}>
-                  <Icon size={15} color="#6b7280" />
-                </button>
-              ))}
             </div>
+
           </header>
 
           {/* Mobile tab bar */}

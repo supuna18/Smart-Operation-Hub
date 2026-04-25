@@ -24,7 +24,7 @@ const ResourceForm = ({ resource, onClose, onSave }) => {
     ];
     const [formData, setFormData] = useState({
         name: '',
-        type: 'Lecture Hall',
+        type: '',
         capacity: 0,
         location: '',
         status: 'ACTIVE',
