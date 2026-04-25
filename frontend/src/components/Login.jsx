@@ -56,10 +56,10 @@ const Login = () => {
         token: credentialResponse.credential,
       });
 
-      // ✅ Store auth data centrally
+      //  Store auth data centrally
       setAuthData(response.data.token, response.data.user);
 
-      // ✅ Role-based navigation
+      // Role-based navigation
       if (response.data.user.role === 'Admin') {
         navigate('/AdminDashboard');
       } else {
@@ -75,7 +75,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 relative overflow-hidden">
-      
+
       {/* Background */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#FACC15] rounded-full blur-3xl opacity-20"></div>
