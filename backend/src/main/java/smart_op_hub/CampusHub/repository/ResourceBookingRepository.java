@@ -9,7 +9,6 @@ import java.util.List;
 @Repository
 public interface ResourceBookingRepository extends MongoRepository<ResourceBooking, String> {
     List<ResourceBooking> findByUserId(String userId);
-    List<ResourceBooking> findByStatus(String status);
-    List<ResourceBooking> findByResourceId(String resourceId);
-    List<ResourceBooking> findByResourceIdAndStatusIn(String resourceId, List<String> statuses);
+    List<ResourceBooking> findByResourceId(String resourceId); // <--- Add this
+    List<ResourceBooking> findByResourceIdAndStatusIn(String resourceId, List<String> statuses); // <--- Add this
 }

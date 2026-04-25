@@ -41,6 +41,12 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/test/**").permitAll()
 
+                        // --- MODULE B: FIXING 403 ACCESS DENIED ERRORS ---
+                        // Indha lines dhaan cards vara vaikka and delete logic-ah allow panna udhavum
+                        .requestMatchers("/api/resources/**").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
+                        // -------------------------------------------------
+
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )
@@ -62,11 +68,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
+        // Docker and Local development origins
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:5174"
         ));
 
+        // Allowed methods for CRUD operations
         configuration.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
