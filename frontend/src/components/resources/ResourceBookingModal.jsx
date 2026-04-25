@@ -1,135 +1,196 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiCalendar, FiClock, FiUsers, FiInfo, FiMessageSquare } from 'react-icons/fi';
-import ResourceService from '../../services/ResourceService';
+import { FiX, FiClock, FiAlertCircle, FiCheck, FiCalendar, FiUsers } from 'react-icons/fi';
+import BookingService from '../../services/BookingService'; 
 import { useToast } from '../../context/ToastContext';
 
-const ResourceBookingModal = ({ resource, user, onClose, onSuccess }) => {
+const ResourceBookingModal = ({ resource, user, onClose, onSuccess, existingData = null }) => {
     const { showToast } = useToast();
     const [submitting, setSubmitting] = useState(false);
+    const [occupiedSlots, setOccupiedSlots] = useState([]);
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Default form state - Combined both branches
     const [formData, setFormData] = useState({
-        bookingDate: '',
-        startTime: '',
-        endTime: '',
-        purpose: '',
-        attendees: 1
+        startDate: existingData?.startDate || existingData?.bookingDate || today,
+        endDate: existingData?.endDate || existingData?.bookingDate || today,
+        bookingDate: existingData?.bookingDate || today,
+        startTime: existingData?.startTime || '',
+        endTime: existingData?.endTime || '',
+        purpose: existingData?.purpose || '',
+        attendees: existingData?.attendees || 1
     });
 
+    // Helper to handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => ({
+            ...prev,
+            [name]: value,
+            // If startDate changes, sync bookingDate for Sujan's logic
+            ...(name === 'startDate' ? { bookingDate: value } : {})
+        }));
     };
+
+    // Fetch Busy Schedule
+    useEffect(() => {
+        const fetchOccupiedSlots = async () => {
+            try {
+                const response = await BookingService.getBookingsByResourceId(resource.id);
+                const active = response.data.filter(b => 
+                    (b.status === 'PENDING' || b.status === 'APPROVED') && b.id !== existingData?.id
+                );
+                setOccupiedSlots(active);
+            } catch (error) {
+                console.error("Error fetching availability:", error);
+            }
+        };
+
+        if (resource?.id) {
+            fetchOccupiedSlots();
+        }
+    }, [resource.id, existingData?.id]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validation logic from both branches
+        if (formData.endDate < formData.startDate) {
+            showToast("End date cannot be before start date", "error");
+            return;
+        }
+
+        if (formData.startDate === formData.endDate && formData.startTime >= formData.endTime) {
+            showToast("End time must be later than start time", "error");
+            return;
+        }
+
         setSubmitting(true);
-
         try {
-            // Validate time range
-            const start = new Date(`${formData.bookingDate}T${formData.startTime}`);
-            const end = new Date(`${formData.bookingDate}T${formData.endTime}`);
-
-            if (end <= start) {
-                showToast('End time must be after start time', 'error');
-                setSubmitting(false);
-                return;
-            }
-
-            const bookingData = {
+            // Combined Payload to satisfy both requirements
+            const payload = {
+                ...formData,
                 resourceId: resource.id,
                 resourceName: resource.name,
                 userId: user.id || user.email,
-                username: user.username || user.email.split('@')[0],
-                startTime: formData.startTime,
-                endTime: formData.endTime,
-                bookingDate: formData.bookingDate,
-                purpose: formData.purpose,
-                attendees: parseInt(formData.attendees)
+                username: user.username || user.name || user.email?.split('@')[0] || "User",
+                attendees: parseInt(formData.attendees),
+                status: existingData ? existingData.status : "PENDING"
             };
 
-            await ResourceService.createBooking(bookingData);
-            showToast(`Booking request for ${resource.name} submitted!`, 'success');
-            onSuccess();
+            if (existingData?.id) {
+                await BookingService.updateBooking(existingData.id, payload);
+                showToast('Reservation updated successfully!', 'success');
+            } else {
+                await BookingService.createBooking(payload);
+                showToast(`Request for ${resource.name} submitted!`, 'success');
+            }
+
+            onSuccess(); 
             onClose();
         } catch (error) {
-            console.error('Booking error:', error);
-            const message = error.response?.data || error.message || 'Failed to submit booking';
-            showToast(message.includes('Conflict') ? message : 'Failed to submit booking request.', 'error');
+            const serverError = error.response?.data?.message;
+            if (serverError === "TIME_SLOT_CONFLICT") {
+                showToast("Conflict Detected! This time slot overlaps with an existing booking.", "error");
+            } else {
+                showToast(serverError || "Request failed. Check Busy Schedule list.", "error");
+            }
+            console.error("Booking Error:", error);
         } finally {
             setSubmitting(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-md">
             <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden relative"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                className="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-white/10"
             >
-                {/* Header */}
-                <div className="bg-[#262626] p-8 pb-12 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400 opacity-5 -translate-y-16 translate-x-16 rounded-full" />
-                    <div className="flex justify-between items-start relative z-10">
-                        <div>
-                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-yellow-500 text-[9px] font-black uppercase tracking-widest mb-4">
-                                Resource Reservation
-                            </span>
-                            <h2 className="text-2xl font-black text-white">Book <span className="text-yellow-400">{resource.name}</span></h2>
+                
+                {/* LEFT SIDE: BUSY SCHEDULE */}
+                <div className="md:w-5/12 bg-slate-50 p-8 border-r border-slate-100 overflow-y-auto max-h-[85vh] scrollbar-hide">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-yellow-400/20 flex items-center justify-center text-yellow-700">
+                            <FiAlertCircle size={20} />
                         </div>
-                        <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-white/40">
-                            <FiX size={20} />
-                        </button>
+                        <div>
+                            <h3 className="text-sm font-black uppercase tracking-widest text-slate-600">Busy Schedule</h3>
+                            <p className="text-[10px] text-slate-400 font-bold">Avoid overlapping with these slots</p>
+                        </div>
                     </div>
+
+                    {occupiedSlots.length === 0 ? (
+                        <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-white/50">
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">All Slots Available</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {occupiedSlots.map((slot, idx) => (
+                                <motion.div 
+                                    key={idx}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-yellow-400 relative group"
+                                >
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-[9px] font-black bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded uppercase">{slot.status}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{slot.username?.split(' ')[0]}</span>
+                                    </div>
+                                    <div className="text-xs font-black text-slate-800">
+                                        {slot.startDate || slot.bookingDate} {slot.endDate && slot.startDate !== slot.endDate && ` — ${slot.endDate}`}
+                                    </div>
+                                    <div className="text-[10px] text-slate-500 font-bold mt-1 flex items-center gap-1">
+                                        <FiClock size={11} className="text-yellow-500" /> {slot.startTime} to {slot.endTime}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-8 -mt-6 bg-white rounded-t-[2.5rem] relative z-20 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2 col-span-full">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                                <FiCalendar className="text-yellow-500" /> Date of Booking
-                            </label>
-                            <input 
-                                required
-                                type="date" 
-                                name="bookingDate"
-                                value={formData.bookingDate}
-                                onChange={handleChange}
-                                min={new Date().toISOString().split('T')[0]}
-                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-yellow-500/10 focus:border-yellow-400 transition-all font-bold text-sm text-slate-700 shadow-inner"
-                            />
+                {/* RIGHT SIDE: BOOKING FORM */}
+                <div className="md:w-7/12 p-10 bg-white relative overflow-y-auto max-h-[85vh]">
+                    <button onClick={onClose} className="absolute top-8 right-8 p-2 bg-slate-50 hover:bg-rose-50 hover:text-rose-500 rounded-xl transition-all text-slate-400"><FiX size={20} /></button>
+                    
+                    <div className="mb-8">
+                        <span className="px-3 py-1 rounded-full bg-slate-900 text-yellow-400 text-[9px] font-black uppercase tracking-widest mb-3 inline-block">
+                            Module B: Resource Manager
+                        </span>
+                        <h2 className="text-3xl font-black text-slate-900">
+                            Book <span className="text-yellow-500">{resource.name}</span>
+                        </h2>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Dates Row */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Start Date</label>
+                                <input required type="date" name="startDate" min={today} value={formData.startDate} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-yellow-400 outline-none transition-all" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase text-slate-400 ml-1">End Date</label>
+                                <input required type="date" name="endDate" min={formData.startDate} value={formData.endDate} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-yellow-400 outline-none transition-all" />
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                                <FiClock className="text-yellow-500" /> Start Time
-                            </label>
-                            <input 
-                                required
-                                type="time" 
-                                name="startTime"
-                                value={formData.startTime}
-                                onChange={handleChange}
-                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-yellow-500/10 focus:border-yellow-400 transition-all font-bold text-sm text-slate-700 shadow-inner"
-                            />
+                        {/* Times Row */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Start Time</label>
+                                <input required type="time" name="startTime" value={formData.startTime} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-yellow-400 outline-none transition-all" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase text-slate-400 ml-1">End Time</label>
+                                <input required type="time" name="endTime" value={formData.endTime} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-yellow-400 outline-none transition-all" />
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                                <FiClock className="text-yellow-500" /> End Time
-                            </label>
-                            <input 
-                                required
-                                type="time" 
-                                name="endTime"
-                                value={formData.endTime}
-                                onChange={handleChange}
-                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-yellow-500/10 focus:border-yellow-400 transition-all font-bold text-sm text-slate-700 shadow-inner"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
+                        {/* Attendees Field (from Sujan branch) */}
+                        <div className="space-y-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
                                 <FiUsers className="text-yellow-500" /> Attendees
                             </label>
@@ -141,55 +202,27 @@ const ResourceBookingModal = ({ resource, user, onClose, onSuccess }) => {
                                 max={resource.capacity || 1000}
                                 value={formData.attendees}
                                 onChange={handleChange}
-                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-yellow-500/10 focus:border-yellow-400 transition-all font-bold text-sm text-slate-700 shadow-inner"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-yellow-400 outline-none transition-all shadow-inner"
                             />
                         </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                            <FiMessageSquare className="text-yellow-500" /> Purpose of Booking
-                        </label>
-                        <textarea 
-                            required
-                            name="purpose"
-                            value={formData.purpose}
-                            onChange={handleChange}
-                            placeholder="e.g., Final Year Group Presentation"
-                            rows="2"
-                            className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-yellow-500/10 focus:border-yellow-400 transition-all font-bold text-sm text-slate-700 placeholder-slate-400 shadow-inner resize-none"
-                        />
-                    </div>
+                        {/* Purpose Field */}
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Purpose of Booking</label>
+                            <textarea required name="purpose" rows="3" placeholder="Describe why you need this resource..." value={formData.purpose} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm resize-none focus:ring-2 focus:ring-yellow-400 outline-none transition-all" />
+                        </div>
 
-                    <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-2xl flex gap-3 items-start">
-                        <FiInfo className="text-yellow-600 mt-1 flex-shrink-0" size={18} />
-                        <p className="text-[11px] font-medium text-yellow-800 leading-relaxed">
-                            Booking requests are subject to administrator approval. You will be notified via the notification hub once a decision is made.
-                        </p>
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
                         <button 
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest shadow-inner active:scale-95"
+                            type="submit" 
+                            disabled={submitting} 
+                            className="w-full py-5 bg-[#262626] hover:bg-black text-[#FACC15] rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
-                            Cancel
+                            {submitting ? 'Checking System...' : (
+                                <><FiCheck size={18} /> {existingData ? 'Save Changes' : 'Confirm Reservation'}</>
+                            )}
                         </button>
-                        <button 
-                            type="submit"
-                            disabled={submitting}
-                            className="flex-[2] px-8 py-4 bg-[#262626] hover:bg-black text-[#FACC15] rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest shadow-xl shadow-black/20 active:scale-95 flex items-center justify-center gap-2"
-                        >
-                            {submitting ? (
-                                <>
-                                    <div className="w-3 h-3 border-2 border-[#FACC15] border-t-transparent rounded-full animate-spin" />
-                                    Processing...
-                                </>
-                            ) : 'Submit Request'}
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </motion.div>
         </div>
     );

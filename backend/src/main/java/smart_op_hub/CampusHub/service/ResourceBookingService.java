@@ -4,101 +4,81 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import smart_op_hub.CampusHub.model.ResourceBooking;
 import smart_op_hub.CampusHub.repository.ResourceBookingRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ResourceBookingService {
-
     private final ResourceBookingRepository repository;
 
-    public ResourceBooking createBooking(ResourceBooking newBooking) {
+    // --- 1. CREATE BOOKING (Unga exact logic patti) ---
+    public ResourceBooking createBooking(ResourceBooking booking) {
+        
+        // Conflict Prevention: PENDING or APPROVED bookings-ah fetch pannuvom
+        List<ResourceBooking> conflictingBookings = repository.findByResourceIdAndStatusIn(
+                booking.getResourceId(), List.of("PENDING", "APPROVED"));
 
-        // Resource ID வைத்து existing bookings fetch pannrom
-        List<ResourceBooking> existingBookings =
-                repository.findByResourceId(newBooking.getResourceId());
+        // Logic check: Date serthu check panna dhaan different days-la same time book panna mudiyum
+        boolean hasOverlap = conflictingBookings.stream()
+                .anyMatch(existing -> {
+                    // Date overlap check
+                    boolean dateOverlap = (booking.getStartDate().compareTo(existing.getEndDate()) <= 0) &&
+                                         (booking.getEndDate().compareTo(existing.getStartDate()) >= 0);
+                    
+                    // Time overlap check (Unga exact formula)
+                    return dateOverlap && 
+                           booking.getStartTime().compareTo(existing.getEndTime()) < 0 &&
+                           booking.getEndTime().compareTo(existing.getStartTime()) > 0;
+                });
 
-        if (existingBookings != null) {
-            for (ResourceBooking existing : existingBookings) {
-
-                // REJECTED bookings ignore pannuvom
-                if (existing.getStatus() != null &&
-                        !existing.getStatus().equals("REJECTED")) {
-
-                    // Safety check for old data (null values avoid panna)
-                    if (existing.getStartDate() == null ||
-                            existing.getEndDate() == null ||
-                            existing.getStartTime() == null ||
-                            existing.getEndTime() == null) {
-                        continue;
-                    }
-
-                    // Date range overlap check
-                    boolean dateOverlap =
-                            (newBooking.getStartDate().compareTo(existing.getEndDate()) <= 0) &&
-                            (newBooking.getEndDate().compareTo(existing.getStartDate()) >= 0);
-
-                    if (dateOverlap) {
-
-                        // Time slot overlap check
-                        boolean timeOverlap =
-                                (newBooking.getStartTime().compareTo(existing.getEndTime()) < 0) &&
-                                (newBooking.getEndTime().compareTo(existing.getStartTime()) > 0);
-
-                        if (timeOverlap) {
-                            throw new RuntimeException(
-                                    "Time slot conflict! This period is already reserved."
-                            );
-                        }
-                    }
-                }
-            }
+        if (hasOverlap) {
+            throw new RuntimeException(
+                    "Scheduling Conflict: The resource is already booked for the selected time range.");
         }
 
-        // Save as PENDING if no conflict
-        newBooking.setStatus("PENDING");
+        // --- Booking save pannuvom ---
+        booking.setStatus("PENDING");
+        booking.setBookingDate(LocalDateTime.now().toString());
 
-        // Booking date set pannrom
-        newBooking.setBookingDate(LocalDateTime.now().toString());
-
-        return repository.save(newBooking);
+        return repository.save(booking);
     }
 
-    public List<ResourceBooking> getMyBookings(String userId) {
-        return repository.findByUserId(userId);
+    // --- 2. UPDATE BOOKING DETAILS ---
+    public ResourceBooking updateBookingDetails(String id, ResourceBooking updated) {
+        return repository.findById(id).map(existing -> {
+            existing.setStartDate(updated.getStartDate());
+            existing.setEndDate(updated.getEndDate());
+            existing.setStartTime(updated.getStartTime());
+            existing.setEndTime(updated.getEndTime());
+            existing.setPurpose(updated.getPurpose());
+            existing.setAttendees(updated.getAttendees());
+            return repository.save(existing);
+        }).orElseThrow(() -> new RuntimeException("Booking not found"));
     }
 
-    public List<ResourceBooking> getAllBookings() {
-        List<ResourceBooking> all = repository.findAll();
-        System.out.println(
-                "ResourceBookingService: Found " +
-                        all.size() +
-                        " total bookings in database."
-        );
-        return all;
-    }
-
+    // --- 3. HELPER METHODS ---
     public List<ResourceBooking> getBookingsByResourceId(String resourceId) {
         return repository.findByResourceId(resourceId);
     }
 
-    public ResourceBooking updateBookingStatus(String id, String status, String reason) {
-        return repository.findById(id).map(booking -> {
-            booking.setStatus(status);
-
-            if (reason != null && !reason.isEmpty()) {
-                booking.setRejectionReason(reason);
-            }
-
-            return repository.save(booking);
-
-        }).orElseThrow(() -> new RuntimeException("Booking not found"));
+    public List<ResourceBooking> getMyBookings(String userId) { 
+        return repository.findByUserId(userId); 
     }
 
-    // MODULE B: DELETE METHOD
-    public void deleteBooking(String id) {
-        repository.deleteById(id);
+    public List<ResourceBooking> getAllBookings() { 
+        return repository.findAll(); 
+    }
+
+    public void deleteBooking(String id) { 
+        repository.deleteById(id); 
+    }
+
+    public ResourceBooking updateBookingStatus(String id, String status, String reason) {
+        return repository.findById(id).map(b -> {
+            b.setStatus(status);
+            if (reason != null) b.setRejectionReason(reason);
+            return repository.save(b);
+        }).orElseThrow(() -> new RuntimeException("Booking not found"));
     }
 }

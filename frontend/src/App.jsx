@@ -35,13 +35,12 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation();
 
   // Hide footer for dashboard-style pages
-  const hideFooter =
-    location.pathname === '/AdminDashboard';
+  const hideFooter = location.pathname === '/AdminDashboard';
 
   return (
     <div className="min-h-screen bg-white font-poppins selection:bg-yellow-100 flex flex-col text-poppins">
 
-      {/* Navbar */}
+      {/* Navbar - passing isLoggedIn to update UI on login/logout */}
       <Navbar isLoggedIn={isLoggedIn} />
 
       <main className="flex-grow">
@@ -161,6 +160,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    // Sync state with utility on mount
     setIsLoggedIn(checkAuth());
   }, []);
 
