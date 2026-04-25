@@ -48,6 +48,7 @@ const getBookingsByResourceId = (resourceId) => {
     return api.get(`${API_URL}/bookings/resource/${resourceId}`);
 };
 
+
 const ResourceService = {
     getAllResources,
     getResourceById,

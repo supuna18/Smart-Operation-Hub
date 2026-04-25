@@ -18,11 +18,9 @@ public class ResourceBooking {
     private String userId;
     private String username;
 
-    // Multi-day support (Unga Module B Logic)
+    // MODULE B: Multi-day & Time Support
     private String startDate;
     private String endDate;
-
-    // Booking details (Using String for easier conflict checking)
     private String startTime;
     private String endTime;
     private String purpose;
@@ -30,7 +28,6 @@ public class ResourceBooking {
 
     // Status info
     private String status; // PENDING, APPROVED, REJECTED, CANCELLED
-    private String bookingDate;
-    
+    private String bookingDate; // Created date
     private String rejectionReason;
 }
